@@ -1,6 +1,6 @@
 /**
  * FUFUFAFAGAMES - Custom Styles
- * Dark theme dengan aqua accent
+ * Dark theme dengan aqua accent - FIXED RESPONSIVE LAYOUT
  */
 
 /* ==================== IMPORT FONTS ==================== */
@@ -18,11 +18,23 @@
   --border-color: rgba(0, 217, 255, 0.2);
 }
 
-/* ==================== GLOBAL STYLES ==================== */
+/* ==================== GLOBAL STYLES - FIXED OVERSCROLL ==================== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+html {
+  background: linear-gradient(
+    135deg,
+    var(--dark-primary) 0%,
+    var(--dark-secondary) 100%
+  ) !important;
+  background-attachment: fixed !important;
+  min-height: 100%;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
@@ -31,12 +43,15 @@ body {
     135deg,
     var(--dark-primary) 0%,
     var(--dark-secondary) 100%
-  );
-  background-attachment: fixed;
+  ) !important;
+  background-attachment: fixed !important;
   color: var(--text-light);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overscroll-behavior: none;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
 }
 
 a {
@@ -54,6 +69,15 @@ main {
   flex: 1;
   display: flex;
   flex-direction: column;
+}
+
+/* ==================== CONTAINER CENTER FIX ==================== */
+.container.mt-4 {
+  max-width: 1200px;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 15px;
+  padding-right: 15px;
 }
 
 /* ==================== NAVBAR ==================== */
@@ -234,6 +258,8 @@ main {
   color: var(--text-light);
   font-weight: 500;
   margin-bottom: 0.5rem;
+  text-align: left;
+  display: block;
 }
 
 select.form-control {
@@ -382,127 +408,377 @@ textarea.form-control {
   object-fit: cover;
 }
 
-/* ==================== GAME DETAIL ==================== */
+/* ==================== GAME DETAIL - FIXED UNTUK show.ejs ==================== */
+
 .game-detail-card {
-  background-color: var(--dark-secondary);
-  border-radius: 1rem;
+  background: var(--dark-secondary);
+  border-radius: 1.5rem;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 217, 255, 0.1);
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.game-detail-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    270deg,
+    #00d9ff,
+    #00ffff,
+    #00ff88,
+    #00d9ff,
+    #0088ff,
+    #00d9ff
+  );
+  background-size: 400%;
+  animation: borderMove 6s linear infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .game-detail-image {
   width: 100%;
   height: 400px;
   object-fit: cover;
+  display: block;
+}
+
+.game-detail-card .p-4 {
+  padding: 1.5rem !important;
 }
 
 .game-detail-title {
-  font-size: 2rem;
+  font-size: 2.25rem;
   font-weight: 700;
   margin-bottom: 1rem;
   color: var(--aqua);
+  text-shadow: 0 0 20px rgba(0, 217, 255, 0.6);
+  line-height: 1.2;
+  word-wrap: break-word;
 }
 
+/* FIX: Game-detail-meta - panjang box menyesuaikan teks */
 .game-detail-meta {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  align-items: center;
 }
 
-.game-type {
-  display: inline-block;
-  background-color: var(--dark-tertiary);
-  color: var(--text-light);
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
+.game-detail-meta .game-category,
+.game-detail-meta .game-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(
+    135deg,
+    var(--dark-tertiary),
+    rgba(0, 217, 255, 0.1)
+  );
+  color: var(--aqua);
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
   font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid rgba(0, 217, 255, 0.3);
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  width: fit-content;
 }
 
+.game-detail-meta .game-category:hover,
+.game-detail-meta .game-type:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 217, 255, 0.2),
+    var(--dark-tertiary)
+  );
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 217, 255, 0.3);
+}
+
+/* ==================== STAT BOXES - FIXED COMPACT & PADDING ==================== */
 .game-detail-stats {
-  display: flex;
-  gap: 2rem;
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background-color: var(--dark-tertiary);
-  border-radius: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0;
+  width: 100%;
 }
 
 .stat-box {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 1rem;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.85rem 0.75rem;
+  background: linear-gradient(
+    135deg,
+    rgba(22, 33, 62, 0.8),
+    rgba(0, 217, 255, 0.05)
+  );
+  border-radius: 0.875rem;
+  border: 1px solid rgba(0, 217, 255, 0.3);
+  transition: all 0.3s ease;
+  text-align: center;
+  min-height: auto;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
-.stat-box i {
-  font-size: 2rem;
+.stat-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0, 217, 255, 0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.stat-box:hover::before {
+  opacity: 1;
+}
+
+.stat-box:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 217, 255, 0.15),
+    rgba(22, 33, 62, 0.9)
+  );
+  transform: translateY(-3px) translateZ(0);
+  box-shadow: 0 8px 25px rgba(0, 217, 255, 0.4);
+  border-color: rgba(0, 217, 255, 0.6);
+}
+
+/* Icon styling - disesuaikan dengan struktur show.ejs */
+.stat-box > i {
+  font-size: 1.75rem;
   color: var(--aqua);
+  filter: drop-shadow(0 0 10px rgba(0, 217, 255, 0.6));
+  margin: 0;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.stat-box:hover > i {
+  transform: scale(1.1);
+}
+
+/* Div container untuk strong dan small */
+.stat-box > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  z-index: 1;
 }
 
 .stat-box strong {
   font-size: 1.5rem;
   display: block;
+  color: var(--text-light);
+  line-height: 1;
+  margin: 0;
+  font-weight: 700;
 }
 
 .stat-box small {
   color: var(--text-muted);
   display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  line-height: 1;
+  margin: 0;
 }
 
+/* ==================== GAME ACTIONS - FIX HEIGHT BUTTON ==================== */
 .game-actions {
   display: flex;
-  gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 2rem;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  align-items: center;
 }
 
+/* FIX: Semua button dalam game-actions memiliki height yang sama */
+.game-actions .btn-lg,
+.game-actions .btn {
+  font-size: 0.9rem !important;
+  padding: 0.6rem 1rem !important;
+  height: 48px !important;
+  line-height: 1.5 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 1 auto;
+  white-space: nowrap;
+}
+
+.game-actions form {
+  display: inline-flex;
+  margin: 0;
+}
+
+.game-actions form .btn {
+  margin: 0;
+}
+
+/* ==================== GAME DESCRIPTION - FIX MARGIN ==================== */
 .game-description {
-  margin-bottom: 2rem;
+  margin-top: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .game-description h3 {
+  font-size: 1.5rem;
   color: var(--aqua);
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 15px rgba(0, 217, 255, 0.5);
 }
 
 .game-description p {
-  line-height: 1.8;
   color: var(--text-light);
+  line-height: 1.6;
+  margin-bottom: 0;
 }
 
+/* ==================== GAME TAGS ==================== */
 .game-tags {
-  margin-top: 1.5rem;
+  margin-top: 0.75rem;
+}
+
+.game-tags h5 {
+  color: var(--aqua);
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
 }
 
 .badge-tag {
   display: inline-block;
-  background-color: var(--dark-tertiary);
+  background: linear-gradient(
+    135deg,
+    var(--dark-tertiary),
+    rgba(0, 217, 255, 0.1)
+  );
   color: var(--aqua);
-  padding: 0.5rem 1rem;
-  border-radius: 1rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 1.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid rgba(0, 217, 255, 0.3);
   margin-right: 0.5rem;
   margin-bottom: 0.5rem;
-  font-size: 0.9rem;
+  transition: all 0.3s ease;
 }
 
-/* ==================== RATINGS ==================== */
+.badge-tag:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 217, 255, 0.2),
+    var(--dark-tertiary)
+  );
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 217, 255, 0.3);
+}
+
+/* ==================== RATINGS SECTION - FIX MARGIN ==================== */
 .ratings-section {
-  background-color: var(--dark-secondary);
-  border-radius: 1rem;
-  padding: 2rem;
+  background: var(--dark-secondary);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  position: relative;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  margin-top: 1.5rem;
 }
 
+/* Animated gradient border for ratings section */
+.ratings-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    270deg,
+    #00d9ff,
+    #00ffff,
+    #00ff88,
+    #00d9ff,
+    #0088ff,
+    #00d9ff
+  );
+  background-size: 400%;
+  animation: borderMove 6s linear infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.ratings-section h3 {
+  color: var(--aqua);
+  margin-bottom: 1.25rem;
+  font-size: 1.75rem;
+  text-shadow: 0 0 15px rgba(0, 217, 255, 0.5);
+}
+
+/* FIX: Rating form dengan height yang disesuaikan */
 .rating-form {
-  background-color: var(--dark-tertiary);
-  padding: 1.5rem;
-  border-radius: 0.5rem;
-  margin-bottom: 2rem;
+  background: linear-gradient(
+    135deg,
+    var(--dark-tertiary),
+    rgba(0, 217, 255, 0.05)
+  );
+  padding: 1.25rem;
+  border-radius: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(0, 217, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.rating-form h5 {
+  color: var(--aqua);
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+/* FIX: Label rata kiri */
+.rating-form .form-label {
+  text-align: left;
+  display: block;
+  width: 100%;
+}
+
+.rating-form .mb-3 {
+  margin-bottom: 1rem !important;
 }
 
 .star-input {
   display: flex;
   flex-direction: row-reverse;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 0.5rem;
+  margin-top: 0.5rem;
 }
 
 .star-input input {
@@ -514,30 +790,59 @@ textarea.form-control {
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s;
+  filter: drop-shadow(0 0 5px transparent);
 }
 
 .star-input label:hover,
 .star-input label:hover ~ label,
 .star-input input:checked ~ label {
   color: #ffd700;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+  transform: scale(1.1);
+}
+
+/* FIX: Submit button center */
+.rating-form button[type="submit"] {
+  display: block;
+  margin: 0 auto;
+  min-width: 180px;
 }
 
 .ratings-list {
-  margin-top: 2rem;
+  margin-top: 1.5rem;
 }
 
 .rating-item {
-  background-color: var(--dark-tertiary);
-  padding: 1.5rem;
-  border-radius: 0.5rem;
+  background: linear-gradient(
+    135deg,
+    var(--dark-tertiary),
+    rgba(0, 217, 255, 0.05)
+  );
+  padding: 1.25rem;
+  border-radius: 1rem;
   margin-bottom: 1rem;
+  border: 1px solid rgba(0, 217, 255, 0.2);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.rating-item:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 217, 255, 0.1),
+    var(--dark-tertiary)
+  );
+  transform: translateX(5px);
+  box-shadow: 0 6px 25px rgba(0, 217, 255, 0.3);
 }
 
 .rating-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .rating-user {
@@ -551,11 +856,24 @@ textarea.form-control {
   height: 48px;
   border-radius: 50%;
   object-fit: cover;
+  border: 2px solid var(--aqua);
+  box-shadow: 0 0 15px rgba(0, 217, 255, 0.5);
+}
+
+.rating-user i.fa-user-circle {
+  color: var(--aqua);
+  filter: drop-shadow(0 0 10px rgba(0, 217, 255, 0.5));
+}
+
+.rating-user strong {
+  color: var(--text-light);
+  font-size: 1.1rem;
 }
 
 .rating-stars {
   display: flex;
   gap: 0.25rem;
+  margin-top: 0.25rem;
 }
 
 .rating-stars i {
@@ -565,6 +883,7 @@ textarea.form-control {
 
 .rating-stars i.filled {
   color: #ffd700;
+  filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.6));
 }
 
 .rating-review {
@@ -576,40 +895,115 @@ textarea.form-control {
 /* ==================== STAR RATING ==================== */
 .star-rating {
   color: #ffd700;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
 }
 
-/* ==================== AUTHOR CARD ==================== */
+/* ==================== SIDEBAR CARDS ROW - FIX UNTUK 2 KOLOM DI TABLET ==================== */
+.sidebar-cards-row {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.sidebar-cards-row > [class*="col-"] {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* ==================== AUTHOR CARD & INFO CARD ==================== */
+.author-card,
+.info-card {
+  background: var(--dark-secondary);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  position: relative;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  margin-bottom: 1rem;
+  height: 100%;
+}
+
+/* Animated gradient border for author and info cards */
+.author-card::before,
+.info-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    270deg,
+    #00d9ff,
+    #00ffff,
+    #00ff88,
+    #00d9ff,
+    #0088ff,
+    #00d9ff
+  );
+  background-size: 400%;
+  animation: borderMove 6s linear infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.author-card h5,
+.info-card h5 {
+  color: var(--aqua);
+  margin-bottom: 1.25rem;
+  font-size: 1.3rem;
+  text-shadow: 0 0 15px rgba(0, 217, 255, 0.5);
+}
+
 .author-info {
   text-align: center;
-  padding: 1.5rem 0;
+  padding: 1rem 0;
 }
 
 .author-avatar-large {
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   object-fit: cover;
   margin-bottom: 1rem;
   border: 3px solid var(--aqua);
+  box-shadow: 0 0 30px rgba(0, 217, 255, 0.6);
+  transition: all 0.3s ease;
+}
+
+.author-avatar-large:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 40px rgba(0, 217, 255, 0.8);
 }
 
 .author-info h4 {
   color: var(--aqua);
   margin-bottom: 1rem;
+  font-size: 1.5rem;
+  text-shadow: 0 0 15px rgba(0, 217, 255, 0.5);
 }
 
 /* ==================== INFO CARD ==================== */
 .info-list {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 .info-list li {
-  padding: 0.75rem 0;
+  padding: 0.85rem 0;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.info-list li:hover {
+  padding-left: 0.5rem;
+  background: rgba(0, 217, 255, 0.05);
+  border-radius: 0.5rem;
 }
 
 .info-list li:last-child {
@@ -618,22 +1012,31 @@ textarea.form-control {
 
 .info-list i {
   color: var(--aqua);
-  width: 20px;
+  width: 24px;
+  font-size: 1.1rem;
+  filter: drop-shadow(0 0 8px rgba(0, 217, 255, 0.5));
 }
 
-/* ==================== PROFILE ==================== */
+.info-list span {
+  color: var(--text-light);
+  font-size: 0.95rem;
+}
+
+/* ==================== PROFILE (CONTINUED) ==================== */
 .profile-header {
   text-align: center;
-  padding: 2rem 0;
+  padding-bottom: 1.5rem;
 }
 
+/* FIX: Profile avatar size - mengurangi ukuran agar tidak tabrakan */
 .profile-avatar {
-  width: 150px;
-  height: 150px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid var(--aqua);
-  box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+  border: 3px solid var(--aqua);
+  box-shadow: 0 0 30px rgba(0, 217, 255, 0.6);
+  margin-bottom: 1rem;
 }
 
 .profile-bio {
@@ -683,27 +1086,57 @@ textarea.form-control {
   margin-bottom: 2rem;
 }
 
-/* ==================== PLAY PAGE ==================== */
+/* ==================== PLAY PAGE - FIXED STRUCTURE ==================== */
 .play-container {
   padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--dark-primary);
 }
 
 .play-header {
   background-color: var(--dark-secondary);
   padding: 1.5rem 0;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.play-header h2 {
+  color: var(--aqua);
+  margin: 0;
+  font-size: 1.5rem;
+  text-shadow: 0 0 15px rgba(0, 217, 255, 0.5);
+}
+
+.play-title-section {
+  margin-bottom: 1rem;
+}
+
+.play-actions {
+  margin-bottom: 1rem;
 }
 
 .game-iframe-container {
   width: 100%;
-  height: calc(100vh - 150px);
+  flex: 1;
   background-color: var(--dark-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
 }
 
 .game-iframe {
   width: 100%;
   height: 100%;
   border: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 /* ==================== FILTER BAR ==================== */
@@ -724,10 +1157,10 @@ textarea.form-control {
   text-shadow: 0 0 10px rgba(0, 217, 255, 0.8);
 }
 
-/* ==================== FOOTER - FIXED ==================== */
+/* ==================== FOOTER - RESPONSIVE ==================== */
 .footer {
   background-color: var(--dark-secondary);
-  padding: 3rem 0 1rem;
+  padding: 3rem 0 1.5rem;
   margin-top: auto;
   border-top: 2px solid var(--border-color);
   position: relative;
@@ -735,54 +1168,114 @@ textarea.form-control {
   width: 100%;
 }
 
-/* Pastikan semua elemen di dalam footer direset agar tidak ada padding berlebih */
-.footer-content {
-  /* Jika Anda membungkus konten footer di dalam div/container lain */
+.footer * {
+  box-sizing: border-box;
+}
+
+.footer .container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.footer .row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -15px;
+  margin-right: -15px;
+}
+
+.footer .row > [class*="col-"] {
+  padding-left: 15px;
+  padding-right: 15px;
+  margin-bottom: 2rem;
+}
+
+.footer ul {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.footer ul li {
+  margin-bottom: 0.75rem;
   padding: 0;
 }
 
-/* Penyesuaian untuk semua list (Quick Links, Categories) */
-.footer ul {
-  list-style: none; /* Hilangkan bullet point default */
-  padding-left: 0; /* Penting: Hilangkan indentasi bawaan */
-  margin-bottom: 0; /* Hilangkan margin bawah default */
+.footer ul li:last-child {
+  margin-bottom: 0;
 }
 
 .footer-brand {
   color: var(--aqua);
   text-shadow: 0 0 10px rgba(0, 217, 255, 0.8);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  display: block;
 }
 
 .footer h6 {
   color: var(--aqua);
   margin-bottom: 1rem;
-  font-weight: 600; /* Sedikit penebalan untuk judul */
+  margin-top: 0;
+  font-weight: 600;
+  font-size: 1.1rem;
 }
 
-/* Penyesuaian untuk setiap item list */
-.footer ul li {
-  margin-bottom: 0.5rem;
-}
-
-/* Penyesuaian untuk semua link di dalam footer */
 .footer a {
   color: var(--text-muted);
-  transition: all 0.3s;
-  display: inline-block; /* Agar bisa di-padding dan diatur dengan baik */
+  text-decoration: none;
+  transition: all 0.3s ease;
+  display: inline-block;
 }
 
 .footer a:hover {
   color: var(--aqua);
-  padding-left: 5px; /* Efek geser saat hover */
+  padding-left: 5px;
+  text-decoration: none;
 }
 
-/* Penyesuaian teks copyright */
+.footer p {
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  line-height: 1.8;
+}
+
 .footer .text-center {
+  width: 100%;
   color: var(--text-muted);
   font-size: 0.9rem;
-  margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border-color); /* Garis pemisah */
+  margin-top: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.footer .text-center p {
+  margin-bottom: 0;
+}
+
+.footer .social-icons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.footer .social-icons a {
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+.footer .social-icons a:hover {
+  color: var(--aqua);
+  transform: translateY(-3px);
+  padding-left: 0;
 }
 
 /* ==================== ERROR PAGES ==================== */
@@ -903,8 +1396,63 @@ textarea.form-control {
   background: var(--aqua-hover);
 }
 
-/* ==================== RESPONSIVE ==================== */
-/* Tablet & Mobile - Medium devices */
+/* ==================== RESPONSIVE - DESKTOP ==================== */
+@media (min-width: 992px) {
+  .game-detail-image {
+    height: 400px;
+  }
+
+  .game-actions {
+    justify-content: flex-start;
+  }
+
+  .game-actions form {
+    margin-left: auto;
+  }
+
+  /* Sidebar cards dalam 1 kolom di desktop */
+  .sidebar-cards-row > .col-lg-12 {
+    margin-bottom: 1rem;
+  }
+
+  .sidebar-cards-row > .col-lg-12:last-child {
+    margin-bottom: 0;
+  }
+
+  .play-title-section {
+    margin-bottom: 0;
+  }
+
+  .play-actions {
+    margin-bottom: 0;
+  }
+}
+
+/* ==================== RESPONSIVE - TABLET (768px - 991px) ==================== */
+@media (min-width: 768px) and (max-width: 991px) {
+  /* 2 kolom untuk sidebar cards di tablet */
+  .sidebar-cards-row {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .sidebar-cards-row > .col-md-6 {
+    flex: 0 0 calc(50% - 0.5rem);
+    max-width: calc(50% - 0.5rem);
+  }
+
+  .author-card,
+  .info-card {
+    margin-bottom: 0;
+  }
+
+  /* FIX: Profile avatar size untuk tablet */
+  .profile-avatar {
+    width: 100px;
+    height: 100px;
+  }
+}
+
 @media (max-width: 991px) {
   .navbar-collapse {
     background-color: var(--dark-secondary);
@@ -943,9 +1491,50 @@ textarea.form-control {
   .navbar-nav .d-flex .btn {
     margin: 0;
   }
+
+  .game-detail-image {
+    height: 350px;
+  }
+
+  .game-detail-title {
+    font-size: 2rem;
+  }
+
+  .game-detail-stats {
+    gap: 0.5rem;
+  }
+
+  .stat-box {
+    padding: 0.85rem 0.6rem;
+    gap: 0.6rem;
+  }
+
+  .stat-box > i {
+    font-size: 1.5rem;
+  }
+
+  .stat-box strong {
+    font-size: 1.35rem;
+  }
+
+  .stat-box small {
+    font-size: 0.7rem;
+  }
+
+  .footer {
+    padding: 2.5rem 0 1.5rem;
+  }
+
+  .footer .row {
+    justify-content: flex-start;
+  }
+
+  .footer .row > [class*="col-"] {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
 }
 
-/* Tablet - Medium devices */
 @media (max-width: 768px) {
   .game-grid {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -953,22 +1542,68 @@ textarea.form-control {
   }
 
   .game-detail-image {
-    height: 250px;
+    height: 300px;
   }
 
+  .game-detail-title {
+    font-size: 1.75rem;
+  }
+
+  .game-detail-meta {
+    gap: 0.5rem;
+  }
+
+  .game-detail-meta .game-category,
+  .game-detail-meta .game-type {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  /* 3 kolom pada tablet dengan layout vertikal */
   .game-detail-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .stat-box {
     flex-direction: column;
-    gap: 1rem;
+    padding: 0.75rem 0.5rem;
+    gap: 0.3rem;
+  }
+
+  .stat-box > i {
+    font-size: 1.35rem;
+  }
+
+  .stat-box strong {
+    font-size: 1.25rem;
+  }
+
+  .stat-box small {
+    font-size: 0.7rem;
   }
 
   .game-actions {
     flex-direction: column;
+    gap: 0.5rem;
   }
 
+  .game-actions .btn-lg,
   .game-actions .btn {
+    width: 100%;
+    font-size: 0.9rem !important;
+  }
+
+  .game-actions form {
     width: 100%;
   }
 
+  .game-actions form .btn-lg,
+  .game-actions form .btn {
+    width: 100%;
+  }
+
+  /* FIX: Profile avatar size untuk tablet kecil */
   .profile-avatar {
     width: 100px;
     height: 100px;
@@ -985,9 +1620,33 @@ textarea.form-control {
   .landing-hero p {
     font-size: 1rem !important;
   }
+
+  .footer {
+    padding: 2rem 0 1.5rem;
+  }
+
+  .footer .row > [class*="col-"] {
+    flex: 0 0 50%;
+    max-width: 50%;
+    margin-bottom: 2rem;
+  }
+
+  .footer-brand {
+    font-size: 1.3rem;
+  }
+
+  .footer h6 {
+    font-size: 1rem;
+    margin-top: 0;
+  }
+
+  .footer .text-center {
+    margin-top: 1rem;
+    padding-top: 1.5rem;
+  }
 }
 
-/* Mobile - Small devices */
+/* ==================== RESPONSIVE - MOBILE ==================== */
 @media (max-width: 576px) {
   .game-grid {
     grid-template-columns: 1fr;
@@ -1015,6 +1674,89 @@ textarea.form-control {
     height: 180px;
   }
 
+  .game-detail-image {
+    height: 250px;
+  }
+
+  .game-detail-title {
+    font-size: 1.5rem;
+  }
+
+  .game-detail-stats {
+    gap: 0.5rem;
+  }
+
+  .stat-box {
+    padding: 0.7rem 0.4rem;
+    gap: 0.3rem;
+  }
+
+  .stat-box > i {
+    font-size: 1.2rem;
+  }
+
+  .stat-box strong {
+    font-size: 1.1rem;
+  }
+
+  .stat-box small {
+    font-size: 0.65rem;
+  }
+
+  .game-description h3 {
+    font-size: 1.25rem;
+  }
+
+  /* Hide text on delete button, show icon only */
+  .game-actions form .btn span {
+    display: none;
+  }
+
+  .game-actions form .btn i {
+    margin: 0;
+  }
+
+  .author-avatar-large {
+    width: 80px;
+    height: 80px;
+  }
+
+  /* FIX: Ratings section mobile - add margin top and bottom */
+  .ratings-section {
+    padding: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .ratings-section h3 {
+    font-size: 1.5rem;
+  }
+
+  .rating-form {
+    padding: 1rem;
+  }
+
+  .rating-form h5 {
+    font-size: 1rem;
+  }
+
+  .star-input label {
+    font-size: 1.75rem;
+  }
+
+  .rating-item {
+    padding: 1rem;
+  }
+
+  .rating-user img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .rating-user strong {
+    font-size: 1rem;
+  }
+
   .auth-card,
   .form-card,
   .profile-card {
@@ -1023,6 +1765,12 @@ textarea.form-control {
 
   .profile-stats {
     grid-template-columns: 1fr;
+  }
+
+  /* FIX: Profile avatar size untuk mobile */
+  .profile-avatar {
+    width: 90px;
+    height: 90px;
   }
 
   .landing-hero {
@@ -1037,8 +1785,208 @@ textarea.form-control {
     font-size: 0.9rem !important;
   }
 
-  .footer .col-md-3,
-  .footer .col-sm-6 {
+  .footer {
+    padding: 2rem 0 1rem;
+  }
+
+  .footer .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .footer .row {
+    flex-direction: column;
+  }
+
+  .footer .row > [class*="col-"] {
+    flex: 0 0 100%;
+    max-width: 100%;
     margin-bottom: 1.5rem;
+  }
+
+  .footer .row > [class*="col-"]:last-child {
+    margin-bottom: 0;
+  }
+
+  .footer-brand {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .footer h6 {
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+    margin-top: 0;
+  }
+
+  .footer ul li {
+    margin-bottom: 0.5rem;
+  }
+
+  .footer a {
+    font-size: 0.9rem;
+  }
+
+  .footer p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .footer .text-center {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    font-size: 0.85rem;
+  }
+
+  .footer .social-icons {
+    justify-content: center;
+  }
+
+  /* FIX: Sidebar cards full width di mobile dengan margin yang lebih besar */
+  .sidebar-cards-row > .col-md-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  /* FIX: Add larger margin between sidebar cards on mobile */
+  .author-card {
+    margin-bottom: 2rem;
+    margin-top: 1.5rem;
+  }
+
+  .info-card {
+    margin-bottom: 1.5rem;
+    margin-top: 0;
+  }
+
+  /* FIX: Play page mobile adjustments */
+  .play-header {
+    padding: 1rem 0;
+  }
+
+  .play-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .play-header .d-flex {
+    flex-direction: column;
+  }
+
+  .play-header .btn {
+    width: 100%;
+    font-size: 0.85rem;
+  }
+
+  .play-actions {
+    width: 100%;
+  }
+
+  .play-actions .btn {
+    width: 100%;
+  }
+}
+
+/* Extra Small Mobile */
+@media (max-width: 400px) {
+  .game-detail-title {
+    font-size: 1.25rem;
+  }
+
+  .game-detail-meta .game-category,
+  .game-detail-meta .game-type {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.7rem;
+  }
+
+  .stat-box {
+    padding: 0.6rem 0.3rem;
+  }
+
+  .stat-box > i {
+    font-size: 1.1rem;
+  }
+
+  .stat-box strong {
+    font-size: 1rem;
+  }
+
+  .stat-box small {
+    font-size: 0.6rem;
+  }
+
+  .author-avatar-large {
+    width: 70px;
+    height: 70px;
+  }
+
+  /* FIX: Profile avatar size untuk extra small mobile */
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  /* FIX: Increase margin for extra small mobile */
+  .ratings-section {
+    font-size: 1.25rem;
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .star-input label {
+    font-size: 1.5rem;
+  }
+
+  .footer {
+    padding: 1.5rem 0 1rem;
+  }
+
+  .footer .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .footer-brand {
+    font-size: 1.1rem;
+  }
+
+  .footer h6 {
+    font-size: 0.9rem;
+  }
+
+  .footer a,
+  .footer p {
+    font-size: 0.85rem;
+  }
+
+  .footer ul li {
+    margin-bottom: 0.4rem;
+  }
+
+  .footer .text-center {
+    font-size: 0.8rem;
+  }
+
+  .footer .social-icons a {
+    font-size: 1.3rem;
+  }
+
+  /* FIX: Increase margin for extra small mobile */
+  .author-card {
+    margin-bottom: 2rem;
+    margin-top: 1.5rem;
+  }
+
+  .info-card {
+    margin-bottom: 1.5rem;
+  }
+
+  /* FIX: Play page extra small mobile */
+  .play-header h2 {
+    font-size: 1rem;
+  }
+
+  .play-header .btn {
+    font-size: 0.8rem;
+    padding: 0.5rem 1rem;
   }
 }

@@ -1,185 +1,148 @@
 <%- include('../layouts/header', { title: title }) %> <%-
 include('../partials/navbar') %>
-
 <div class="container mt-4">
-   
   <div class="row">
-           
     <div class="col-lg-8">
-           
       <div class="game-detail-card">
-                       
         <img
           src="<%= game.thumbnail_url %>"
           alt="<%= game.title %>"
           class="game-detail-image"
         />
 
-                       
         <div class="p-4">
-                   
           <h1 class="game-detail-title"><%= game.title %></h1>
 
-                   
           <div class="game-detail-meta">
-                       
             <span class="game-category">
-                            <i class="fas fa-tag"></i> <%= game.category %>    
-                     
+              <i class="fas fa-tag"></i> <%= game.category %>
             </span>
-                       
+
             <span class="game-type">
-                            <% if (game.game_type === 'playable') { %>          
-                  <i class="fas fa-play"></i> Playable <% } else { %>          
-                  <i class="fas fa-download"></i> Download <% } %>            
+              <% if (game.game_type === 'playable') { %>
+              <i class="fas fa-play"></i> Playable <% } else { %>
+              <i class="fas fa-download"></i> Download <% } %>
             </span>
-                     
           </div>
 
-                             
           <div class="game-detail-stats">
-                       
+            <!-- Rating Box -->
             <div class="stat-box">
-                            <i class="fas fa-star star-rating"></i>            
-               
+              <i class="fas fa-star star-rating"></i>
               <div>
-                                               
                 <strong><%= Number(game.avg_rating || 0).toFixed(1) %></strong>
-                                <small>Rating</small>              
+                <small>Rating</small>
               </div>
-                         
             </div>
-                       
+
+            <!-- Plays Box -->
             <div class="stat-box">
-                            <i class="fas fa-eye"></i>              
+              <i class="fas fa-eye"></i>
               <div>
-                                <strong><%= game.play_count %></strong>        
-                        <small>Plays</small>              
+                <strong><%= game.play_count %></strong>
+                <small>Plays</small>
               </div>
-                         
             </div>
-                       
+
+            <!-- Reviews Box -->
             <div class="stat-box">
-                            <i class="fas fa-comments"></i>              
+              <i class="fas fa-comments"></i>
               <div>
-                                <strong><%= ratingStats.total %></strong>      
-                          <small>Reviews</small>              
+                <strong><%= ratingStats.total %></strong>
+                <small>Reviews</small>
               </div>
-                         
             </div>
-                     
           </div>
 
-                             
+          <!-- Ganti bagian game-actions dengan yang ini -->
           <div class="game-actions">
-                        <% if (game.game_type === 'playable') { %>            
+            <% if (game.game_type === 'playable') { %>
             <a href="/games/<%= game.slug %>/play" class="btn btn-aqua btn-lg">
-                            <i class="fas fa-play"></i> Play Now            
+              <i class="fas fa-play"></i> Play Now
             </a>
-                        <% } else { %>            
+            <% } else { %>
             <a
               href="<%= game.github_url %>"
               target="_blank"
               class="btn btn-aqua btn-lg"
             >
-                            <i class="fas fa-download"></i> Download Game      
-                   
+              <i class="fas fa-download"></i> Download Game
             </a>
-                        <% } %>            
+            <% } %>
+
             <a
               href="<%= game.github_url %>"
               target="_blank"
               class="btn btn-outline-aqua btn-lg"
             >
-                            <i class="fab fa-github"></i> View on GitHub        
-                 
+              <i class="fab fa-github"></i> View on GitHub
             </a>
 
-                        <% if (user && user.id === game.author_id) { %>        
-               
+            <% if (user && user.id === game.author_id) { %>
             <a
               href="/games/<%= game.slug %>/edit"
               class="btn btn-outline-aqua btn-lg"
             >
-                            <i class="fas fa-edit"></i> Edit            
+              <i class="fas fa-edit"></i> Edit
             </a>
-                       
+
             <form
               action="/games/<%= game.slug %>?_method=DELETE"
               method="POST"
               style="display: inline"
               onsubmit="return confirm('Are you sure you want to delete this game?')"
             >
-                           
               <button type="submit" class="btn btn-danger btn-lg">
-                                <i class="fas fa-trash"></i> Delete            
-                 
+                <i class="fas fa-trash"></i> <span>Delete</span>
               </button>
-                         
             </form>
-                        <% } %>          
+            <% } %>
           </div>
 
-                             
           <div class="game-description">
-                       
             <h3>About This Game</h3>
-                       
+
             <p><%= game.description %></p>
-                     
           </div>
 
-                                        <% if (game.parsedTags &&
-          game.parsedTags.length > 0) { %>          
+          <% if (game.parsedTags && game.parsedTags.length > 0) { %>
           <div class="game-tags">
-                       
             <h5>Tags:</h5>
-                        <% game.parsedTags.forEach(tag => { %>            
-            <span class="badge-tag"><%= tag %></span>             <% }); %>    
-                 
+            <% game.parsedTags.forEach(tag => { %>
+            <span class="badge-tag"><%= tag %></span> <% }); %>
           </div>
-                    <% } %>        
+          <% } %>
         </div>
-             
       </div>
 
-                 
-      <div class="ratings-section mt-4">
-               
+      <div class="ratings-section">
         <h3>Reviews & Ratings</h3>
 
-                        <% if (user) { %>        
+        <% if (user) { %>
         <div class="rating-form">
-                   
           <h5><%= userRating ? 'Update Your Rating' : 'Rate This Game' %></h5>
-                   
+
           <form action="/ratings" method="POST">
-                       
             <input type="hidden" name="game_id" value="<%= game.id %>" />
 
-                       
             <div class="mb-3">
-                            <label class="form-label">Your Rating:</label>      
-                     
+              <label class="form-label">Your Rating:</label>
+
               <div class="star-input">
-                                <% for(let i = 5; i >= 1; i--) { %> <input
-                type="radio"                 name="rating" id="star<%= i %>"
-                value="<%= i %>" <%= userRating                 &&
-                userRating.rating === i ? 'checked' : '' %> required>          
-                     
-                <label for="star<%= i %>"><i class="fas fa-star"></i></label>  
-                              <% } %>              
+                <% for(let i = 5; i >= 1; i--) { %> <input type="radio"
+                name="rating" id="star<%= i %>" value="<%= i %>" <%= userRating
+                && userRating.rating === i ? 'checked' : '' %> required>
+
+                <label for="star<%= i %>"><i class="fas fa-star"></i></label>
+                <% } %>
               </div>
-                         
             </div>
 
-                       
             <div class="mb-3">
-                           
               <label for="review" class="form-label"
                 >Your Review (Optional):</label
               >
-                           
+
               <textarea
                 class="form-control"
                 id="review"
@@ -189,148 +152,127 @@ include('../partials/navbar') %>
               >
 <%= userRating ? userRating.review : '' %></textarea
               >
-                           
-              <small class="text-muted">Maximum 500 characters</small>          
-               
+
+              <small class="text-muted">Maximum 500 characters</small>
             </div>
 
-                       
             <button type="submit" class="btn btn-aqua">
-                            <i class="fas fa-paper-plane"></i> Submit Rating    
-                     
+              <i class="fas fa-paper-plane"></i> Submit Rating
             </button>
-                     
           </form>
-                 
         </div>
-                <% } else { %>        
+        <% } else { %>
         <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i>          
-          <a href="/login">Login</a> to rate and review this game        
+          <i class="fas fa-info-circle"></i>
+          <a href="/login">Login</a> to rate and review this game
         </div>
-                <% } %>                
+        <% } %>
         <div class="ratings-list mt-4">
-                    <% if (ratings.length > 0) { %> <% ratings.forEach(rating =>
-          { %>          
+          <% if (ratings.length > 0) { %> <% ratings.forEach(rating => { %>
           <div class="rating-item">
-                       
             <div class="rating-header">
-                           
               <div class="rating-user">
-                                <% if (rating.user_avatar) { %>                
+                <% if (rating.user_avatar) { %>
                 <img
                   src="<%= rating.user_avatar %>"
                   alt="<%= rating.user_name %>"
                 />
-                                <% } else { %>                
-                <i class="fas fa-user-circle fa-2x"></i>                 <% } %>
-                               
+                <% } else { %>
+                <i class="fas fa-user-circle fa-2x"></i> <% } %>
+
                 <div>
-                                    <strong><%= rating.user_name %></strong>    
-                               
+                  <strong><%= rating.user_name %></strong>
+
                   <div class="rating-stars">
-                                        <% for(let i = 1; i <= 5; i++) { %>    
-                                   
+                    <% for(let i = 1; i <= 5; i++) { %>
+
                     <i
                       class="fas fa-star <%= i <= rating.rating ? 'filled' : '' %>"
                     ></i>
-                                        <% } %>                  
+                    <% } %>
                   </div>
-                                 
                 </div>
-                             
               </div>
-                           
+
               <small class="text-muted"
                 ><%= new Date(rating.created_at).toLocaleDateString() %></small
               >
-                         
             </div>
-                        <% if (rating.review) { %>            
+            <% if (rating.review) { %>
             <p class="rating-review"><%= rating.review %></p>
-                        <% } %>          
+            <% } %>
           </div>
-                    <% }); %> <% } else { %>          
+          <% }); %> <% } else { %>
           <p class="text-muted text-center py-4">
-                        No reviews yet. Be the first to review!          
+            No reviews yet. Be the first to review!
           </p>
-                    <% } %>        
+          <% } %>
         </div>
-             
       </div>
-         
     </div>
 
-           
     <div class="col-lg-4">
-                 
-      <div class="author-card">
-               
-        <h5>Uploaded By</h5>
-               
-        <div class="author-info">
-                    <% if (game.author_avatar) { %>          
-          <img
-            src="<%= game.author_avatar %>"
-            alt="<%= game.author_name %>"
-            class="author-avatar-large"
-          />
-                    <% } else { %>          
-          <i class="fas fa-user-circle fa-4x text-aqua"></i>           <% } %>  
-                 
-          <h4><%= game.author_name %></h4>
-                   
-          <a
-            href="/profile/<%= game.author_id %>"
-            class="btn btn-outline-aqua btn-sm"
-          >
-                        View Profile          
-          </a>
-                 
-        </div>
-             
-      </div>
+      <!-- Row untuk membuat 2 card sejajar di tablet dan desktop -->
+      <div class="row sidebar-cards-row">
+        <div class="col-md-6 col-lg-12">
+          <div class="author-card">
+            <h5>Uploaded By</h5>
 
-                 
-      <div class="info-card mt-3">
-               
-        <h5>Game Information</h5>
-               
-        <ul class="info-list">
-                   
-          <li>
-                        <i class="fas fa-calendar"></i>            
-            <span
-              >Uploaded: <%= new Date(game.created_at).toLocaleDateString()    
-                        %></span
-            >
-                     
-          </li>
-                   
-          <li>
-                        <i class="fas fa-sync"></i>            
-            <span
-              >Updated: <%= new Date(game.updated_at).toLocaleDateString()      
-                      %></span
-            >
-                     
-          </li>
-                   
-          <li>
-                        <i class="fas fa-code-branch"></i>            
-            <span
-              >Type: <%= game.game_type === 'playable' ? 'Browser Game' :      
-                      'Downloadable' %></span
-            >
-                     
-          </li>
-                 
-        </ul>
-             
+            <div class="author-info">
+              <% if (game.author_avatar) { %>
+              <img
+                src="<%= game.author_avatar %>"
+                alt="<%= game.author_name %>"
+                class="author-avatar-large"
+              />
+              <% } else { %>
+              <i class="fas fa-user-circle fa-4x text-aqua"></i> <% } %>
+
+              <h4><%= game.author_name %></h4>
+
+              <a
+                href="/profile/<%= game.author_id %>"
+                class="btn btn-outline-aqua btn-sm"
+              >
+                View Profile
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-12">
+          <div class="info-card">
+            <h5>Game Information</h5>
+
+            <ul class="info-list">
+              <li>
+                <i class="fas fa-calendar"></i>
+                <span
+                  >Uploaded: <%= new Date(game.created_at).toLocaleDateString()
+                  %></span
+                >
+              </li>
+
+              <li>
+                <i class="fas fa-sync"></i>
+                <span
+                  >Updated: <%= new Date(game.updated_at).toLocaleDateString()
+                  %></span
+                >
+              </li>
+
+              <li>
+                <i class="fas fa-code-branch"></i>
+                <span
+                  >Type: <%= game.game_type === 'playable' ? 'Browser Game' :
+                  'Downloadable' %></span
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
-         
     </div>
-     
   </div>
 </div>
 

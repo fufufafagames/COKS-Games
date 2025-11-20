@@ -374,6 +374,122 @@ body {
   margin-bottom: 1rem;
 }
 
+/* ==================== FOOTER STYLING FOR AUTH PAGES ==================== */
+/* CRITICAL: Override konflik dengan aturan global row/col */
+.footer {
+  background-color: var(--dark-secondary, #1a1a2e) !important;
+  padding: 2.5rem 0 1.5rem !important;
+  margin-top: auto !important;
+  border-top: 2px solid rgba(0, 217, 255, 0.2) !important;
+  position: relative !important;
+  z-index: 10 !important;
+  width: 100% !important;
+}
+
+.footer * {
+  box-sizing: border-box !important;
+}
+
+.footer .container {
+  width: 100% !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding-left: 15px !important;
+  padding-right: 15px !important;
+  display: block !important;
+}
+
+/* CRITICAL FIX: Override aturan global .row untuk footer */
+.footer .row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  margin-left: -15px !important;
+  margin-right: -15px !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+}
+
+/* CRITICAL FIX: Override aturan global .col untuk footer */
+.footer .row > [class*="col-"] {
+  padding-left: 15px !important;
+  padding-right: 15px !important;
+  margin-bottom: 1.5rem !important;
+  display: block !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+}
+
+.footer ul {
+  list-style: none !important;
+  padding-left: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.footer ul li {
+  margin-bottom: 0.5rem !important;
+  padding: 0 !important;
+}
+
+.footer ul li:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* UKURAN LOGO + TEKS DIPERKECIL */
+.footer-brand {
+  color: #00d9ff !important;
+  text-shadow: 0 0 10px rgba(0, 217, 255, 0.8) !important;
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 0.5rem !important;
+  display: block !important;
+  line-height: 1.3 !important;
+}
+
+/* H6 DITARIK KE ATAS AGAR SEJAJAR DENGAN LIST */
+.footer h6 {
+  color: #00d9ff !important;
+  margin-bottom: 0.5rem !important;
+  margin-top: 0 !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  line-height: 1.3 !important;
+}
+
+.footer a {
+  color: #a0a0a0 !important;
+  text-decoration: none !important;
+  transition: all 0.3s ease !important;
+  display: inline-block !important;
+  font-size: 0.85rem !important;
+}
+
+.footer a:hover {
+  color: #00d9ff !important;
+  padding-left: 5px !important;
+  text-decoration: none !important;
+}
+
+.footer p {
+  color: #a0a0a0 !important;
+  margin-bottom: 0.5rem !important;
+  line-height: 1.6 !important;
+  font-size: 0.85rem !important;
+}
+
+.footer .text-center {
+  width: 100% !important;
+  color: #a0a0a0 !important;
+  font-size: 0.85rem !important;
+  margin-top: 1rem !important;
+  padding-top: 1rem !important;
+  border-top: 1px solid rgba(0, 217, 255, 0.2) !important;
+  text-align: center !important;
+}
+
+.footer .text-center p {
+  margin-bottom: 0 !important;
+}
+
 /* ==================== RESPONSIVE ==================== */
 /* Tablet */
 @media (max-width: 768px) {
@@ -402,6 +518,20 @@ body {
     max-width: 500px;
     width: 100%;
     margin: 0 auto !important;
+  }
+
+  /* Footer responsive untuk tablet */
+  .footer {
+    padding: 2rem 0 1.5rem !important;
+  }
+
+  .footer .row {
+    justify-content: flex-start !important;
+  }
+
+  .footer .row > [class*="col-"] {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
   }
 }
 
@@ -458,6 +588,59 @@ body {
   .oauth-divider {
     margin: 1.25rem 0;
   }
+
+  /* Footer responsive untuk mobile */
+  .footer {
+    padding: 1.5rem 0 1rem !important;
+  }
+
+  .footer .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .footer .row {
+    flex-direction: column !important;
+  }
+
+  .footer .row > [class*="col-"] {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  .footer .row > [class*="col-"]:last-child {
+    margin-bottom: 0 !important;
+  }
+
+  .footer-brand {
+    font-size: 1rem !important;
+    margin-bottom: 0.4rem !important;
+  }
+
+  .footer h6 {
+    font-size: 0.9rem !important;
+    margin-bottom: 0.4rem !important;
+  }
+
+  .footer ul li {
+    margin-bottom: 0.4rem !important;
+  }
+
+  .footer a {
+    font-size: 0.8rem !important;
+  }
+
+  .footer p {
+    font-size: 0.8rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .footer .text-center {
+    margin-top: 1rem !important;
+    padding-top: 0.75rem !important;
+    font-size: 0.75rem !important;
+  }
 }
 
 /* Extra Small Mobile */
@@ -486,6 +669,37 @@ body {
 
   .auth-card .form-label {
     font-size: 0.875rem;
+  }
+
+  /* Footer responsive untuk extra small mobile */
+  .footer {
+    padding: 1.25rem 0 0.75rem !important;
+  }
+
+  .footer .container {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  .footer-brand {
+    font-size: 0.95rem !important;
+  }
+
+  .footer h6 {
+    font-size: 0.85rem !important;
+  }
+
+  .footer a,
+  .footer p {
+    font-size: 0.75rem !important;
+  }
+
+  .footer ul li {
+    margin-bottom: 0.35rem !important;
+  }
+
+  .footer .text-center {
+    font-size: 0.7rem !important;
   }
 }
 
@@ -542,26 +756,33 @@ body {
   text-align: center;
 }
 
-/* ==================== FIX CENTER ALIGNMENT ==================== */
-.row {
+/* ==================== FIX CENTER ALIGNMENT - HANYA UNTUK AUTH CONTAINER ==================== */
+/* PENTING: Jangan apply ke footer! */
+.auth-container .row,
+.auth-card .row {
   margin-left: 0 !important;
   margin-right: 0 !important;
   display: flex;
   justify-content: center;
 }
 
-.col,
-.col-md-6,
-.col-lg-5,
-[class*="col-"] {
+.auth-container .col,
+.auth-container .col-md-6,
+.auth-container .col-lg-5,
+.auth-container [class*="col-"],
+.auth-card .col,
+.auth-card .col-md-6,
+.auth-card .col-lg-5,
+.auth-card [class*="col-"] {
   padding-left: 15px;
   padding-right: 15px;
   display: flex;
   justify-content: center;
 }
 
-/* Force center untuk container auth */
-.container {
+/* Force center untuk container auth ONLY */
+.auth-container .container,
+.auth-card .container {
   width: 100%;
   padding-right: 15px;
   padding-left: 15px;
@@ -570,7 +791,8 @@ body {
   display: block;
 }
 
-.container-fluid {
+.auth-container .container-fluid,
+.auth-card .container-fluid {
   width: 100%;
   padding-right: 15px;
   padding-left: 15px;

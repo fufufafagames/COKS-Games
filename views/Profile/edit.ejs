@@ -8,7 +8,7 @@ include('../partials/navbar') %>
         <div class="text-center mb-4">
           <i class="fas fa-user-edit fa-3x text-aqua"></i>
           <h2 class="mt-3">Edit Profile</h2>
-          <p class="text-muted">Update your profile information</p>
+          <p class="text-white">Update your profile information</p>
         </div>
 
         <form action="/profile/update/me?_method=PUT" method="POST">
@@ -33,11 +33,12 @@ include('../partials/navbar') %>
             <input
               type="email"
               class="form-control"
+              style="background-color: black"
               id="email"
               value="<%= profileUser.email %>"
               disabled
             />
-            <small class="text-muted">Email cannot be changed</small>
+            <small class="text-white">Email cannot be changed</small>
           </div>
 
           <div class="mb-3">
@@ -52,7 +53,7 @@ include('../partials/navbar') %>
               value="<%= profileUser.avatar || '' %>"
               placeholder="https://example.com/avatar.jpg"
             />
-            <small class="text-muted"
+            <small class="text-white"
               >Enter a URL to your profile picture</small
             >
           </div>
@@ -70,7 +71,7 @@ include('../partials/navbar') %>
             >
 <%= profileUser.bio || '' %></textarea
             >
-            <small class="text-muted"
+            <small class="text-white"
               >Tell us about yourself (max 500 characters)</small
             >
           </div>

@@ -4,12 +4,12 @@ include('../partials/navbar') %>
 <div class="container-fluid play-container">
   <div class="play-header">
     <div class="container">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div class="play-title-section">
           <h2><i class="fas fa-gamepad"></i> <%= game.title %></h2>
-          <p class="mb-0 text-muted">by <%= game.author_name %></p>
+          <p class="mb-0 text-white">by <%= game.author_name %></p>
         </div>
-        <div>
+        <div class="play-actions d-flex gap-2 flex-wrap">
           <a href="/games/<%= game.slug %>" class="btn btn-outline-aqua">
             <i class="fas fa-arrow-left"></i> Back to Game
           </a>
@@ -38,7 +38,7 @@ include('../partials/navbar') %>
     <div class="text-center py-5">
       <i class="fas fa-download fa-5x text-aqua mb-4"></i>
       <h3>This is a downloadable game</h3>
-      <p class="text-muted mb-4">Download the game from GitHub to play</p>
+      <p class="text-white mb-4">Download the game from GitHub to play</p>
       <a
         href="<%= game.github_url %>"
         target="_blank"

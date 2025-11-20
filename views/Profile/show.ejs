@@ -17,7 +17,7 @@ include('../partials/navbar') %>
           <i class="fas fa-user-circle fa-5x text-aqua"></i>
           <% } %>
           <h3 class="mt-3"><%= profileUser.name %></h3>
-          <p class="text-muted"><%= profileUser.email %></p>
+          <p class="text-white"><%= profileUser.email %></p>
 
           <% if (profileUser.bio) { %>
           <p class="profile-bio"><%= profileUser.bio %></p>
@@ -94,8 +94,7 @@ include('../partials/navbar') %>
                 <div class="stat-item">
                   <i class="fas fa-star star-rating"></i>
                   <span
-                    ><%= game.avg_rating ? game.avg_rating.toFixed(1) : '0.0'
-                    %></span
+                    ><%= (parseFloat(game.avg_rating) || 0).toFixed(1) %></span
                   >
                 </div>
                 <div class="stat-item">
@@ -124,7 +123,7 @@ include('../partials/navbar') %>
           <i class="fas fa-gamepad fa-5x text-muted mb-3"></i>
           <h4>No games uploaded yet</h4>
           <% if (user && user.id === profileUser.id) { %>
-          <p class="text-muted">Start sharing your games with the community!</p>
+          <p class="text-white">Start sharing your games with the community!</p>
           <a href="/games/create/new" class="btn btn-aqua mt-3">
             <i class="fas fa-upload"></i> Upload Your First Game
           </a>

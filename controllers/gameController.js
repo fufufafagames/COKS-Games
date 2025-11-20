@@ -48,13 +48,11 @@ module.exports = {
         ],
       });
     }
-  }
+  },
   /**
    * Display all games dengan search & filter
    * UPDATED: Handle empty games dengan proper message
-   */,
-
-  index: async (req, res) => {
+   */ index: async (req, res) => {
     try {
       const { search, category } = req.query;
       const games = await Game.getAll(search, category); // Render games index page
@@ -86,12 +84,10 @@ module.exports = {
       req.session.error = "Failed to load games. Please try again.";
       res.redirect("/");
     }
-  }
+  },
   /**
    * Display game detail
-   */,
-
-  show: async (req, res) => {
+   */ show: async (req, res) => {
     try {
       const game = await Game.findBySlug(req.params.slug);
       if (!game) {
@@ -99,21 +95,43 @@ module.exports = {
         return res.redirect("/games");
       }
 
-      // START OF TAGS FIX 🚀
-      // Memproses game.tags dari string JSON menjadi array yang aman di backend
-      if (game && game.tags) {
+      // START: FIX UNTUK JSON PARSING TAGS
+      game.parsedTags = [];
+
+      if (game.tags) {
         try {
-          // Coba parse tags string. Jika gagal, error JSON.parse akan tertangkap.
-          // Hasilnya disimpan di properti baru: game.parsedTags
-          game.parsedTags = JSON.parse(game.tags);
+          // Jika game.tags adalah string, coba parse
+          if (typeof game.tags === "string" && game.tags.trim().length > 0) {
+            game.parsedTags = JSON.parse(game.tags);
+          }
+
+          // Pastikan hasilnya adalah array (penting!)
+          if (!Array.isArray(game.parsedTags)) {
+            // Jika parse berhasil tapi hasilnya bukan array (misalnya, hanya string "tag"),
+            // coba pisahkan sebagai string biasa.
+            if (typeof game.parsedTags === "string") {
+              game.parsedTags = game.parsedTags
+                .split(",")
+                .map((t) => t.trim())
+                .filter((t) => t.length > 0);
+            } else {
+              game.parsedTags = []; // Default ke array kosong
+            }
+          }
         } catch (e) {
-          console.error("Error parsing tags for game:", game.slug, e);
-          game.parsedTags = []; // Default ke array kosong jika gagal
+          console.error("Error parsing tags for game:", game.slug, e.message);
+          // FALLBACK KUAT: Jika parsing JSON gagal, coba pisahkan string secara manual
+          if (typeof game.tags === "string" && game.tags.trim().length > 0) {
+            game.parsedTags = game.tags
+              .split(",")
+              .map((t) => t.trim())
+              .filter((t) => t.length > 0);
+          } else {
+            game.parsedTags = [];
+          }
         }
-      } else {
-        game.parsedTags = []; // Default ke array kosong jika game.tags null/undefined
       } // Get ratings
-      // END OF TAGS FIX
+      // END: FIX UNTUK JSON PARSING TAGS
 
       const ratings = await Rating.getByGameId(game.id);
       const ratingStats = await Rating.getStats(game.id); // Check if current user has rated
@@ -135,12 +153,10 @@ module.exports = {
       req.session.error = "Failed to load game details";
       res.redirect("/games");
     }
-  }
+  },
   /**
    * Show upload game form
-   */,
-
-  create: (req, res) => {
+   */ create: (req, res) => {
     res.render("games/create", {
       title: "Upload Game",
       categories: [
@@ -154,12 +170,10 @@ module.exports = {
         "Racing",
       ],
     });
-  }
+  },
   /**
    * Store new game
-   */,
-
-  store: async (req, res) => {
+   */ store: async (req, res) => {
     try {
       const { title, description, github_url, thumbnail_url, category, tags } =
         req.body; // Generate unique slug
@@ -204,12 +218,10 @@ module.exports = {
       req.session.error = "Failed to upload game. Please try again.";
       res.redirect("/games/create/new");
     }
-  }
+  },
   /**
    * Show edit game form
-   */,
-
-  edit: async (req, res) => {
+   */ edit: async (req, res) => {
     try {
       const game = await Game.findBySlug(req.params.slug);
       if (!game) {
@@ -241,12 +253,10 @@ module.exports = {
       req.session.error = "Failed to load game";
       res.redirect("/games");
     }
-  }
+  },
   /**
    * Update game
-   */,
-
-  update: async (req, res) => {
+   */ update: async (req, res) => {
     try {
       const game = await Game.findBySlug(req.params.slug);
       if (!game) {
@@ -288,12 +298,10 @@ module.exports = {
       req.session.error = "Failed to update game";
       res.redirect(`/games/${req.params.slug}/edit`);
     }
-  }
+  },
   /**
    * Delete game
-   */,
-
-  destroy: async (req, res) => {
+   */ destroy: async (req, res) => {
     try {
       const game = await Game.findBySlug(req.params.slug);
       if (!game) {
@@ -315,12 +323,10 @@ module.exports = {
       req.session.error = "Failed to delete game";
       res.redirect("/games");
     }
-  }
+  },
   /**
    * Play game (iframe embed)
-   */,
-
-  play: async (req, res) => {
+   */ play: async (req, res) => {
     try {
       const game = await Game.findBySlug(req.params.slug);
       if (!game) {
