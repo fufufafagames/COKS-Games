@@ -95,44 +95,48 @@ module.exports = {
         return res.redirect("/games");
       }
 
-      // START: FIX UNTUK JSON PARSING TAGS
+      // START: KOREKSI FIX UNTUK JSON PARSING TAGS
       game.parsedTags = [];
 
-      if (game.tags) {
+      if (
+        game.tags &&
+        typeof game.tags === "string" &&
+        game.tags.trim().length > 0
+      ) {
+        let tagsArray = [];
         try {
-          // Jika game.tags adalah string, coba parse
-          if (typeof game.tags === "string" && game.tags.trim().length > 0) {
-            game.parsedTags = JSON.parse(game.tags);
-          }
+          // 1. Coba parse JSON. Ini berhasil jika formatnya ['tag1', 'tag2']
+          const parsed = JSON.parse(game.tags);
 
-          // Pastikan hasilnya adalah array (penting!)
-          if (!Array.isArray(game.parsedTags)) {
-            // Jika parse berhasil tapi hasilnya bukan array (misalnya, hanya string "tag"),
-            // coba pisahkan sebagai string biasa.
-            if (typeof game.parsedTags === "string") {
-              game.parsedTags = game.parsedTags
-                .split(",")
-                .map((t) => t.trim())
-                .filter((t) => t.length > 0);
-            } else {
-              game.parsedTags = []; // Default ke array kosong
-            }
-          }
-        } catch (e) {
-          console.error("Error parsing tags for game:", game.slug, e.message);
-          // FALLBACK KUAT: Jika parsing JSON gagal, coba pisahkan string secara manual
-          if (typeof game.tags === "string" && game.tags.trim().length > 0) {
-            game.parsedTags = game.tags
+          if (Array.isArray(parsed)) {
+            // Jika hasil parse adalah array (format JSON valid), gunakan itu
+            tagsArray = parsed;
+          } else if (typeof parsed === "string") {
+            // Kasus aneh: JSON.parse menghasilkan string (misal, jika inputnya hanya '"tag1, tag2"' )
+            tagsArray = parsed
               .split(",")
               .map((t) => t.trim())
               .filter((t) => t.length > 0);
-          } else {
-            game.parsedTags = [];
           }
+        } catch (e) {
+          // 2. Jika JSON.parse gagal (kemungkinan data tersimpan sebagai string biasa "tag1, tag2")
+          // Jalankan FALLBACK KUAT: Pisahkan string secara manual
+          console.error(
+            "Tags data is not valid JSON, applying fallback parsing:",
+            e.message
+          );
+          tagsArray = game.tags
+            .split(",")
+            .map((t) => t.trim())
+            .filter((t) => t.length > 0);
         }
-      } // Get ratings
-      // END: FIX UNTUK JSON PARSING TAGS
 
+        // Assign hasil array ke game.parsedTags
+        game.parsedTags = tagsArray;
+      }
+      // END: KOREKSI FIX UNTUK JSON PARSING TAGS
+
+      // Get ratings
       const ratings = await Rating.getByGameId(game.id);
       const ratingStats = await Rating.getStats(game.id); // Check if current user has rated
 
@@ -175,8 +179,21 @@ module.exports = {
    * Store new game
    */ store: async (req, res) => {
     try {
-      const { title, description, github_url, thumbnail_url, category, tags } =
+      const { title, description, github_url, thumbnail_url, video_url, category, tags } =
         req.body; // Generate unique slug
+
+      // Handle file uploads
+      let finalThumbnailUrl = thumbnail_url;
+      if (req.files && req.files['thumbnail']) {
+        finalThumbnailUrl = '/uploads/thumbnails/' + req.files['thumbnail'][0].filename;
+      } else if (!finalThumbnailUrl) {
+          finalThumbnailUrl = "https://via.placeholder.com/400x300/1a1a2e/00D9FF?text=Game";
+      }
+
+      let finalVideoUrl = video_url;
+      if (req.files && req.files['video']) {
+        finalVideoUrl = '/uploads/videos/' + req.files['video'][0].filename;
+      }
 
       let slug = slugify(title, { lower: true, strict: true });
       let slugExists = await Game.slugExists(slug);
@@ -203,9 +220,8 @@ module.exports = {
         slug,
         description,
         github_url,
-        thumbnail_url:
-          thumbnail_url ||
-          "https://via.placeholder.com/400x300/1a1a2e/00D9FF?text=Game",
+        thumbnail_url: finalThumbnailUrl,
+        video_url: finalVideoUrl,
         game_type,
         category,
         tags: JSON.stringify(tags ? tags.split(",").map((t) => t.trim()) : []),
@@ -233,6 +249,46 @@ module.exports = {
         req.session.error = "You are not authorized to edit this game";
         return res.redirect("/games");
       }
+
+      // ------------------------------------------------------------------
+      // START: KOREKSI FIX UNTUK JSON PARSING TAGS
+      game.parsedTags = [];
+
+      if (
+        game.tags &&
+        typeof game.tags === "string" &&
+        game.tags.trim().length > 0
+      ) {
+        let tagsArray = [];
+        try {
+          // 1. Coba parse JSON. Ini berhasil jika formatnya ['tag1', 'tag2']
+          const parsed = JSON.parse(game.tags);
+
+          if (Array.isArray(parsed)) {
+            // Jika hasil parse adalah array (format JSON valid), gunakan itu
+            tagsArray = parsed;
+          } else if (typeof parsed === "string") {
+            // Kasus aneh: JSON.parse menghasilkan string
+            tagsArray = parsed
+              .split(",")
+              .map((t) => t.trim())
+              .filter((t) => t.length > 0);
+          }
+        } catch (e) {
+          // 2. Jika JSON.parse gagal (kemungkinan data tersimpan sebagai string biasa)
+          console.error(
+            "Tags data is not valid JSON for edit, applying fallback parsing:",
+            e.message
+          );
+          tagsArray = game.tags
+            .split(",")
+            .map((t) => t.trim())
+            .filter((t) => t.length > 0);
+        } // Assign hasil array ke game.parsedTags
+
+        game.parsedTags = tagsArray;
+      } // END: KOREKSI FIX UNTUK JSON PARSING TAGS
+      // ------------------------------------------------------------------
 
       res.render("games/edit", {
         title: "Edit Game",
@@ -269,8 +325,25 @@ module.exports = {
         return res.redirect("/games");
       }
 
-      const { title, description, github_url, thumbnail_url, category, tags } =
+      const { title, description, github_url, thumbnail_url, video_url, category, tags } =
         req.body; // Auto-detect game type
+
+      // Handle file uploads
+      let finalThumbnailUrl = game.thumbnail_url;
+      if (req.files && req.files['thumbnail']) {
+        finalThumbnailUrl = '/uploads/thumbnails/' + req.files['thumbnail'][0].filename;
+      } else if (thumbnail_url) {
+        finalThumbnailUrl = thumbnail_url;
+      }
+
+      let finalVideoUrl = game.video_url;
+      if (req.files && req.files['video']) {
+        finalVideoUrl = '/uploads/videos/' + req.files['video'][0].filename;
+      } else if (video_url !== undefined) {
+        // Only update if video_url is explicitly provided (even if empty string to clear it)
+        // But since we use value="<%= game.video_url || '' %>" in view, empty string means clear
+        finalVideoUrl = video_url;
+      }
 
       let game_type = "playable";
       if (
@@ -285,7 +358,8 @@ module.exports = {
         title,
         description,
         github_url,
-        thumbnail_url: thumbnail_url || game.thumbnail_url,
+        thumbnail_url: finalThumbnailUrl,
+        video_url: finalVideoUrl,
         category,
         tags: JSON.stringify(tags ? tags.split(",").map((t) => t.trim()) : []),
         game_type,
@@ -325,8 +399,9 @@ module.exports = {
     }
   },
   /**
-   * Play game (iframe embed)
-   */ play: async (req, res) => {
+   /**
+   * Play game (iframe embed)
+   */ play: async (req, res) => {
     try {
       const game = await Game.findBySlug(req.params.slug);
       if (!game) {
@@ -338,17 +413,22 @@ module.exports = {
 
       let gameUrl = game.github_url;
       if (game.game_type === "playable") {
-        // Convert GitHub repo URL ke raw URL jika perlu
-        if (
-          gameUrl.includes("github.com") &&
-          !gameUrl.includes("raw.githubusercontent.com")
-        ) {
-          // Example: https://github.com/user/repo → https://raw.githubusercontent.com/user/repo/main/index.html
-          gameUrl =
-            gameUrl
-              .replace("github.com", "raw.githubusercontent.com")
-              .replace("/blob/", "/") + "/main/index.html";
-        }
+        // START: KOREKSI UNTUK MENGGUNAKAN GITHUB PAGES URL
+        if (gameUrl.includes("github.com")) {
+          // Membersihkan URL dari potensi /tree/main atau /blob/main
+          const cleanUrl = gameUrl
+            .replace(/\/$/, "")
+            .replace(/\/tree\/main/, "")
+            .replace(/\/blob\/main/, "");
+          const parts = cleanUrl.split("/");
+          const repo = parts.pop(); // Ambil nama repo (contoh: "game_absurd")
+          const user = parts.pop(); // Ambil username (contoh: "sabungoren")
+
+          if (user && repo) {
+            // Konversi ke format GitHub Pages: https://[user].github.io/[repo]/
+            gameUrl = `https://${user}.github.io/${repo}/`;
+          }
+        } // END: KOREKSI UNTUK MENGGUNAKAN GITHUB PAGES URL
       }
 
       res.render("games/play", {

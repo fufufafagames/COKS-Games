@@ -9,6 +9,7 @@ body {
   /* Jangan override background dari style.css */
   min-height: 100vh;
   overflow-x: hidden;
+  background-color: var(--dark-primary); /* Ensure solid background persists */
 }
 
 /* Remove background::before yang bisa crash footer */

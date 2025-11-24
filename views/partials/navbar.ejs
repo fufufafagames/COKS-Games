@@ -1,12 +1,9 @@
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
-  <div class="container">
-    <a class="navbar-brand" href="/">
-      <i class="fas fa-gamepad"></i> FUFUFAFAGAMES
-    </a>
-
+  <div class="container-fluid px-3 px-lg-4">
+    <!-- 1. Mobile Toggler (Left) -->
     <button
-      class="navbar-toggler"
+      class="navbar-toggler me-2 d-lg-none border-0 p-0"
       type="button"
       data-bs-toggle="collapse"
       data-bs-target="#navbarNav"
@@ -14,9 +11,93 @@
       <span class="navbar-toggler-icon"></span>
     </button>
 
+    <!-- 2. Brand (Left/Center-Left) -->
+    <a class="navbar-brand me-auto me-lg-4" href="/">
+      <i class="fas fa-gamepad"></i> <span class="d-none d-sm-inline">FUFUFAFAGAMES</span>
+    </a>
+
+    <!-- 3. Mobile Right Icons (Visible only on mobile) -->
+    <div class="d-flex align-items-center d-lg-none gap-3">
+      <!-- Search Icon Trigger (Mobile) -->
+      <button class="btn btn-link text-white p-0" type="button" data-bs-toggle="collapse" data-bs-target="#mobileSearch" aria-expanded="false">
+        <i class="fas fa-search fa-lg"></i>
+      </button>
+
+      <% if (user) { %>
+      <!-- Upload Icon (Mobile) -->
+      <a href="/games/create/new" class="btn btn-link text-white p-0">
+        <i class="fas fa-upload fa-lg"></i>
+      </a>
+
+      <!-- Profile Dropdown (Mobile & Desktop Custom) -->
+      <div class="dropdown">
+        <a
+          href="#"
+          class="d-flex align-items-center text-decoration-none"
+          id="profileDropdown"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        >
+          <% if (user.avatar) { %>
+          <img
+            src="<%= user.avatar %>"
+            alt="<%= user.name %>"
+            class="rounded-circle border border-aqua"
+            width="32"
+            height="32"
+            style="object-fit: cover;"
+          />
+          <% } else { %>
+          <i class="fas fa-user-circle fa-2x text-white"></i>
+          <% } %>
+          <i class="fas fa-chevron-down text-white ms-1" style="font-size: 0.8rem;"></i>
+        </a>
+
+        <!-- Custom Crunchyroll-style Dropdown -->
+        <ul class="dropdown-menu dropdown-menu-end custom-profile-menu mt-2 shadow-lg border-0" aria-labelledby="profileDropdown">
+          <!-- Profile Header -->
+          <li class="profile-header p-3 mb-2">
+            <div class="d-flex align-items-center justify-content-between">
+              <a href="/profile/<%= user.id %>" class="d-flex align-items-center text-decoration-none text-white flex-grow-1">
+                <% if (user.avatar) { %>
+                <img
+                  src="<%= user.avatar %>"
+                  alt="<%= user.name %>"
+                  class="rounded-circle me-3"
+                  width="48"
+                  height="48"
+                  style="object-fit: cover;"
+                />
+                <% } else { %>
+                <i class="fas fa-user-circle fa-3x me-3 text-aqua"></i>
+                <% } %>
+                <div class="d-flex flex-column">
+                  <span class="fw-bold text-truncate" style="max-width: 140px;"><%= user.name %></span>
+                  <small class="text-aqua">View Profile</small>
+                </div>
+              </a>
+              <a href="/profile/edit/me" class="btn btn-link text-muted p-2 edit-profile-btn" title="Edit Profile">
+                <i class="fas fa-pencil-alt"></i>
+              </a>
+            </div>
+          </li>
+          
+          <!-- Menu Items -->
+          <li><a class="dropdown-item py-2" href="/profile/<%= user.id %>"><i class="fas fa-user me-2"></i> My Profile</a></li>
+          <li><a class="dropdown-item py-2" href="/profile/settings"><i class="fas fa-cog me-2"></i> Settings</a></li>
+          <li><hr class="dropdown-divider bg-secondary opacity-25 my-2" /></li>
+          <li><a class="dropdown-item py-2 text-danger" href="/logout"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+        </ul>
+      </div>
+      <% } else { %>
+        <a href="/login" class="btn btn-sm btn-outline-aqua">Login</a>
+      <% } %>
+    </div>
+
+    <!-- 4. Desktop Menu & Search (Collapsible) -->
     <div class="collapse navbar-collapse" id="navbarNav">
-      <!-- Search Form -->
-      <form class="d-flex mx-auto search-form" action="/games" method="GET">
+      <!-- Search Form (Desktop) -->
+      <form class="d-none d-lg-flex mx-auto search-form" action="/games" method="GET">
         <input
           class="form-control me-2"
           type="search"
@@ -29,31 +110,21 @@
         </button>
       </form>
 
-      <!-- Right Side Menu -->
-      <ul class="navbar-nav ms-auto align-items-center">
+      <!-- Desktop Right Menu -->
+      <ul class="navbar-nav ms-auto align-items-center d-none d-lg-flex">
         <% if (user) { %>
-        <!-- Upload Button -->
         <li class="nav-item">
-          <a
-            class="btn btn-aqua me-2"
-            href="/games/create/new"
-            style="
-              height: 40px;
-              display: flex;
-              align-items: center;
-              padding: 0 20px;
-            "
-          >
-            <i class="fas fa-upload"></i> Upload Game
+          <a class="btn btn-aqua me-3" href="/games/create/new">
+            <i class="fas fa-upload me-2"></i> Upload Game
           </a>
         </li>
-
-        <!-- User Dropdown -->
+        
+        <!-- Desktop Profile Dropdown (Same structure as mobile for consistency) -->
         <li class="nav-item dropdown">
           <a
-            class="nav-link dropdown-toggle d-flex align-items-center"
+            class="nav-link p-0 d-flex align-items-center"
             href="#"
-            id="userDropdown"
+            id="userDropdownDesktop"
             role="button"
             data-bs-toggle="dropdown"
           >
@@ -61,66 +132,76 @@
             <img
               src="<%= user.avatar %>"
               alt="<%= user.name %>"
-              class="rounded-circle me-2"
-              width="32"
-              height="32"
+              class="rounded-circle border border-aqua"
+              width="40"
+              height="40"
+              style="object-fit: cover;"
             />
             <% } else { %>
-            <i class="fas fa-user-circle fa-2x me-2"></i>
-            <% } %> <%= user.name %>
+            <i class="fas fa-user-circle fa-2x text-white"></i>
+            <% } %>
           </a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li>
-              <a class="dropdown-item" href="/profile/<%= user.id %>">
-                <i class="fas fa-user"></i> My Profile
-              </a>
+          
+          <!-- Custom Dropdown (Reused) -->
+          <ul class="dropdown-menu dropdown-menu-end custom-profile-menu mt-3 shadow-lg border-0" aria-labelledby="userDropdownDesktop">
+            <li class="profile-header p-3 mb-2">
+              <div class="d-flex align-items-center justify-content-between">
+                <a href="/profile/<%= user.id %>" class="d-flex align-items-center text-decoration-none text-white flex-grow-1">
+                  <% if (user.avatar) { %>
+                  <img
+                    src="<%= user.avatar %>"
+                    alt="<%= user.name %>"
+                    class="rounded-circle me-3"
+                    width="48"
+                    height="48"
+                    style="object-fit: cover;"
+                  />
+                  <% } else { %>
+                  <i class="fas fa-user-circle fa-3x me-3 text-aqua"></i>
+                  <% } %>
+                  <div class="d-flex flex-column">
+                    <span class="fw-bold text-truncate" style="max-width: 150px;"><%= user.name %></span>
+                    <small class="text-aqua">View Profile</small>
+                  </div>
+                </a>
+                <a href="/profile/edit/me" class="btn btn-link text-muted p-2 edit-profile-btn">
+                  <i class="fas fa-pencil-alt"></i>
+                </a>
+              </div>
             </li>
-            <li>
-              <a class="dropdown-item" href="/profile/edit/me">
-                <i class="fas fa-edit"></i> Edit Profile
-              </a>
-            </li>
-            <li><hr class="dropdown-divider" /></li>
-            <li>
-              <a class="dropdown-item" href="/logout">
-                <i class="fas fa-sign-out-alt"></i> Logout
-              </a>
-            </li>
+            <li><a class="dropdown-item py-2" href="/profile/<%= user.id %>"><i class="fas fa-user me-2"></i> My Profile</a></li>
+            <li><a class="dropdown-item py-2" href="/profile/settings"><i class="fas fa-cog me-2"></i> Settings</a></li>
+            <li><hr class="dropdown-divider bg-secondary opacity-25 my-2" /></li>
+            <li><a class="dropdown-item py-2 text-danger" href="/logout"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
           </ul>
         </li>
         <% } else { %>
-        <!-- Login Button - Outline Style -->
         <li class="nav-item me-2">
-          <a
-            class="btn btn-outline-aqua"
-            href="/login"
-            style="
-              height: 40px;
-              display: flex;
-              align-items: center;
-              padding: 0 20px;
-            "
-          >
-            Login
-          </a>
+          <a class="btn btn-outline-aqua btn-auth" href="/login">Login</a>
         </li>
-        <!-- Register Button - Solid Style -->
         <li class="nav-item">
-          <a
-            class="btn btn-aqua"
-            href="/register"
-            style="
-              height: 40px;
-              display: flex;
-              align-items: center;
-              padding: 0 20px;
-            "
-          >
-            Register
-          </a>
+          <a class="btn btn-aqua btn-auth" href="/register">Register</a>
         </li>
         <% } %>
       </ul>
+    </div>
+  </div>
+  
+  <!-- Mobile Search Collapse -->
+  <div class="collapse w-100 d-lg-none bg-dark-secondary" id="mobileSearch">
+    <div class="container py-3">
+      <form class="d-flex" action="/games" method="GET">
+        <input
+          class="form-control me-2"
+          type="search"
+          name="search"
+          placeholder="Search games..."
+          value="<%= typeof search !== 'undefined' ? search : '' %>"
+        />
+        <button class="btn btn-aqua" type="submit">
+          <i class="fas fa-search"></i>
+        </button>
+      </form>
     </div>
   </div>
 </nav>

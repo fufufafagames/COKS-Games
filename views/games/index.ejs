@@ -1,71 +1,81 @@
 <%- include('../layouts/header', { title: title }) %>
 <%- include('../partials/navbar') %>
 
-<div class="container mt-4">
-    <!-- Page Header -->
-    <div class="page-header text-center mb-5">
-        <h1 class="display-4 glow-aqua">🎮 Discover Amazing Games</h1>
-        <p class="lead text-white">Browse, play, and upload your favorite browser games</p>
+<!-- Parallax Hero Section -->
+<div class="parallax-section bg-game-hero d-flex align-items-center justify-content-center" style="min-height: 60vh;">
+    <div class="container text-center">
+        <div class="page-header mb-0 animate-on-scroll scale-up">
+            <h1 class="display-3 fw-bold glow-aqua mb-3">🎮 Discover Amazing Games</h1>
+            <p class="lead text-white fs-4">Browse, play, and upload your favorite browser games</p>
+        </div>
     </div>
-    
-    <!-- Filters -->
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="filter-bar">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <form action="/games" method="GET" class="d-flex">
-                            <input type="text" name="search" class="form-control me-2" placeholder="Search games by title or description..." value="<%= search %>">
-                            <button type="submit" class="btn btn-aqua">
-                                <i class="fas fa-search"></i> Search
-                            </button>
-                        </form>
-                    </div>
-                    <div class="col-md-4">
-                        <select class="form-control" onchange="window.location.href='/games?category=' + this.value + '&search=<%= search %>'">
-                            <option value="">All Categories</option>
-                            <% categories.forEach(cat => { %>
-                                <option value="<%= cat %>" <%= category === cat ? 'selected' : '' %>><%= cat %></option>
-                            <% }); %>
-                        </select>
+</div>
+
+<!-- Main Content Section with Grid Background -->
+<div class="parallax-section bg-game-grid py-5">
+    <div class="container">
+        <!-- Filters -->
+        <div class="row mb-5 animate-on-scroll fade-up">
+            <div class="col-md-12">
+                <div class="filter-bar">
+                    <div class="row align-items-center">
+                        <div class="col-md-8 mb-3 mb-md-0">
+                            <form action="/games" method="GET" class="d-flex">
+                                <input type="text" name="search" class="form-control me-2" placeholder="Search games by title or description..." value="<%= search %>">
+                                <button type="submit" class="btn btn-aqua">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </form>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-control" onchange="window.location.href='/games?category=' + this.value + '&search=<%= search %>'">
+                                <option value="">All Categories</option>
+                                <% categories.forEach(cat => { %>
+                                    <option value="<%= cat %>" <%= category === cat ? 'selected' : '' %>><%= cat %></option>
+                                <% }); %>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        
+        <!-- Games Grid -->
+        <% if (games.length > 0) { %>
+            <div class="game-grid">
+                <% games.forEach((game, index) => { %>
+                    <div class="animate-on-scroll fade-up delay-<%= (index % 3 + 1) * 100 %>">
+                        <%- include('../partials/game-card', { game: game }) %>
+                    </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <!-- Empty State -->
+            <div class="text-center py-5 animate-on-scroll fade-up">
+                <i class="fas fa-gamepad fa-5x text-muted mb-3"></i>
+                <h3><%= emptyMessage || 'No games found' %></h3>
+                <% if (search || category) { %>
+                    <p class="text-muted">Try adjusting your search or filters</p>
+                    <a href="/games" class="btn btn-outline-aqua mt-3">
+                        <i class="fas fa-redo"></i> Clear Filters
+                    </a>
+                <% } else { %>
+                    <p class="text-muted">Be the first to share your game with the community!</p>
+                <% } %>
+                
+                <% if (user) { %>
+                    <a href="/games/create/new" class="btn btn-aqua mt-3">
+                        <i class="fas fa-upload"></i> Upload Your First Game
+                    </a>
+                <% } else { %>
+                    <a href="/auth/login" class="btn btn-aqua mt-3">
+                        <i class="fas fa-sign-in-alt"></i> Login to Upload
+                    </a>
+                <% } %>
+            </div>
+        <% } %>
     </div>
-    
-    <!-- Games Grid -->
-    <% if (games.length > 0) { %>
-        <div class="game-grid">
-            <% games.forEach(game => { %>
-                <%- include('../partials/game-card', { game: game }) %>
-            <% }); %>
-        </div>
-    <% } else { %>
-        <!-- Empty State dengan proper message -->
-        <div class="text-center py-5">
-            <i class="fas fa-gamepad fa-5x text-muted mb-3"></i>
-            <h3><%= emptyMessage || 'No games found' %></h3>
-            <% if (search || category) { %>
-                <p class="text-muted">Try adjusting your search or filters</p>
-                <a href="/games" class="btn btn-outline-aqua mt-3">
-                    <i class="fas fa-redo"></i> Clear Filters
-                </a>
-            <% } else { %>
-                <p class="text-muted">Be the first to share your game with the community!</p>
-            <% } %>
-            
-            <% if (user) { %>
-                <a href="/games/create/new" class="btn btn-aqua mt-3">
-                    <i class="fas fa-upload"></i> Upload Your First Game
-                </a>
-            <% } else { %>
-                <a href="/auth/login" class="btn btn-aqua mt-3">
-                    <i class="fas fa-sign-in-alt"></i> Login to Upload
-                </a>
-            <% } %>
-        </div>
-    <% } %>
 </div>
 
+<script src="/js/scroll-animations.js"></script>
 <%- include('../layouts/footer') %>

@@ -159,3 +159,47 @@ console.log(
   "%cBuilt with Node.js + Express + EJS",
   "color: #a0a0a0; font-size: 12px;"
 );
+
+// Game Player Controls
+document.addEventListener("DOMContentLoaded", function () {
+  const gameContainer = document.getElementById("game-container");
+  const btnFullscreen = document.getElementById("btn-fullscreen");
+  const btnLandscape = document.getElementById("btn-landscape");
+  const btnPortrait = document.getElementById("btn-portrait");
+
+  if (gameContainer && btnFullscreen) {
+    // Fullscreen toggle
+    btnFullscreen.addEventListener("click", function () {
+      if (!document.fullscreenElement) {
+        if (gameContainer.requestFullscreen) {
+          gameContainer.requestFullscreen();
+        } else if (gameContainer.webkitRequestFullscreen) { /* Safari */
+          gameContainer.webkitRequestFullscreen();
+        } else if (gameContainer.msRequestFullscreen) { /* IE11 */
+          gameContainer.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    });
+
+    // Aspect Ratio Toggles
+    if (btnLandscape && btnPortrait) {
+      btnLandscape.addEventListener("click", function () {
+        gameContainer.classList.remove("portrait");
+        gameContainer.classList.add("landscape");
+        btnLandscape.classList.add("active");
+        btnPortrait.classList.remove("active");
+      });
+
+      btnPortrait.addEventListener("click", function () {
+        gameContainer.classList.remove("landscape");
+        gameContainer.classList.add("portrait");
+        btnPortrait.classList.add("active");
+        btnLandscape.classList.remove("active");
+      });
+    }
+  }
+});

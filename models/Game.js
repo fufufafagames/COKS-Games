@@ -108,6 +108,7 @@ module.exports = {
       description,
       github_url,
       thumbnail_url,
+      video_url,
       game_type,
       category,
       tags,
@@ -115,8 +116,8 @@ module.exports = {
 
     const result = await db.query(
       `INSERT INTO games 
-             (user_id, title, slug, description, github_url, thumbnail_url, game_type, category, tags, created_at, updated_at) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW()) 
+             (user_id, title, slug, description, github_url, thumbnail_url, video_url, game_type, category, tags, created_at, updated_at) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW()) 
              RETURNING *`,
       [
         user_id,
@@ -125,6 +126,7 @@ module.exports = {
         description,
         github_url,
         thumbnail_url,
+        video_url,
         game_type,
         category,
         tags,
@@ -146,6 +148,7 @@ module.exports = {
       description,
       github_url,
       thumbnail_url,
+      video_url,
       category,
       tags,
       game_type,
@@ -153,15 +156,16 @@ module.exports = {
 
     const result = await db.query(
       `UPDATE games 
-             SET title = $1, description = $2, github_url = $3, thumbnail_url = $4, 
-                 category = $5, tags = $6, game_type = $7, updated_at = NOW() 
-             WHERE slug = $8 
+             SET title = $1, description = $2, github_url = $3, thumbnail_url = $4, video_url = $5,
+                 category = $6, tags = $7, game_type = $8, updated_at = NOW() 
+             WHERE slug = $9 
              RETURNING *`,
       [
         title,
         description,
         github_url,
         thumbnail_url,
+        video_url,
         category,
         tags,
         game_type,

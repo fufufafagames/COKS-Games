@@ -1,11 +1,5 @@
 <!DOCTYPE html>
-<html
-  lang="en"
-  style="
-    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
-    background-attachment: fixed;
-  "
->
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -31,37 +25,11 @@
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/css/style.css" />
-
-    <style>
-      /* Fix white background on mobile overscroll */
-      html {
-        background: linear-gradient(
-          135deg,
-          #0f0f23 0%,
-          #1a1a2e 100%
-        ) !important;
-        background-attachment: fixed !important;
-        overscroll-behavior: none;
-      }
-
-      body {
-        background: linear-gradient(
-          135deg,
-          #0f0f23 0%,
-          #1a1a2e 100%
-        ) !important;
-        background-attachment: fixed !important;
-        overscroll-behavior: none;
-      }
-    </style>
+    <% if (typeof isAuthPage !== 'undefined' && isAuthPage) { %>
+    <link rel="stylesheet" href="/css/auth.css" />
+    <% } %>
   </head>
-  <body
-    style="
-      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
-      background-attachment: fixed;
-      overscroll-behavior: none;
-    "
-  >
+  <body>
     <!-- Content dari views lain akan di-include di sini -->
   </body>
 </html>

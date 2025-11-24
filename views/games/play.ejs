@@ -1,53 +1,87 @@
 <%- include('../layouts/header', { title: title }) %> <%-
 include('../partials/navbar') %>
 
-<div class="container-fluid play-container">
+<div class="container-fluid play-container mt-1 pt-4">
   <div class="play-header">
     <div class="container">
       <div class="d-flex justify-content-between align-items-center flex-wrap">
-        <div class="play-title-section">
-          <h2><i class="fas fa-gamepad"></i> <%= game.title %></h2>
+        <!-- Left: Back Button -->
+        <div class="play-action-left">
+          <a href="/games/<%= game.slug %>" class="btn btn-outline-aqua btn-mobile-square" title="Back to Game">
+            <i class="fas fa-arrow-left"></i> <span class="d-none d-md-inline ms-1">Back to Game</span>
+          </a>
+        </div>
+
+        <!-- Center: Title -->
+        <div class="play-title-section text-center mx-auto">
+          <h2 class="mb-0"><i class="fas fa-gamepad"></i> <%= game.title %></h2>
           <p class="mb-0 text-white">by <%= game.author_name %></p>
         </div>
-        <div class="play-actions d-flex gap-2 flex-wrap">
-          <a href="/games/<%= game.slug %>" class="btn btn-outline-aqua">
-            <i class="fas fa-arrow-left"></i> Back to Game
-          </a>
+
+        <!-- Right: GitHub Button -->
+        <div class="play-action-right">
           <a
             href="<%= game.github_url %>"
             target="_blank"
-            class="btn btn-outline-aqua"
+            class="btn btn-outline-aqua btn-mobile-square"
+            title="View on GitHub"
           >
-            <i class="fab fa-github"></i> GitHub
+            <i class="fab fa-github"></i> <span class="d-none d-md-inline ms-1">GitHub</span>
           </a>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="game-iframe-container">
-    <% if (game.game_type === 'playable') { %>
-    <iframe
-      src="<%= gameUrl %>"
-      frameborder="0"
-      allowfullscreen
-      sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-forms"
-      class="game-iframe"
-    ></iframe>
-    <% } else { %>
-    <div class="text-center py-5">
-      <i class="fas fa-download fa-5x text-aqua mb-4"></i>
-      <h3>This is a downloadable game</h3>
-      <p class="text-white mb-4">Download the game from GitHub to play</p>
-      <a
-        href="<%= game.github_url %>"
-        target="_blank"
-        class="btn btn-aqua btn-lg"
-      >
-        <i class="fas fa-download"></i> Download from GitHub
-      </a>
+  <div class="container game-play-wrapper">
+    <div class="game-iframe-container landscape" id="game-container">
+      <% if (game.game_type === 'playable') { %>
+      <iframe
+        src="<%= gameUrl %>"
+        frameborder="0"
+        allowfullscreen
+        sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-forms"
+        class="game-iframe"
+        id="game-iframe"
+      ></iframe>
+      <% } else { %>
+      <div class="text-center py-5 download-placeholder">
+        <i class="fas fa-download fa-5x text-aqua mb-4"></i>
+        <h3>This is a downloadable game</h3>
+        <p class="text-white mb-4">Download the game from GitHub to play</p>
+        <a
+          href="<%= game.github_url %>"
+          target="_blank"
+          class="btn btn-aqua btn-lg"
+        >
+          <i class="fas fa-download"></i> Download from GitHub
+        </a>
+      </div>
+      <% } %>
     </div>
-    <% } %>
+
+    <div class="game-controls-bar d-flex justify-content-between align-items-center mt-3 mb-2">
+      <div class="aspect-controls">
+        <span class="text-white me-2 d-none d-md-inline"><small>Aspect Ratio:</small></span>
+        <div class="btn-group" role="group" aria-label="Aspect Ratio">
+          <button type="button" class="btn btn-sm btn-outline-aqua active" id="btn-landscape" title="Landscape (16:9)">
+            <i class="fas fa-desktop"></i> <span class="d-none d-sm-inline">Landscape</span>
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-aqua" id="btn-portrait" title="Portrait (9:16)">
+            <i class="fas fa-mobile-alt"></i> <span class="d-none d-sm-inline">Portrait</span>
+          </button>
+        </div>
+      </div>
+      <div class="screen-controls">
+        <button type="button" class="btn btn-sm btn-outline-aqua" id="btn-fullscreen" title="Fullscreen">
+          <i class="fas fa-expand"></i> <span class="d-none d-sm-inline">Fullscreen</span>
+        </button>
+      </div>
+    </div>
+    
+    <div class="text-center mt-2 text-white d-md-none">
+      <small><i class="fas fa-info-circle"></i> Rotate your device for better experience</small>
+    </div>
   </div>
 </div>
 

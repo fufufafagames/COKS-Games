@@ -8,6 +8,10 @@ const router = express.Router();
 const { isAuthenticated } = require("../middleware/auth");
 const profileController = require("../controllers/profileController");
 
+// Account Settings
+router.get("/settings", isAuthenticated, profileController.settings);
+router.put("/settings/password", isAuthenticated, profileController.updatePassword);
+
 // View user profile (public)
 router.get("/:id", profileController.show);
 

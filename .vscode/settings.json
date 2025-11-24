@@ -1,0 +1,4 @@
+{
+  "terminal.integrated.confirmOnKill": "editor",
+  "editor.experimental.asyncTokenizationVerification": false
+}

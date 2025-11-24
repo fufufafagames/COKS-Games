@@ -1,0 +1,73 @@
+<%- include('../layouts/header', { title: title }) %>
+<%- include('../partials/navbar') %>
+
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <div class="form-card">
+        <div class="text-center mb-4">
+          <i class="fas fa-cog fa-3x text-aqua"></i>
+          <h2 class="mt-3">Account Settings</h2>
+          <p class="text-white">Manage your account security</p>
+        </div>
+
+        <!-- Password Change Form -->
+        <div class="card bg-transparent border-0">
+          <div class="card-header bg-transparent border-0 p-0 mb-3">
+            <h5 class="text-white"><i class="fas fa-lock me-2"></i>Change Password</h5>
+            <hr class="border-white opacity-50">
+          </div>
+          
+          <form action="/profile/settings/password?_method=PUT" method="POST">
+            <div class="mb-3">
+              <label for="currentPassword" class="form-label">Current Password</label>
+              <input
+                type="password"
+                class="form-control"
+                id="currentPassword"
+                name="currentPassword"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="newPassword" class="form-label">New Password</label>
+              <input
+                type="password"
+                class="form-control"
+                id="newPassword"
+                name="newPassword"
+                minlength="6"
+                required
+              />
+              <div class="form-text text-muted">Minimum 6 characters</div>
+            </div>
+
+            <div class="mb-4">
+              <label for="confirmPassword" class="form-label">Confirm New Password</label>
+              <input
+                type="password"
+                class="form-control"
+                id="confirmPassword"
+                name="confirmPassword"
+                minlength="6"
+                required
+              />
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-aqua">
+                <i class="fas fa-save me-2"></i> Update Password
+              </button>
+              <a href="/profile/<%= profileUser.id %>" class="btn btn-outline-aqua">
+                <i class="fas fa-arrow-left me-2"></i> Back to Profile
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../layouts/footer') %>

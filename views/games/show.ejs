@@ -30,7 +30,9 @@ include('../partials/navbar') %>
             <div class="stat-box">
               <i class="fas fa-star star-rating"></i>
               <div>
-                <strong><%= Number(game.avg_rating || 0).toFixed(1) %></strong>
+                <strong
+                  ><%= (parseFloat(game.avg_rating) || 0).toFixed(1) %></strong
+                >
                 <small>Rating</small>
               </div>
             </div>
@@ -109,7 +111,7 @@ include('../partials/navbar') %>
           <div class="game-tags">
             <h5>Tags:</h5>
             <% game.parsedTags.forEach(tag => { %>
-            <span class="badge-tag"><%= tag %></span> <% }); %>
+            <span class="badge bg-secondary"><%= tag %></span> <% }); %>
           </div>
           <% } %>
         </div>

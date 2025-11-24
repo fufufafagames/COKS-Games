@@ -282,68 +282,37 @@
     <%- include('layouts/header', { title: title }) %> <%-
     include('partials/navbar') %>
 
-    <!-- Hero Section -->
-    <section class="landing-hero">
-      <h1 class="hero-title">🎮 Discover Amazing Games</h1>
-      <p class="hero-subtitle">
-        Explore, play, and share incredible browser-based games created by
-        talented developers worldwide
-      </p>
-      <a href="/games" class="hero-btn">Browse Games</a>
-    </section>
-
-    <!-- Featured Games Section -->
-    <section class="landing-section">
-      <h2 class="section-title">Featured Games</h2>
-
-      <% if (featuredGames && featuredGames.length > 0) { %>
-      <!-- Games Grid -->
-      <div class="landing-games-grid">
-        <% featuredGames.forEach(game => { %>
-        <a href="/games/<%= game.slug %>" class="landing-game-card">
-          <img
-            src="<%= game.thumbnail_url %>"
-            alt="<%= game.title %>"
-            class="game-thumbnail"
-          />
-          <div class="game-info">
-            <h3 class="game-title"><%= game.title %></h3>
-            <div class="game-meta">
-              <span class="game-category"><%= game.category %></span>
-              <div class="game-stats">
-                <span class="stat-item">
-                  ⭐ <%= Number(game.avg_rating || 0).toFixed(1) %>
-                </span>
-                <span class="stat-item"> 🎮 <%= game.play_count || 0 %> </span>
-              </div>
+    <!-- Carousel Section -->
+    <div class="parallax-section bg-game-hero d-flex align-items-center justify-content-center" style="min-height: 100vh; padding: 0;">
+        <div class="carousel-container">
+            <div class="slide">
+                <% featuredGames.forEach((game, index) => { %>
+                    <div class="item" style="background-image: url('<%= game.thumbnail_url %>');">
+                        <!-- If it's the active item (first 2 in DOM logic) and has video, show iframe -->
+                        <% if (game.video_url) { %>
+                            <div class="video-bg-container" style="display: none;"> <!-- Logic handled via CSS/JS or just use image for now -->
+                                <iframe class="video-bg" src="<%= game.video_url %>?autoplay=1&mute=1&loop=1&controls=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                                <div class="video-overlay"></div>
+                            </div>
+                        <% } %>
+                        
+                        <div class="content">
+                            <div class="name"><%= game.title %></div>
+                            <div class="des"><%= game.description.substring(0, 100) %>...</div>
+                            <a href="/games/<%= game.slug %>">
+                                <button>See More</button>
+                            </a>
+                        </div>
+                    </div>
+                <% }); %>
             </div>
-          </div>
-        </a>
-        <% }); %>
-      </div>
-
-      <!-- View All Button -->
-      <div style="text-align: center; margin-top: 40px">
-        <a href="/games" class="hero-btn">View All Games</a>
-      </div>
-      <% } else { %>
-      <!-- Empty State - Belum ada games -->
-      <div class="landing-empty-state">
-        <div class="empty-state-icon">🎮</div>
-        <h3>No Games Yet</h3>
-        <p>Be the first to upload a game and share it with the community!</p>
-        <% if (user) { %>
-        <a href="/games/create/new" class="hero-btn" style="margin-top: 20px"
-          >Upload Your Game</a
-        >
-        <% } else { %>
-        <a href="/auth/login" class="hero-btn" style="margin-top: 20px"
-          >Login to Upload</a
-        >
-        <% } %>
-      </div>
-      <% } %>
-    </section>
+            
+            <div class="carousel-nav">
+                <button class="prev"><i class="fas fa-chevron-left"></i></button>
+                <button class="next"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </div>
 
     <!-- Popular Categories Section -->
     <section class="landing-section">
@@ -361,6 +330,7 @@
     Main JS
     <script src="/js/main.js"></script> -->
     <!-- Footer -->
+    <script src="/js/carousel.js"></script>
     <%- include('layouts/footer') %>
   </body>
 </html>
