@@ -287,14 +287,12 @@
         <div class="carousel-container">
             <div class="slide">
                 <% featuredGames.forEach((game, index) => { %>
-                    <div class="item" style="background-image: url('<%= game.thumbnail_url %>');">
-                        <!-- If it's the active item (first 2 in DOM logic) and has video, show iframe -->
-                        <% if (game.video_url) { %>
-                            <div class="video-bg-container" style="display: none;"> <!-- Logic handled via CSS/JS or just use image for now -->
-                                <iframe class="video-bg" src="<%= game.video_url %>?autoplay=1&mute=1&loop=1&controls=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                                <div class="video-overlay"></div>
-                            </div>
-                        <% } %>
+                    <div class="item" style="background-image: url('<%= game.thumbnail_url %>');" data-video-url="<%= game.video_url || '' %>">
+                        <!-- Video container (initially hidden) -->
+                        <div class="video-bg-container" style="display: none;">
+                            <iframe class="video-bg" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                            <div class="video-overlay"></div>
+                        </div>
                         
                         <div class="content">
                             <div class="name"><%= game.title %></div>

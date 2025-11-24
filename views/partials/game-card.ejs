@@ -1,54 +1,59 @@
 <!-- Game Card Component -->
-<div class="game-card" onclick="window.location.href='/games/<%= game.slug %>'">
-  <div class="game-card-image">
-    <img
-      src="<%= game.thumbnail_url %>"
-      alt="<%= game.title %>"
-      loading="lazy"
-    />
-    <% if (game.game_type === 'download') { %>
-    <span class="badge-download">
-      <i class="fas fa-download"></i> Download
-    </span>
-    <% } else { %>
-    <span class="badge-playable"> <i class="fas fa-play"></i> Play Now </span>
-    <% } %>
-  </div>
-
-  <div class="game-card-body">
-    <h3 class="game-card-title"><%= game.title %></h3>
-
-    <div class="game-meta">
-      <span class="game-category">
-        <i class="fas fa-tag"></i> <%= game.category %>
-      </span>
-    </div>
-
-    <div class="game-stats">
-      <div class="stat-item">
-        <i class="fas fa-star star-rating"></i>
-        <strong
-          ><%= game.avg_rating != null ? parseFloat(game.avg_rating).toFixed(1)
-          : '0.0' %></strong
-        >
-      </div>
-      <div class="stat-item">
-        <i class="fas fa-eye"></i>
-        <span><%= game.play_count %> plays</span>
-      </div>
-    </div>
-
-    <div class="game-author">
-      <% if (game.author_avatar) { %>
+<a href="/games/<%= game.slug %>" class="game-card-link text-decoration-none">
+  <div class="card game-card h-100 border-0 shadow-sm" data-video-url="<%= game.video_url || '' %>">
+    <div class="position-relative overflow-hidden">
       <img
-        src="<%= game.author_avatar %>"
-        alt="<%= game.author_name %>"
-        class="author-avatar"
+        src="<%= game.thumbnail_url %>"
+        class="card-img-top game-thumbnail"
+        alt="<%= game.title %>"
+        loading="lazy"
       />
-      <% } else { %>
-      <i class="fas fa-user-circle"></i>
-      <% } %>
-      <span><%= game.author_name %></span>
+      <div class="game-badge position-absolute top-0 end-0 m-2">
+        <% if (game.game_type === 'download') { %>
+        <span class="badge bg-aqua text-dark">
+          <i class="fas fa-download"></i> Download
+        </span>
+        <% } else { %>
+        <span class="badge bg-aqua text-dark"> <i class="fas fa-play"></i> Play Now </span>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="card-body game-card-body">
+      <h5 class="card-title text-white mb-2 text-truncate"><%= game.title %></h5>
+
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="badge bg-dark border border-aqua text-aqua rounded-pill">
+          <i class="fas fa-tag me-1"></i> <%= game.category %>
+        </span>
+        <div class="text-warning small">
+          <i class="fas fa-star"></i>
+          <strong
+            ><%= game.avg_rating != null ? parseFloat(game.avg_rating).toFixed(1)
+            : '0.0' %></strong
+          >
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center text-muted small">
+        <div class="d-flex align-items-center">
+            <% if (game.author_avatar) { %>
+            <img
+                src="<%= game.author_avatar %>"
+                alt="<%= game.author_name %>"
+                class="rounded-circle me-1"
+                width="20"
+                height="20"
+            />
+            <% } else { %>
+            <i class="fas fa-user-circle me-1"></i>
+            <% } %>
+            <span class="text-truncate" style="max-width: 80px;"><%= game.author_name %></span>
+        </div>
+        <div>
+            <i class="fas fa-eye me-1"></i> <%= game.play_count %>
+        </div>
+      </div>
     </div>
   </div>
-</div>
+</a>

@@ -7,6 +7,23 @@ const Game = require("../models/Game");
 const Rating = require("../models/Rating");
 const slugify = require("slugify");
 
+// Helper to get merged categories
+const getCategories = async () => {
+  const defaultCategories = [
+    "Action",
+    "Puzzle",
+    "RPG",
+    "Adventure",
+    "Strategy",
+    "Casual",
+    "Sports",
+    "Racing",
+  ];
+  const dbCategories = await Game.getAllCategories();
+  // Merge and remove duplicates
+  return [...new Set([...defaultCategories, ...dbCategories])].sort();
+};
+
 module.exports = {
   /**
    * Landing page - Homepage dengan featured games
@@ -16,20 +33,12 @@ module.exports = {
     try {
       // Ambil 6 featured games (games dengan play_count & rating tertinggi)
       const featuredGames = await Game.getFeatured(6); // Render landing page
+      const categories = await getCategories();
 
       res.render("index", {
         title: "FUFUFAFAGAMES - Discover Amazing Games",
         featuredGames,
-        categories: [
-          "Action",
-          "Puzzle",
-          "RPG",
-          "Adventure",
-          "Strategy",
-          "Casual",
-          "Sports",
-          "Racing",
-        ],
+        categories,
       });
     } catch (error) {
       console.error("Landing page error:", error); // Jika error, tetap render landing page tapi tanpa featured games
@@ -56,22 +65,14 @@ module.exports = {
     try {
       const { search, category } = req.query;
       const games = await Game.getAll(search, category); // Render games index page
+      const categories = await getCategories();
 
       res.render("games/index", {
         title: "All Games",
         games,
         search: search || "",
         category: category || "",
-        categories: [
-          "Action",
-          "Puzzle",
-          "RPG",
-          "Adventure",
-          "Strategy",
-          "Casual",
-          "Sports",
-          "Racing",
-        ], // Pass message jika games kosong
+        categories, // Pass message jika games kosong
         emptyMessage:
           games.length === 0
             ? search || category
@@ -160,26 +161,18 @@ module.exports = {
   },
   /**
    * Show upload game form
-   */ create: (req, res) => {
+   */ create: async (req, res) => {
+    const categories = await getCategories();
     res.render("games/create", {
       title: "Upload Game",
-      categories: [
-        "Action",
-        "Puzzle",
-        "RPG",
-        "Adventure",
-        "Strategy",
-        "Casual",
-        "Sports",
-        "Racing",
-      ],
+      categories,
     });
   },
   /**
    * Store new game
    */ store: async (req, res) => {
     try {
-      const { title, description, github_url, thumbnail_url, video_url, category, tags } =
+      const { title, description, github_url, thumbnail_url, video_url, category, new_category, tags, price_model } =
         req.body; // Generate unique slug
 
       // Handle file uploads
@@ -193,6 +186,12 @@ module.exports = {
       let finalVideoUrl = video_url;
       if (req.files && req.files['video']) {
         finalVideoUrl = '/uploads/videos/' + req.files['video'][0].filename;
+      }
+
+      // Handle dynamic category
+      let finalCategory = category;
+      if (new_category && new_category.trim() !== "") {
+          finalCategory = new_category.trim();
       }
 
       let slug = slugify(title, { lower: true, strict: true });
@@ -223,8 +222,9 @@ module.exports = {
         thumbnail_url: finalThumbnailUrl,
         video_url: finalVideoUrl,
         game_type,
-        category,
+        category: finalCategory,
         tags: JSON.stringify(tags ? tags.split(",").map((t) => t.trim()) : []),
+        price_model,
       });
 
       req.session.success = "Game uploaded successfully! 🎮";
@@ -290,19 +290,12 @@ module.exports = {
       } // END: KOREKSI FIX UNTUK JSON PARSING TAGS
       // ------------------------------------------------------------------
 
+      const categories = await getCategories();
+
       res.render("games/edit", {
         title: "Edit Game",
         game,
-        categories: [
-          "Action",
-          "Puzzle",
-          "RPG",
-          "Adventure",
-          "Strategy",
-          "Casual",
-          "Sports",
-          "Racing",
-        ],
+        categories,
       });
     } catch (error) {
       console.error("Edit error:", error);
@@ -325,7 +318,7 @@ module.exports = {
         return res.redirect("/games");
       }
 
-      const { title, description, github_url, thumbnail_url, video_url, category, tags } =
+      const { title, description, github_url, thumbnail_url, video_url, category, new_category, tags, price_model } =
         req.body; // Auto-detect game type
 
       // Handle file uploads
@@ -345,6 +338,12 @@ module.exports = {
         finalVideoUrl = video_url;
       }
 
+      // Handle dynamic category
+      let finalCategory = category;
+      if (new_category && new_category.trim() !== "") {
+          finalCategory = new_category.trim();
+      }
+
       let game_type = "playable";
       if (
         github_url.includes("/releases/") ||
@@ -360,9 +359,10 @@ module.exports = {
         github_url,
         thumbnail_url: finalThumbnailUrl,
         video_url: finalVideoUrl,
-        category,
+        category: finalCategory,
         tags: JSON.stringify(tags ? tags.split(",").map((t) => t.trim()) : []),
         game_type,
+        price_model,
       });
 
       req.session.success = "Game updated successfully!";
@@ -400,8 +400,8 @@ module.exports = {
   },
   /**
    /**
-   * Play game (iframe embed)
-   */ play: async (req, res) => {
+    * Play game (iframe embed)
+    */ play: async (req, res) => {
     try {
       const game = await Game.findBySlug(req.params.slug);
       if (!game) {
