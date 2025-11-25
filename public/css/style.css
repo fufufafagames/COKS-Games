@@ -2385,3 +2385,141 @@ textarea.form-control {
   background: rgba(0,0,0,0.4);
   z-index: 0;
 }
+
+/* ========================================
+   VIDEO CONTROLS - Volume Button
+   ======================================== */
+
+/* Video container styling */
+.video-bg-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  display: none;
+}
+
+/* Thumbnail background */
+.thumb-bg {
+  transition: opacity 0.5s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Video spinner */
+.video-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.video-spinner .spinner-border {
+  width: 3rem;
+  height: 3rem;
+  border-width: 0.3rem;
+}
+
+/* Volume Toggle Button - CRITICAL! */
+.volume-toggle {
+  position: absolute;
+  bottom: 80px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(0, 217, 255, 0.6);
+  color: #fff;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.volume-toggle:hover {
+  background: rgba(0, 217, 255, 0.9);
+  border-color: var(--aqua);
+  transform: scale(1.15);
+  box-shadow: 0 0 25px rgba(0, 217, 255, 0.8);
+}
+
+.volume-toggle i {
+  font-size: 1.3rem;
+  pointer-events: none;
+}
+
+/* Active state - Makes button visible */
+.volume-toggle.active {
+  display: flex !important;
+  animation: fadeInScale 0.4s ease-out;
+}
+
+/* Video elements positioning */
+.video-bg.youtube-frame,
+.video-bg.local-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .volume-toggle {
+    width: 45px;
+    height: 45px;
+    bottom: 70px;
+    right: 20px;
+  }
+  
+  .volume-toggle i {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .volume-toggle {
+    width: 40px;
+    height: 40px;
+    bottom: 60px;
+    right: 15px;
+  }
+  
+  .volume-toggle i {
+    font-size: 1rem;
+  }
+}
+
+/* Animation */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

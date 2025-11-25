@@ -27,10 +27,10 @@ module.exports = {
       query += ` AND (games.title ILIKE $${params.length} OR games.description ILIKE $${params.length})`;
     }
 
-    // Add category filter
+    // Add category filter - Use ILIKE for partial match (multi-category support)
     if (category) {
-      params.push(category);
-      query += ` AND games.category = $${params.length}`;
+      params.push(`%${category}%`);
+      query += ` AND games.category ILIKE $${params.length}`;
     }
 
     query += " ORDER BY games.created_at DESC";
@@ -123,13 +123,12 @@ module.exports = {
       game_type,
       category,
       tags,
-      price_model,
     } = gameData;
 
     const result = await db.query(
       `INSERT INTO games 
-             (user_id, title, slug, description, github_url, thumbnail_url, video_url, game_type, category, tags, price_model, created_at, updated_at) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW()) 
+             (user_id, title, slug, description, github_url, thumbnail_url, video_url, game_type, category, tags, created_at, updated_at) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW()) 
              RETURNING *`,
       [
         user_id,
@@ -142,7 +141,6 @@ module.exports = {
         game_type,
         category,
         tags,
-        price_model || 'Free',
       ]
     );
 
@@ -165,14 +163,13 @@ module.exports = {
       category,
       tags,
       game_type,
-      price_model,
     } = updateData;
 
     const result = await db.query(
       `UPDATE games 
              SET title = $1, description = $2, github_url = $3, thumbnail_url = $4, video_url = $5,
-                 category = $6, tags = $7, game_type = $8, price_model = $9, updated_at = NOW() 
-             WHERE slug = $10 
+                 category = $6, tags = $7, game_type = $8, updated_at = NOW() 
+             WHERE slug = $9 
              RETURNING *`,
       [
         title,
@@ -183,7 +180,6 @@ module.exports = {
         category,
         tags,
         game_type,
-        price_model,
         slug,
       ]
     );

@@ -91,17 +91,7 @@ const gameValidation = [
   body("category")
     .notEmpty()
     .withMessage("Category is required")
-    .isIn([
-      "Action",
-      "Puzzle",
-      "RPG",
-      "Adventure",
-      "Strategy",
-      "Casual",
-      "Sports",
-      "Racing",
-    ])
-    .withMessage("Invalid category"),
+    .trim(),
 ];
 
 /**

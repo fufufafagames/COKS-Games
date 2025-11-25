@@ -25,76 +25,94 @@
                     <li><a href="/games?category=Puzzle">Puzzle</a></li>
                     <li><a href="/games?category=RPG">RPG</a></li>
                     <li><a href="/games?category=Adventure">Adventure</a></li>
-            return {
-                access_token: params.get("access_token"),
-                refresh_token: params.get("refresh_token"),
-                error: params.get("error"),
-                error_description: params.get("error_description"),
-            };
-        }
+                </ul>
+            </div>
+        </div>
+        <div class="text-center">
+            <p>&copy; 2024 FUFUFAFAGAMES. Built with ❤️ for gamers.</p>
+        </div>
+    </div>
+</footer>
 
-        // Process OAuth callback
-        async function processOAuthCallback() {
-            try {
-                const tokens = extractTokensFromHash();
+<script src="/js/game-hover.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
 
-                // HANYA JALANKAN LOGIKA JIKA ADA TOKEN DITERIMA!
-                if (!tokens.access_token && !tokens.error) {
-                    // Jika tidak ada token dan tidak ada error di hash, abaikan (halaman normal)
-                    return; 
-                }
+<script>
+    function extractTokensFromHash() {
+        const hash = window.location.hash.substring(1); // Remove # symbol
+        const params = new URLSearchParams(hash);
 
-                // Check for errors dari OAuth provider
-                if (tokens.error) {
-                    const errorMsg = tokens.error_description || tokens.error;
-                    console.error("OAuth Error:", errorMsg);
-                    window.location.href = "/login?error=" + encodeURIComponent(errorMsg);
-                    return;
-                }
+        return {
+            access_token: params.get("access_token"),
+            refresh_token: params.get("refresh_token"),
+            error: params.get("error"),
+            error_description: params.get("error_description"),
+        };
+    }
 
-                // Validasi tokens
-                if (!tokens.access_token) {
-                    console.error("No access token received.");
-                    window.location.href = "/login?error=authentication_failed";
-                    return;
-                }
+    // Process OAuth callback
+    async function processOAuthCallback() {
+        try {
+            const tokens = extractTokensFromHash();
 
-                // --- BAGIAN PENTING: Mengirim token ke server ---
-                const response = await fetch("/auth/callback/process", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        access_token: tokens.access_token,
-                        refresh_token: tokens.refresh_token,
-                    }),
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    // Success! Redirect ke games page
-                    console.log("Login successful, redirecting...");
-                    // Hapus hash fragment dari URL sebelum redirect final
-                    window.history.replaceState(null, null, window.location.pathname);
-                    window.location.href = result.redirect || "/games";
-                } else {
-                    // Error dari server
-                    console.error("Server Error:", result.error || "Authentication failed");
-                    window.history.replaceState(null, null, window.location.pathname);
-                    window.location.href =
-                        "/login?error=" + encodeURIComponent(result.error || "Authentication failed");
-                }
-            } catch (error) {
-                console.error("OAuth processing error:", error);
-                window.history.replaceState(null, null, window.location.pathname);
-                window.location.href = "/login?error=unexpected_error";
+            // HANYA JALANKAN LOGIKA JIKA ADA TOKEN DITERIMA!
+            if (!tokens.access_token && !tokens.error) {
+                // Jika tidak ada token dan tidak ada error di hash, abaikan (halaman normal)
+                return; 
             }
-        }
 
-        // Jalankan fungsi saat script dimuat (saat redirect dari OAuth)
-        processOAuthCallback();
-         </script>
+            // Check for errors dari OAuth provider
+            if (tokens.error) {
+                const errorMsg = tokens.error_description || tokens.error;
+                console.error("OAuth Error:", errorMsg);
+                window.location.href = "/login?error=" + encodeURIComponent(errorMsg);
+                return;
+            }
+
+            // Validasi tokens
+            if (!tokens.access_token) {
+                console.error("No access token received.");
+                window.location.href = "/login?error=authentication_failed";
+                return;
+            }
+
+            // --- BAGIAN PENTING: Mengirim token ke server ---
+            const response = await fetch("/auth/callback/process", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    access_token: tokens.access_token,
+                    refresh_token: tokens.refresh_token,
+                }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Success! Redirect ke games page
+                console.log("Login successful, redirecting...");
+                // Hapus hash fragment dari URL sebelum redirect final
+                window.history.replaceState(null, null, window.location.pathname);
+                window.location.href = result.redirect || "/games";
+            } else {
+                // Error dari server
+                console.error("Server Error:", result.error || "Authentication failed");
+                window.history.replaceState(null, null, window.location.pathname);
+                window.location.href =
+                    "/login?error=" + encodeURIComponent(result.error || "Authentication failed");
+            }
+        } catch (error) {
+            console.error("OAuth processing error:", error);
+            window.history.replaceState(null, null, window.location.pathname);
+            window.location.href = "/login?error=unexpected_error";
+        }
+    }
+
+    // Jalankan fungsi saat script dimuat (saat redirect dari OAuth)
+    processOAuthCallback();
+</script>
 </body>
 </html>

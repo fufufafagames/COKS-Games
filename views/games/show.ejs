@@ -155,7 +155,7 @@ include('../partials/navbar') %>
 <%= userRating ? userRating.review : '' %></textarea
               >
 
-              <small class="text-muted">Maximum 500 characters</small>
+              <small class="text-white">Maximum 500 characters</small>
             </div>
 
             <button type="submit" class="btn btn-aqua">
@@ -196,7 +196,7 @@ include('../partials/navbar') %>
                 </div>
               </div>
 
-              <small class="text-muted"
+              <small class="text-white"
                 ><%= new Date(rating.created_at).toLocaleDateString() %></small
               >
             </div>
@@ -205,7 +205,7 @@ include('../partials/navbar') %>
             <% } %>
           </div>
           <% }); %> <% } else { %>
-          <p class="text-muted text-center py-4">
+          <p class="text-white text-center py-4">
             No reviews yet. Be the first to review!
           </p>
           <% } %>

@@ -11,7 +11,7 @@
                     <p class="text-white">Update your game information</p>
                 </div>
                 
-                <form action="/games/<%= game.slug %>?_method=PUT" method="POST" enctype="multipart/form-data">
+                <form id="game-form" action="/games/<%= game.slug %>?_method=PUT" method="POST" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label for="title" class="form-label">
                             <i class="fas fa-heading"></i> Game Title *
@@ -39,8 +39,12 @@
                         </label>
                         <% if (game.thumbnail_url) { %>
                             <div class="mb-2">
-                                <img src="<%= game.thumbnail_url %>" alt="Current Thumbnail" style="height: 100px; border-radius: 5px;">
+                                <img id="thumbnail-preview" src="<%= game.thumbnail_url %>" alt="Current Thumbnail" style="height: 100px; border-radius: 5px;">
                                 <small class="text-white d-block">Current thumbnail</small>
+                            </div>
+                        <% } else { %>
+                            <div class="mb-2">
+                                <img id="thumbnail-preview" src="" alt="Preview" style="height: 100px; border-radius: 5px; display: none;">
                             </div>
                         <% } %>
                         <input type="file" class="form-control" id="thumbnail" name="thumbnail" accept="image/*">
@@ -61,49 +65,55 @@
                         <small class="text-white">Or update URL below (YouTube embed, etc.)</small>
                         <input type="url" class="form-control mt-2" id="video_url" name="video_url" value="<%= game.video_url || '' %>">
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">
-                            <i class="fas fa-tag"></i> Pricing Model *
-                        </label>
-                        <div class="d-flex gap-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="price_model" id="price_free" value="Free" <%= (!game.price_model || game.price_model === 'Free') ? 'checked' : '' %>>
-                                <label class="form-check-label text-white" for="price_free">
-                                    Free
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="price_model" id="price_pro" value="Pro" <%= game.price_model === 'Pro' ? 'checked' : '' %>>
-                                <label class="form-check-label text-white" for="price_pro">
-                                    Pro
-                                </label>
-                            </div>
-                        </div>
-                    </div>
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="category" class="form-label">
-                                <i class="fas fa-tag"></i> Category *
+                            <label class="form-label">
+                                <i class="fas fa-tag"></i> Categories *
                             </label>
-                            <select class="form-control" id="category" name="category" required>
-                                <% categories.forEach(cat => { %>
-                                    <option value="<%= cat %>" <%= game.category === cat ? 'selected' : '' %>><%= cat %></option>
-                                <% }); %>
-                            </select>
-                            <input type="text" class="form-control mt-2" id="new_category" name="new_category" placeholder="Or type new category...">
+                            <div class="multi-input-container">
+                                <div class="input-group mb-2">
+                                    <input type="text" class="form-control" list="categories_list" placeholder="Add category...">
+                                    <button type="button" class="btn btn-outline-aqua add-btn"><i class="fas fa-plus"></i></button>
+                                </div>
+                                <datalist id="categories_list">
+                                    <% categories.forEach(cat => { %>
+                                        <option value="<%= cat %>">
+                                    <% }); %>
+                                </datalist>
+                                <div class="selected-items d-flex flex-wrap"></div>
+                                <input type="hidden" name="category" value="<%= game.category %>" required>
+                            </div>
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label for="tags" class="form-label">
+                            <label class="form-label">
                                 <i class="fas fa-tags"></i> Tags
                             </label>
-                            <input type="text" class="form-control" id="tags" name="tags" value="<%= game.parsedTags ? game.parsedTags.join(', ') : '' %>">
+                            <div class="multi-input-container">
+                                <div class="input-group mb-2">
+                                    <input type="text" class="form-control" placeholder="Add tag...">
+                                    <button type="button" class="btn btn-outline-aqua add-btn"><i class="fas fa-plus"></i></button>
+                                </div>
+                                <div class="selected-items d-flex flex-wrap"></div>
+                                <input type="hidden" name="tags" value="<%= game.parsedTags ? game.parsedTags.join(',') : '' %>">
+                            </div>
+                            <small class="text-white">Press Enter or + to add</small>
                         </div>
                     </div>
                     
                     <div class="d-grid gap-2">
+                        <!-- Progress Bar -->
+                        <div id="progress-container" class="mb-3" style="display: none;">
+                            <div class="d-flex justify-content-between text-white mb-1">
+                                <span>Uploading...</span>
+                                <span id="progress-text">0%</span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div id="progress-bar" class="progress-bar bg-aqua" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+
                         <button type="submit" class="btn btn-aqua btn-lg">
                             <i class="fas fa-save"></i> Save Changes
                         </button>
@@ -140,18 +150,18 @@
                         if (confirm(`Uploading a new ${typeName} file will clear the ${typeName} URL. Do you want to continue?`)) {
                             urlInput.value = "";
                             urlInput.readOnly = true;
-                            urlInput.classList.add('bg-dark', 'text-muted'); // Visual cue
+                            urlInput.classList.add('bg-dark', 'text-white'); // Visual cue
                         } else {
                             this.value = ""; // Clear file input
                         }
                     } else {
                         urlInput.readOnly = true;
-                        urlInput.classList.add('bg-dark', 'text-muted');
+                        urlInput.classList.add('bg-dark', 'text-white');
                     }
                 } else {
                     // File deselected/cancelled
                     urlInput.readOnly = false;
-                    urlInput.classList.remove('bg-dark', 'text-muted');
+                    urlInput.classList.remove('bg-dark', 'text-white');
                 }
             });
 
@@ -161,7 +171,7 @@
                     if (confirm(`Do you want to remove the uploaded ${typeName} file and use a URL instead?`)) {
                         fileInput.value = ""; // Clear file input
                         this.readOnly = false;
-                        this.classList.remove('bg-dark', 'text-muted');
+                        this.classList.remove('bg-dark', 'text-white');
                         this.focus();
                     }
                 }
@@ -172,3 +182,5 @@
         setupMutualExclusion('video', 'video_url', 'Video');
     });
 </script>
+<script src="/js/upload-handler.js"></script>
+<script src="/js/multi-input.js"></script>

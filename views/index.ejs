@@ -170,9 +170,10 @@
 
       /* Categories Section */
       .landing-categories-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
       }
 
       .landing-category-card {
@@ -279,26 +280,51 @@
   </head>
   <body class="landing-page">
     <!-- Include Navbar -->
-    <%- include('layouts/header', { title: title }) %> <%-
-    include('partials/navbar') %>
+    <!-- Include Navbar -->
+    <%- include('partials/navbar') %>
 
     <!-- Carousel Section -->
     <div class="parallax-section bg-game-hero d-flex align-items-center justify-content-center" style="min-height: 100vh; padding: 0;">
         <div class="carousel-container">
             <div class="slide">
                 <% featuredGames.forEach((game, index) => { %>
-                    <div class="item" style="background-image: url('<%= game.thumbnail_url %>');" data-video-url="<%= game.video_url || '' %>">
-                        <!-- Video container (initially hidden) -->
-                        <div class="video-bg-container" style="display: none;">
-                            <iframe class="video-bg" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    <div class="item" data-video-url="<%= game.video_url || '' %>">
+                        <% const thumbUrl = game.thumbnail_url || 'https://via.placeholder.com/400x300/1a1a2e/00D9FF?text=No+Image'; %>
+                        
+                        <!-- Thumbnail Background (Separate div for fade effect) -->
+                        <div class="thumb-bg" style="background-image: url('<%= thumbUrl %>'); width: 100%; height: 100%; position: absolute; top: 0; left: 0; background-size: cover; background-position: center; z-index: 1;"></div>
+                        
+                        <!-- Video Spinner -->
+                        <div class="video-spinner" style="display: none;">
+                            <div class="spinner-border text-light" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+
+                        <!-- Video container -->
+                        <div class="video-bg-container">
+                            <iframe class="video-bg youtube-frame" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="display: none;"></iframe>
+                            <video class="video-bg local-video" muted playsinline style="display: none; object-fit: cover; width: 100%; height: 100%;"></video>
                             <div class="video-overlay"></div>
+                            
+                            <!-- Volume Control -->
+                            <button class="volume-toggle" style="display: none;">
+                                <i class="fas fa-volume-mute"></i>
+                            </button>
+                        </div>
+
+                        <!-- Loading Spinner -->
+                        <div class="video-spinner" style="display: none;">
+                            <div class="spinner-border text-info" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
                         </div>
                         
                         <div class="content">
                             <div class="name"><%= game.title %></div>
                             <div class="des"><%= game.description.substring(0, 100) %>...</div>
                             <a href="/games/<%= game.slug %>">
-                                <button>See More</button>
+                                <button class="btn-aqua text-white">See More</button>
                             </a>
                         </div>
                     </div>

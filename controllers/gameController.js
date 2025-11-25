@@ -6,6 +6,8 @@
 const Game = require("../models/Game");
 const Rating = require("../models/Rating");
 const slugify = require("slugify");
+const fs = require('fs');
+const path = require('path');
 
 // Helper to get merged categories
 const getCategories = async () => {
@@ -172,7 +174,7 @@ module.exports = {
    * Store new game
    */ store: async (req, res) => {
     try {
-      const { title, description, github_url, thumbnail_url, video_url, category, new_category, tags, price_model } =
+      const { title, description, github_url, thumbnail_url, video_url, category, new_category, tags } =
         req.body; // Generate unique slug
 
       // Handle file uploads
@@ -224,7 +226,6 @@ module.exports = {
         game_type,
         category: finalCategory,
         tags: JSON.stringify(tags ? tags.split(",").map((t) => t.trim()) : []),
-        price_model,
       });
 
       req.session.success = "Game uploaded successfully! 🎮";
@@ -318,12 +319,19 @@ module.exports = {
         return res.redirect("/games");
       }
 
-      const { title, description, github_url, thumbnail_url, video_url, category, new_category, tags, price_model } =
+      const { title, description, github_url, thumbnail_url, video_url, category, new_category, tags } =
         req.body; // Auto-detect game type
 
       // Handle file uploads
       let finalThumbnailUrl = game.thumbnail_url;
       if (req.files && req.files['thumbnail']) {
+        // Delete old thumbnail if it exists and is a local file
+        if (game.thumbnail_url && game.thumbnail_url.startsWith('/uploads/')) {
+            const oldPath = path.join(__dirname, '../public', game.thumbnail_url);
+            if (fs.existsSync(oldPath)) {
+                fs.unlinkSync(oldPath);
+            }
+        }
         finalThumbnailUrl = '/uploads/thumbnails/' + req.files['thumbnail'][0].filename;
       } else if (thumbnail_url) {
         finalThumbnailUrl = thumbnail_url;
@@ -331,6 +339,13 @@ module.exports = {
 
       let finalVideoUrl = game.video_url;
       if (req.files && req.files['video']) {
+        // Delete old video if it exists and is a local file
+        if (game.video_url && game.video_url.startsWith('/uploads/')) {
+            const oldPath = path.join(__dirname, '../public', game.video_url);
+            if (fs.existsSync(oldPath)) {
+                fs.unlinkSync(oldPath);
+            }
+        }
         finalVideoUrl = '/uploads/videos/' + req.files['video'][0].filename;
       } else if (video_url !== undefined) {
         // Only update if video_url is explicitly provided (even if empty string to clear it)
@@ -362,7 +377,6 @@ module.exports = {
         category: finalCategory,
         tags: JSON.stringify(tags ? tags.split(",").map((t) => t.trim()) : []),
         game_type,
-        price_model,
       });
 
       req.session.success = "Game updated successfully!";
@@ -389,6 +403,20 @@ module.exports = {
       }
 
       await Game.delete(req.params.slug);
+
+      // Delete files
+      if (game.thumbnail_url && game.thumbnail_url.startsWith('/uploads/')) {
+          const oldPath = path.join(__dirname, '../public', game.thumbnail_url);
+          if (fs.existsSync(oldPath)) {
+              fs.unlinkSync(oldPath);
+          }
+      }
+      if (game.video_url && game.video_url.startsWith('/uploads/')) {
+          const oldPath = path.join(__dirname, '../public', game.video_url);
+          if (fs.existsSync(oldPath)) {
+              fs.unlinkSync(oldPath);
+          }
+      }
 
       req.session.success = "Game deleted successfully";
       res.redirect("/games");

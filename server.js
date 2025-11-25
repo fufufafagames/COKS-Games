@@ -100,11 +100,18 @@ app.use((err, req, res, next) => {
 // ==================== START SERVER ====================
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 FUFUFAFAGAMES Server running on:`);
+  console.log(`FUFUFAFAGAMES Server running on:`);
   console.log(`   - Local: http://localhost:${PORT}`);
   console.log(`   - Network: http://${getLocalIP()}:${PORT}`);
-  console.log(`📦 Environment: ${process.env.NODE_ENV || "development"}`);
-  console.log(`🎮 Ready to play games!`);
+  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log(`Ready to play games!`);
+  
+  // Run cleanup on start
+  const cleanupOrphanedFiles = require('./utils/cleanup');
+  cleanupOrphanedFiles();
+
+  // Run cleanup periodically (every 1 hour)
+  setInterval(cleanupOrphanedFiles, 60 * 60 * 1000);
 });
 
 // Function untuk mendapatkan IP lokal WiFi
