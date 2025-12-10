@@ -5,6 +5,7 @@
 
 const Game = require("../models/Game");
 const Rating = require("../models/Rating");
+const Transaction = require("../models/Transaction");
 const slugify = require("slugify");
 const fs = require('fs');
 const path = require('path');
@@ -143,9 +144,25 @@ module.exports = {
       const ratings = await Rating.getByGameId(game.id);
       const ratingStats = await Rating.getStats(game.id); // Check if current user has rated
 
+      let isPurchased = false;
       let userRating = null;
       if (req.session.user) {
         userRating = await Rating.getUserRating(req.session.user.id, game.id);
+        
+        // Check purchase status
+        // Free games are always "purchased". Author always owns their game.
+        if (game.price_type === 'free' || !game.price_type) {
+            isPurchased = true;
+        } else if (req.session.user.id === game.user_id) {
+            isPurchased = true;
+        } else {
+            isPurchased = await Transaction.hasPurchased(req.session.user.id, game.id);
+        }
+      } else {
+          // Guest
+          if (game.price_type === 'free' || !game.price_type) {
+              isPurchased = true;
+          }
       }
 
       res.render("games/show", {
@@ -154,6 +171,7 @@ module.exports = {
         ratings,
         ratingStats,
         userRating,
+        isPurchased,
       });
     } catch (error) {
       console.error("Show error:", error);
@@ -174,7 +192,7 @@ module.exports = {
    * Store new game
    */ store: async (req, res) => {
     try {
-      const { title, description, github_url, thumbnail_url, video_url, category, new_category, tags } =
+      const { title, description, github_url, thumbnail_url, video_url, category, new_category, tags, price_type, price } =
         req.body; // Generate unique slug
 
       // Handle file uploads
@@ -226,6 +244,8 @@ module.exports = {
         game_type,
         category: finalCategory,
         tags: JSON.stringify(tags ? tags.split(",").map((t) => t.trim()) : []),
+        price_type: price_type || 'free',
+        price: price_type === 'free' ? 0 : (parseInt(price) || 0),
       });
 
       req.session.success = "Game uploaded successfully! 🎮";
@@ -306,31 +326,37 @@ module.exports = {
   },
   /**
    * Update game
-   */ update: async (req, res) => {
+   */
+   update: async (req, res) => {
     try {
       const game = await Game.findBySlug(req.params.slug);
       if (!game) {
         req.session.error = "Game not found";
         return res.redirect("/games");
-      } // Check ownership
-
+      }
+      
       if (game.user_id !== req.session.user.id) {
         req.session.error = "You are not authorized to edit this game";
         return res.redirect("/games");
       }
 
-      const { title, description, github_url, thumbnail_url, video_url, category, new_category, tags } =
-        req.body; // Auto-detect game type
+      const { title, description, github_url, thumbnail_url, video_url, category, new_category, tags, price_type, price } = req.body;
+
+      // 🔍 FULL DEBUG
+      console.log('\n========== UPDATE GAME FULL DEBUG ==========');
+      console.log('Raw req.body:', JSON.stringify(req.body, null, 2));
+      console.log('Extracted price_type:', price_type);
+      console.log('Type:', typeof price_type);
+      console.log('Value:', `"${price_type}"`);
+      console.log('Comparison: price_type === "paid":', price_type === 'paid');
+      console.log('============================================\n');
 
       // Handle file uploads
       let finalThumbnailUrl = game.thumbnail_url;
       if (req.files && req.files['thumbnail']) {
-        // Delete old thumbnail if it exists and is a local file
         if (game.thumbnail_url && game.thumbnail_url.startsWith('/uploads/')) {
-            const oldPath = path.join(__dirname, '../public', game.thumbnail_url);
-            if (fs.existsSync(oldPath)) {
-                fs.unlinkSync(oldPath);
-            }
+          const oldPath = path.join(__dirname, '../public', game.thumbnail_url);
+          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
         }
         finalThumbnailUrl = '/uploads/thumbnails/' + req.files['thumbnail'][0].filename;
       } else if (thumbnail_url) {
@@ -339,34 +365,43 @@ module.exports = {
 
       let finalVideoUrl = game.video_url;
       if (req.files && req.files['video']) {
-        // Delete old video if it exists and is a local file
         if (game.video_url && game.video_url.startsWith('/uploads/')) {
-            const oldPath = path.join(__dirname, '../public', game.video_url);
-            if (fs.existsSync(oldPath)) {
-                fs.unlinkSync(oldPath);
-            }
+          const oldPath = path.join(__dirname, '../public', game.video_url);
+          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
         }
         finalVideoUrl = '/uploads/videos/' + req.files['video'][0].filename;
       } else if (video_url !== undefined) {
-        // Only update if video_url is explicitly provided (even if empty string to clear it)
-        // But since we use value="<%= game.video_url || '' %>" in view, empty string means clear
         finalVideoUrl = video_url;
       }
 
-      // Handle dynamic category
       let finalCategory = category;
       if (new_category && new_category.trim() !== "") {
-          finalCategory = new_category.trim();
+        finalCategory = new_category.trim();
       }
 
       let game_type = "playable";
-      if (
-        github_url.includes("/releases/") ||
-        github_url.includes(".zip") ||
-        github_url.includes(".rar")
-      ) {
+      if (github_url.includes("/releases/") || github_url.includes(".zip") || github_url.includes(".rar")) {
         game_type = "download";
       }
+
+      // 🔧 EXPLICIT PRICE HANDLING
+      let finalPriceType = 'free';
+      let finalPrice = 0;
+
+      if (price_type && String(price_type).trim() === 'paid') {
+        finalPriceType = 'paid';
+        finalPrice = parseInt(price) || 0;
+        
+        if (finalPrice < 1000) {
+          req.session.error = "Paid games must have price ≥ Rp 1,000";
+          return res.redirect(`/games/${req.params.slug}/edit`);
+        }
+      }
+
+      console.log('🎯 FINAL VALUES:');
+      console.log('finalPriceType:', finalPriceType);
+      console.log('finalPrice:', finalPrice);
+      console.log('---\n');
 
       await Game.update(req.params.slug, {
         title,
@@ -377,7 +412,11 @@ module.exports = {
         category: finalCategory,
         tags: JSON.stringify(tags ? tags.split(",").map((t) => t.trim()) : []),
         game_type,
+        price_type: finalPriceType,
+        price: finalPrice,
       });
+
+      console.log('✅ Update completed\n');
 
       req.session.success = "Game updated successfully!";
       res.redirect(`/games/${req.params.slug}`);
@@ -438,6 +477,21 @@ module.exports = {
       } // Increment play count
 
       await Game.incrementPlayCount(game.id); // Process GitHub URL untuk playable games
+
+      // Check access rights
+      let isPurchased = false;
+      if (game.price_type === 'free' || !game.price_type) {
+          isPurchased = true;
+      } else if (req.session.user && req.session.user.id === game.user_id) {
+          isPurchased = true;
+      } else if (req.session.user) {
+          isPurchased = await Transaction.hasPurchased(req.session.user.id, game.id);
+      }
+
+      if (!isPurchased) {
+          req.session.error = "You must purchase this game to play it.";
+          return res.redirect(`/games/${game.slug}`);
+      }
 
       let gameUrl = game.github_url;
       if (game.game_type === "playable") {

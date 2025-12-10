@@ -1,0 +1,131 @@
+<%- include('../layouts/header', { title: title }) %>
+<%- include('../partials/navbar') %>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card bg-dark text-white border-aqua">
+                <div class="card-header bg-aqua text-white">
+                    <h3 class="card-title mb-0"><i class="fas fa-shopping-cart"></i> Payment Details</h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <img src="<%= game.thumbnail_url %>" alt="<%= game.title %>" class="img-fluid rounded mb-3">
+                        </div>
+                        <div class="col-md-8">
+                            <h4><%= game.title %></h4>
+                            <p class="text-light"><%= game.description.substring(0, 100) %>...</p>
+                            
+                            <hr class="border-secondary">
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Price</span>
+                                <span class="fw-bold">Rp <%= parseInt(game.price).toLocaleString('id-ID') %></span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Tax (0%)</span>
+                                <span>Rp 0</span>
+                            </div>
+                            <hr class="border-white">
+                            <div class="d-flex justify-content-between mb-4">
+                                <span class="h5">Total</span>
+                                <span class="h5 text-aqua">Rp <%= parseInt(game.price).toLocaleString('id-ID') %></span>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button id="pay-button" class="btn btn-aqua btn-lg pulse-animation">
+                                    <i class="fas fa-lock"></i> Pay Now with Midtrans
+                                </button>
+                            </div>
+                            <div class="text-center mt-3">
+                                <small class="text-muted"><i class="fas fa-shield-alt"></i> Secure Payment by Midtrans</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Hidden inputs for data -->
+                <input type="hidden" id="game-slug" value="<%= game.slug %>">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Midtrans Snap.js -->
+<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="<%= midtransClientKey %>"></script>
+
+<script>
+    document.getElementById('pay-button').addEventListener('click', async function() {
+        const button = this;
+        const originalText = button.innerHTML;
+        const slug = document.getElementById('game-slug').value;
+        
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        
+        try {
+            // Get Snap Token from backend
+            const response = await fetch(`/payment/${slug}/charge`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.error) {
+                alert('Payment failed: ' + data.error);
+                button.disabled = false;
+                button.innerHTML = originalText;
+                return;
+            }
+            
+            // Open Snap Popup
+            window.snap.pay(data.token, {
+                onSuccess: function(result) {
+                    // Redirect to invoice page
+                    window.location.href = `/payment/invoice?order_id=${result.order_id}&transaction_status=success`;
+                },
+                onPending: function(result) {
+                    window.location.href = `/payment/invoice?order_id=${result.order_id}&transaction_status=pending`;
+                },
+                onError: function(result) {
+                    alert('Payment failed!');
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                },
+                onClose: function() {
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                }
+            });
+            
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Something went wrong. Please try again.');
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    });
+</script>
+
+<style>
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(0, 217, 255, 0.7);
+        }
+        70% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 10px rgba(0, 217, 255, 0);
+        }
+        100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(0, 217, 255, 0);
+        }
+    }
+</style>

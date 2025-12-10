@@ -23,6 +23,19 @@ include('../partials/navbar') %>
               <i class="fas fa-play"></i> Playable <% } else { %>
               <i class="fas fa-download"></i> Download <% } %>
             </span>
+
+            <% if (game.price_type === 'paid') { %>
+            <span class="badge bg-warning text-dark">
+                <i class="fas fa-crown"></i> PRO
+            </span>
+            <span class="text-aqua fw-bold ms-2">
+                Rp <%= parseInt(game.price).toLocaleString('id-ID') %>
+            </span>
+            <% } else { %>
+            <span class="badge bg-success">
+                <i class="fas fa-gift"></i> FREE
+            </span>
+            <% } %>
           </div>
 
           <div class="game-detail-stats">
@@ -57,19 +70,33 @@ include('../partials/navbar') %>
           </div>
 
           <!-- Ganti bagian game-actions dengan yang ini -->
+          <!-- Ganti bagian game-actions dengan yang ini -->
           <div class="game-actions">
-            <% if (game.game_type === 'playable') { %>
-            <a href="/games/<%= game.slug %>/play" class="btn btn-aqua btn-lg">
-              <i class="fas fa-play"></i> Play Now
-            </a>
+            <% if (isPurchased) { %>
+                <% if (game.game_type === 'playable') { %>
+                <a href="/games/<%= game.slug %>/play" class="btn btn-aqua btn-lg">
+                  <i class="fas fa-play"></i> Play Now
+                </a>
+                <% } else { %>
+                <a
+                  href="<%= game.github_url %>"
+                  target="_blank"
+                  class="btn btn-aqua btn-lg"
+                >
+                  <i class="fas fa-download"></i> Download Game
+                </a>
+                <% } %>
             <% } else { %>
-            <a
-              href="<%= game.github_url %>"
-              target="_blank"
-              class="btn btn-aqua btn-lg"
-            >
-              <i class="fas fa-download"></i> Download Game
-            </a>
+                <!-- Buy Button -->
+                <% if (user) { %>
+                <a href="/payment/<%= game.slug %>/details" class="btn btn-aqua btn-lg">
+                  <i class="fas fa-shopping-cart"></i> Buy Game (Rp <%= parseInt(game.price).toLocaleString('id-ID') %>)
+                </a>
+                <% } else { %>
+                <a href="/login" class="btn btn-aqua btn-lg">
+                  <i class="fas fa-sign-in-alt"></i> Login to Buy (Rp <%= parseInt(game.price).toLocaleString('id-ID') %>)
+                </a>
+                <% } %>
             <% } %>
 
             <a

@@ -63,6 +63,7 @@ const authRoutes = require("./routes/auth");
 const gameRoutes = require("./routes/games");
 const ratingRoutes = require("./routes/ratings");
 const profileRoutes = require("./routes/profile");
+const paymentRoutes = require("./routes/payment");
 
 // Import game controller untuk landing page
 const gameController = require("./controllers/gameController");
@@ -72,6 +73,7 @@ app.use("/", authRoutes);
 app.use("/games", gameRoutes);
 app.use("/ratings", ratingRoutes);
 app.use("/profile", profileRoutes);
+app.use("/payment", paymentRoutes);
 
 // Homepage - Landing page dengan featured games
 // UPDATED: Tidak lagi redirect ke /games, tapi render landing page
@@ -111,7 +113,12 @@ app.listen(PORT, "0.0.0.0", () => {
   cleanupOrphanedFiles();
 
   // Run cleanup periodically (every 1 hour)
+  // Run cleanup periodically (every 1 hour)
   setInterval(cleanupOrphanedFiles, 60 * 60 * 1000);
+
+  // Run migration
+  const runMigration = require('./utils/migrator');
+  runMigration();
 });
 
 // Function untuk mendapatkan IP lokal WiFi

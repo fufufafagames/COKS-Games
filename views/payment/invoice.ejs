@@ -1,0 +1,61 @@
+<%- include('../layouts/header', { title: title }) %>
+<%- include('../partials/navbar') %>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card bg-dark text-white border-aqua text-center pt-4 pb-4">
+                <div class="card-body">
+                    <% if (status === 'success') { %>
+                        <i class="fas fa-check-circle fa-5x text-success mb-3"></i>
+                        <h2 class="mb-3">Payment Successful!</h2>
+                        <p>Thank you for your purchase. You can now download and play the game.</p>
+                    <% } else if (status === 'pending') { %>
+                        <i class="fas fa-clock fa-5x text-warning mb-3"></i>
+                        <h2 class="mb-3">Waiting for Payment</h2>
+                        <p>Please complete your payment within 24 hours.</p>
+                        
+                        <div class="alert alert-warning d-inline-block">
+                            <i class="fas fa-stopwatch"></i> Time Remaining: <span id="timer">23:59:59</span>
+                        </div>
+                    <% } else { %>
+                        <i class="fas fa-times-circle fa-5x text-danger mb-3"></i>
+                        <h2 class="mb-3">Payment Failed</h2>
+                        <p>Something went wrong or the payment was cancelled.</p>
+                    <% } %>
+
+                    <div class="mt-4 d-grid gap-2 col-8 mx-auto">
+                        <a href="/" class="btn btn-outline-light">Back to Home</a>
+                        <a href="/payment/status" class="btn btn-aqua">Check Payment Status</a>
+                        <% if (status === 'success') { %>
+                            <a href="/games" class="btn btn-success">Go to My Games</a>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../layouts/footer') %>
+
+<script>
+    // Simple 24h timer countdown (Visual only)
+    let timeLeft = 24 * 60 * 60; // seconds
+    const timerElement = document.getElementById('timer');
+    
+    if (timerElement) {
+        const interval = setInterval(() => {
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                timerElement.innerText = "Expired";
+            } else {
+                timeLeft--;
+                const h = Math.floor(timeLeft / 3600);
+                const m = Math.floor((timeLeft % 3600) / 60);
+                const s = timeLeft % 60;
+                timerElement.innerText = `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }
+        }, 1000);
+    }
+</script>

@@ -92,6 +92,16 @@ const gameValidation = [
     .notEmpty()
     .withMessage("Category is required")
     .trim(),
+
+  body("price_type")
+    .optional()
+    .isIn(['free', 'paid'])
+    .withMessage("Invalid price type"),
+
+  body("price")
+    .optional()
+    .isNumeric()
+    .withMessage("Price must be a number"),
 ];
 
 /**
