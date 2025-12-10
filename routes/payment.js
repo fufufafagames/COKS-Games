@@ -1,21 +1,25 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const { isAuthenticated } = require("../middleware/auth");
-const paymentController = require("../controllers/paymentController");
+const paymentController = require('../controllers/paymentController');
+const { isAuthenticated } = require('../middleware/auth');
 
-// Payment Details (Buy Page)
-router.get("/:slug/details", isAuthenticated, paymentController.details);
+// Checkout page
+router.get('/buy/:slug', isAuthenticated, paymentController.checkout);
 
-// Charge (Get Snap Token)
-router.post("/:slug/charge", isAuthenticated, paymentController.charge);
+// Process payment
+router.post('/process', isAuthenticated, paymentController.processPayment);
 
-// Invoice / Receipt (Redirect after payment)
-router.get("/invoice", isAuthenticated, paymentController.invoice);
+// Invoice page
+router.get('/:order_id/invoice', isAuthenticated, paymentController.invoice);
 
-// Payment Status History
-router.get("/status", isAuthenticated, paymentController.status);
+// Status page
+router.get('/:order_id/status', isAuthenticated, paymentController.status);
 
-// Webhook notification (No auth middleware because it's server-to-server)
-router.post("/notification", paymentController.notification);
+// Check status (AJAX)
+router.get('/:order_id/check', isAuthenticated, paymentController.checkStatus);
+
+// Payment callback from DOKU
+// No auth middleware for callback as it comes from external server
+router.post('/callback', paymentController.callback);
 
 module.exports = router;

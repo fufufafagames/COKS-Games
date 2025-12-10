@@ -1,0 +1,143 @@
+<%- include('../layouts/header', { title: title }) %>
+<%- include('../partials/navbar') %>
+
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card bg-dark text-white">
+        <div class="card-header bg-gradient text-center">
+          <h3><i class="fas fa-shopping-cart"></i> Checkout</h3>
+        </div>
+        <div class="card-body">
+          <!-- Game Info -->
+          <div class="row mb-4">
+            <div class="col-md-4">
+              <img src="<%= game.thumbnail_url || '/images/default-game.png' %>" class="img-fluid rounded" alt="<%= game.title %>">
+            </div>
+            <div class="col-md-8">
+              <h4><%= game.title %></h4>
+              <p class="text-muted"><%= game.description.substring(0, 150) %>...</p>
+              <h3 class="text-aqua">Rp <%= game.price.toLocaleString('id-ID') %></h3>
+            </div>
+          </div>
+          
+          <hr>
+          
+          <!-- Payment Methods -->
+          <h5 class="mb-3">Select Payment Method:</h5>
+          
+          <form id="payment-form">
+            <input type="hidden" name="game_slug" value="<%= game.slug %>">
+            
+            <div class="payment-methods">
+              <!-- QRIS -->
+              <div class="form-check payment-option mb-3 p-3 border rounded">
+                <input class="form-check-input" type="radio" name="payment_method" id="qris" value="QRIS" required>
+                <label class="form-check-label w-100" for="qris">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <i class="fas fa-qrcode fa-2x text-aqua"></i>
+                      <strong class="ms-2">QRIS</strong>
+                      <p class="text-muted small mb-0">Scan QR with any e-wallet</p>
+                    </div>
+                    <span class="badge bg-success">Instant</span>
+                  </div>
+                </label>
+              </div>
+              
+              <!-- Virtual Account -->
+              <div class="form-check payment-option mb-3 p-3 border rounded">
+                <input class="form-check-input" type="radio" name="payment_method" id="va" value="VIRTUAL_ACCOUNT">
+                <label class="form-check-label w-100" for="va">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <i class="fas fa-university fa-2x text-aqua"></i>
+                      <strong class="ms-2">Virtual Account</strong>
+                      <p class="text-muted small mb-0">BCA, BNI, BRI, Mandiri</p>
+                    </div>
+                  </div>
+                </label>
+              </div>
+              
+              <!-- E-Wallet -->
+              <div class="form-check payment-option mb-3 p-3 border rounded">
+                <input class="form-check-input" type="radio" name="payment_method" id="ewallet" value="EWALLET">
+                <label class="form-check-label w-100" for="ewallet">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <i class="fas fa-wallet fa-2x text-aqua"></i>
+                      <strong class="ms-2">E-Wallet</strong>
+                      <p class="text-muted small mb-0">OVO, Dana, ShopeePay, LinkAja</p>
+                    </div>
+                  </div>
+                </label>
+              </div>
+              
+              <!-- Retail -->
+              <div class="form-check payment-option mb-3 p-3 border rounded">
+                <input class="form-check-input" type="radio" name="payment_method" id="retail" value="RETAIL">
+                <label class="form-check-label w-100" for="retail">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <i class="fas fa-store fa-2x text-aqua"></i>
+                      <strong class="ms-2">Retail Store</strong>
+                      <p class="text-muted small mb-0">Alfamart, Indomaret, Alfamidi</p>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+            
+            <button type="submit" class="btn btn-aqua btn-lg w-100 mt-3">
+              <i class="fas fa-lock"></i> Proceed to Payment
+            </button>
+            <a href="/games/<%= game.slug %>" class="btn btn-outline-secondary w-100 mt-2">
+              <i class="fas fa-arrow-left"></i> Back to Game
+            </a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('payment-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const formData = new FormData(this);
+  const data = Object.fromEntries(formData);
+  
+  try {
+    // Show loading state
+    const btn = this.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    btn.disabled = true;
+    
+    const response = await fetch('/payment/process', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      window.location.href = result.redirect_url;
+    } else {
+      alert('Payment failed: ' + (result.message || result.error));
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  } catch (error) {
+    alert('Error processing payment');
+    console.error(error);
+    const btn = this.querySelector('button[type="submit"]');
+    btn.innerHTML = '<i class="fas fa-lock"></i> Proceed to Payment';
+    btn.disabled = false;
+  }
+});
+</script>
+
+<%- include('../layouts/footer') %>

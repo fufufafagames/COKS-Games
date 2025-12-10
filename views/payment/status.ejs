@@ -1,61 +1,109 @@
 <%- include('../layouts/header', { title: title }) %>
 <%- include('../partials/navbar') %>
 
-<div class="container mt-5">
-    <h2 class="text-white mb-4"><i class="fas fa-history"></i> Payment Status</h2>
-    
-    <% if (transactions.length === 0) { %>
-        <div class="alert alert-info">
-            You haven't made any purchases yet.
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <div class="card bg-dark text-white">
+        <div class="card-header bg-gradient text-center">
+          <h3><i class="fas fa-info-circle"></i> Payment Status</h3>
         </div>
-    <% } else { %>
-        <div class="table-responsive">
-            <table class="table table-dark table-hover">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Game</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% transactions.forEach(trx => { %>
-                        <tr>
-                            <td><%= new Date(trx.created_at).toLocaleDateString() %> <%= new Date(trx.created_at).toLocaleTimeString() %></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <img src="<%= trx.thumbnail_url %>" alt="thumb" style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px; border-radius: 4px;">
-                                    <%= trx.game_title %>
-                                </div>
-                            </td>
-                            <td>Rp <%= parseInt(trx.amount).toLocaleString('id-ID') %></td>
-                            <td>
-                                <% if (trx.status === 'success') { %>
-                                    <span class="badge bg-success">Success</span>
-                                <% } else if (trx.status === 'pending') { %>
-                                    <span class="badge bg-warning text-dark">Waiting</span>
-                                <% } else if (trx.status === 'challenge') { %>
-                                    <span class="badge bg-info">Processing</span>
-                                <% } else { %>
-                                    <span class="badge bg-danger">Error/Failed</span>
-                                <% } %>
-                            </td>
-                            <td>
-                                <% if (trx.status === 'success') { %>
-                                    <a href="/games/<%= trx.game_slug %>" class="btn btn-sm btn-aqua">Play/Download</a>
-                                <% } else if (trx.status === 'pending') { %>
-                                    <!-- Use Snap again if possible, or just details page -->
-                                    <a href="/payment/<%= trx.game_slug %>/details" class="btn btn-sm btn-outline-warning">Pay Now</a>
-                                <% } %>
-                            </td>
-                        </tr>
-                    <% }); %>
-                </tbody>
-            </table>
+        <div class="card-body text-center">
+          <!-- Status Icon -->
+          <div class="status-icon mb-4">
+            <% if (transaction.status === 'success') { %>
+              <i class="fas fa-check-circle fa-5x text-success"></i>
+              <h3 class="text-success mt-3">Payment Successful!</h3>
+              <p>Your purchase is complete. Check your email for details.</p>
+            <% } else if (transaction.status === 'waiting' || transaction.status === 'pending') { %>
+              <i class="fas fa-clock fa-5x text-warning"></i>
+              <h3 class="text-warning mt-3">Waiting for Payment</h3>
+              <p>Please complete your payment to continue.</p>
+            <% } else if (transaction.status === 'processing') { %>
+              <i class="fas fa-spinner fa-spin fa-5x text-info"></i>
+              <h3 class="text-info mt-3">Processing Payment</h3>
+              <p>Verifying your payment. Please wait...</p>
+            <% } else if (transaction.status === 'failed') { %>
+              <i class="fas fa-times-circle fa-5x text-danger"></i>
+              <h3 class="text-danger mt-3">Payment Failed</h3>
+              <p>Something went wrong. Please try again.</p>
+            <% } else if (transaction.status === 'expired') { %>
+              <i class="fas fa-hourglass-end fa-5x text-secondary"></i>
+              <h3 class="text-secondary mt-3">Payment Expired</h3>
+              <p>Your payment link has expired. Please create a new order.</p>
+            <% } %>
+          </div>
+          
+          <!-- Order Info -->
+          <div class="order-info mb-4">
+            <p class="mb-1"><strong>Order ID:</strong> <%= transaction.order_id %></p>
+            <p class="mb-1"><strong>Game:</strong> <%= transaction.game_title %></p>
+            <p class="mb-0"><strong>Amount:</strong> Rp <%= transaction.amount.toLocaleString('id-ID') %></p>
+          </div>
+          
+          <!-- Actions -->
+          <div class="d-grid gap-2">
+            <% if (transaction.status === 'success') { %>
+              <a href="/games/<%= transaction.game_slug %>" class="btn btn-success btn-lg">
+                <i class="fas fa-play"></i> Play Game Now
+              </a>
+            <% } else if (transaction.status === 'waiting' || transaction.status === 'pending' || transaction.status === 'processing') { %>
+              <button id="check-status-btn" class="btn btn-aqua btn-lg">
+                <i class="fas fa-sync"></i> Refresh Status
+              </button>
+              <a href="/payment/<%= transaction.order_id %>/invoice" class="btn btn-outline-secondary">
+                <i class="fas fa-receipt"></i> View Invoice
+              </a>
+            <% } else { %>
+              <a href="/games/<%= transaction.game_slug %>" class="btn btn-primary">
+                Try Again
+              </a>
+            <% } %>
+            
+            <a href="/" class="btn btn-outline-secondary">
+              <i class="fas fa-home"></i> Back to Home
+            </a>
+          </div>
         </div>
-    <% } %>
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+// Auto refresh status every 5 seconds for pending/processing payments
+<% if (['waiting', 'pending', 'processing'].includes(transaction.status)) { %>
+  let checkInterval = setInterval(checkPaymentStatus, 5000);
+  
+  async function checkPaymentStatus() {
+    try {
+      const response = await fetch('/payment/<%= transaction.order_id %>/check');
+      const data = await response.json();
+      
+      if (data.status === 'success' || data.status === 'failed' || data.status === 'expired') {
+        clearInterval(checkInterval);
+        location.reload();
+      }
+    } catch (error) {
+      console.error('Failed to check status:', error);
+    }
+  }
+  
+  // Manual refresh button
+  document.getElementById('check-status-btn')?.addEventListener('click', async function() {
+    const originalText = this.innerHTML;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+    this.disabled = true;
+    
+    await checkPaymentStatus();
+    
+    // If status didn't change (still pending), revert button
+    setTimeout(() => {
+      this.innerHTML = originalText;
+      this.disabled = false;
+    }, 1000);
+  });
+<% } %>
+</script>
 
 <%- include('../layouts/footer') %>

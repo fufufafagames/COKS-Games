@@ -1,186 +1,288 @@
-const Game = require("../models/Game");
-const Transaction = require("../models/Transaction");
-const User = require("../models/User");
-const midtrans = require("../utils/midtrans");
+const Game = require('../models/Game');
+const Transaction = require('../models/Transaction');
+const { createPayment, checkPaymentStatus } = require('../config/doku');
+const { sendPaymentSuccessEmail } = require('../utils/emailService');
 
 module.exports = {
-  /**
-   * Show payment details page
-   */
-  details: async (req, res) => {
+  // Show checkout page
+  checkout: async (req, res) => {
     try {
       const game = await Game.findBySlug(req.params.slug);
+      
       if (!game) {
-        req.session.error = "Game not found";
-        return res.redirect("/games");
+        req.session.error = 'Game not found';
+        return res.redirect('/games');
       }
-
-      // Check if already purchased
-      const hasPurchased = await Transaction.hasPurchased(req.session.user.id, game.id);
-      if (hasPurchased) {
-        req.session.success = "You already own this game!";
+      
+      // Check if game is free
+      if (game.price_type === 'free' || !game.price || game.price === 0) {
+        req.session.error = 'This game is free to play';
         return res.redirect(`/games/${game.slug}`);
       }
-
-      res.render("payment/details", {
-        title: "Payment Details",
-        game,
-        user: req.session.user,
-        midtransClientKey: process.env.MIDTRANS_CLIENT_KEY
-      });
-    } catch (error) {
-      console.error("Payment details error:", error);
-      req.session.error = "Failed to load payment details";
-      res.redirect("/games");
-    }
-  },
-
-  /**
-   * Process payment and get Snap Token
-   */
-  charge: async (req, res) => {
-    try {
-      const game = await Game.findBySlug(req.params.slug);
-      if (!game) {
-        return res.status(404).json({ error: "Game not found" });
-      }
-
-      const user = req.session.user;
-      const orderId = `TRX-${Date.now()}-${user.id}-${game.id}`;
-
-      // Create parameter for Midtrans
-      const parameter = {
-        transaction_details: {
-          order_id: orderId,
-          gross_amount: game.price,
-        },
-        credit_card: {
-          secure: true,
-        },
-        customer_details: {
-          first_name: user.name,
-          email: user.email,
-        },
-        item_details: [
-            {
-                id: game.id.toString(),
-                price: game.price,
-                quantity: 1,
-                name: game.title.substring(0, 50)
-            }
-        ]
-      };
-
-      // Get Snap Token
-      const transaction = await midtrans.createTransaction(parameter);
       
-      // Save pending transaction to DB
-      await Transaction.create({
-          user_id: user.id,
-          game_id: game.id,
-          amount: game.price,
-          status: 'pending',
-          snap_token: transaction.token,
-          payment_type: 'unknown' // Will be updated on notification
+      // Check if already purchased
+      if (req.session.user) {
+        const alreadyPurchased = await Transaction.hasPurchased(
+          req.session.user.id, 
+          game.id
+        );
+        
+        if (alreadyPurchased) {
+          req.session.info = 'You already own this game!';
+          return res.redirect(`/games/${game.slug}`);
+        }
+      }
+      
+      res.render('payment/checkout', {
+        title: `Buy ${game.title}`,
+        game,
+        user: req.session.user
       });
-
-      res.json({ token: transaction.token, redirect_url: transaction.redirect_url });
-
     } catch (error) {
-      console.error("Charge error:", error);
-      res.status(500).json({ error: error.message });
+      console.error('Checkout error:', error);
+      req.session.error = 'Failed to load checkout page';
+      res.redirect('/games');
     }
-  },
-
-  /**
-   * Show Invoice / Receipt page
-   */
-  invoice: async (req, res) => {
-      try {
-          const { order_id, transaction_status } = req.query;
-          
-          // FOR DEMO/SIMULATOR ONLY: Update status based on redirect param
-          if (order_id && transaction_status) {
-              // Extract order_id parts: TRX-Timestamp-UserId-GameId
-              // Actually we saved it as is.
-              // We need to find transaction by order_id, but our DB table doesn't have order_id column (oops?).
-              // Wait, I created DB `transactions` table but didn't put `order_id` in it in migration.
-              // `snap_token` is unique, but I don't have it in query params.
-              // However, I can infer user and game from context or just update by finding pending transaction for this user.
-              // For robustness in this limited scope:
-              // I'll trust internal logic: transaction created in `charge`.
-              
-              // Let's assume we update the LATEST pending transaction for this user as success if param says so.
-              if (transaction_status === 'success') {
-                  // SIMULATION: Update DB
-                  // In real app, we use finding by order_id from `notification` webhook.
-                  
-                  await Transaction.updateStatus(req.session.user.id, 'success'); 
-                  // Wait, `updateStatus` in model was defined as: updateStatus(snap_token, status, payment_type)
-                  // I don't have snap_token here easily unless I stored it in session or query.
-                  
-                  // Simplified for "Simulator" flow without webhook:
-                  // Just sending email notification simulation
-                  console.log(`[EMAIL NOTIFICATION] Sending success email to ${req.session.user.email} for Order ${order_id}`);
-                  console.log(`[EMAIL CONTENT] Payment Success! You can now download your game.`);
-                  
-                  // Also strictly speaking, we should update the DB status here so Access Control works!
-                  // I need to update the DB status for `Access Control` to work.
-                  // Improvise: I will find the latest pending transaction for this user and set it to success.
-                   const db = require("../config/database");
-                   await db.query(`
-                        UPDATE transactions 
-                        SET status = 'success', updated_at = NOW() 
-                        WHERE user_id = $1 AND status = 'pending' 
-                        ORDER BY created_at DESC LIMIT 1
-                   `, [req.session.user.id]);
-              }
-          }
-
-          res.render("payment/invoice", {
-              title: "Payment Invoice",
-              status: transaction_status || 'pending',
-              order_id
-          });
-      } catch (error) {
-          console.error("Invoice error:", error);
-          res.redirect("/");
-      }
-  },
-
-  /**
-   * Status Payment Page
-   */
-  status: async (req, res) => {
-      try {
-          const transactions = await Transaction.getByUserId(req.session.user.id);
-          res.render("payment/status", {
-              title: "Payment Status",
-              transactions
-          });
-      } catch (error) {
-          console.error("Status page error:", error);
-          res.redirect("/");
-      }
   },
   
-  /**
-   * Notification Webhook (Called by Midtrans)
-   */
-  notification: async (req, res) => {
-      try {
-          const notification = req.body;
-          // Update transaction status based on notification
-          // notification.order_id, notification.transaction_status
-          
-          // Implementation of status update logic...
-          // For now, allow simple success
-          
-          console.log('Received notification:', notification);
-          res.status(200).send('OK');
-      } catch (error) {
-          console.error('Notification error:', error);
-          res.status(500).send('Error');
+  // Process payment
+  processPayment: async (req, res) => {
+    try {
+      const { game_slug, payment_method } = req.body;
+      const game = await Game.findBySlug(game_slug);
+      
+      if (!game) {
+        return res.status(404).json({ error: 'Game not found' });
       }
+      
+      const orderId = `ORDER-${Date.now()}-${req.session.user.id}`;
+      const expiredAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      
+      // MAP Generic Payment Method to DOKU Payment Method Types
+      let paymentMethodTypes = [];
+      
+      switch (payment_method) {
+        case 'QRIS':
+             paymentMethodTypes = ["QRIS"];
+             break;
+        case 'VIRTUAL_ACCOUNT':
+             // Include all popular banks
+             paymentMethodTypes = [
+                 "VIRTUAL_ACCOUNT_BCA", 
+                 "VIRTUAL_ACCOUNT_MANDIRI", 
+                 "VIRTUAL_ACCOUNT_BRI", 
+                 "VIRTUAL_ACCOUNT_BNI", 
+                 "VIRTUAL_ACCOUNT_DANAMON", 
+                 "VIRTUAL_ACCOUNT_PERMATA", 
+                 "VIRTUAL_ACCOUNT_CIMB", 
+                 "VIRTUAL_ACCOUNT_BSI"
+             ];
+             break;
+        case 'EWALLET':
+             paymentMethodTypes = ["E_WALLET_OVO", "E_WALLET_DANA", "E_WALLET_LINKAJA", "E_WALLET_SHOPEEPAY"];
+             break;
+        case 'RETAIL':
+             paymentMethodTypes = ["ONLINE_TO_OFFLINE_ALFAMART", "ONLINE_TO_OFFLINE_INDOMARET"];
+             break;
+        default:
+             paymentMethodTypes = []; // Empty array means SHOW ALL in DOKU
+      }
+      
+      // Create payment request to DOKU
+      const paymentData = {
+        order: {
+          invoice_number: orderId,
+          amount: parseInt(game.price), // Ensure integer
+          currency: 'IDR'
+        },
+        // payment: {
+        //   payment_method_types: paymentMethodTypes
+        // },
+        customer: {
+          id: req.session.user.id.toString(),
+          name: req.session.user.name, 
+          email: req.session.user.email
+        },
+        expired_at: expiredAt.toISOString()
+      };
+      
+      console.log('Sending DOKU Payment Request:', JSON.stringify(paymentData, null, 2));
+
+      const dokuResponse = await createPayment(paymentData);
+      
+      console.log('DOKU Response:', JSON.stringify(dokuResponse, null, 2));
+      
+      // Save transaction to database
+      await Transaction.create({
+        user_id: req.session.user.id,
+        game_id: game.id,
+        order_id: orderId,
+        invoice_number: dokuResponse.order.invoice_number || orderId, 
+        amount: game.price,
+        payment_method: payment_method,
+        payment_channel: payment_method, // Simplified
+        status: 'waiting',
+        payment_url: dokuResponse.payment.url, 
+        payment_code: dokuResponse.virtual_account_info?.virtual_account_number || dokuResponse.payment_code, 
+        qr_code_url: dokuResponse.qr_code_urls?.[0], 
+        expired_at: expiredAt
+      });
+      
+      res.json({
+        success: true,
+        order_id: orderId,
+        redirect_url: `/payment/${orderId}/invoice`
+      });
+      
+    } catch (error) {
+      console.error('Process payment error:', error.response?.data || error.message);
+      res.status(500).json({ 
+        error: 'Failed to process payment',
+        message: error.response?.data?.message || 'Check Server Logs for Details',
+        details: error.response?.data
+      });
+    }
+  },
+  
+  // Show invoice/receipt page
+  invoice: async (req, res) => {
+    try {
+      const transaction = await Transaction.findByOrderId(req.params.order_id);
+      
+      if (!transaction) {
+        req.session.error = 'Transaction not found';
+        return res.redirect('/games');
+      }
+      
+      // Check ownership
+      if (transaction.user_id !== req.session.user.id) {
+        req.session.error = 'Unauthorized access';
+        return res.redirect('/games');
+      }
+      
+      res.render('payment/invoice', {
+        title: 'Payment Invoice',
+        transaction,
+        user: req.session.user
+      });
+    } catch (error) {
+      console.error('Invoice error:', error);
+      req.session.error = 'Failed to load invoice';
+      res.redirect('/games');
+    }
+  },
+  
+  // Show payment status page
+  status: async (req, res) => {
+    try {
+      const transaction = await Transaction.findByOrderId(req.params.order_id);
+      
+      if (!transaction) {
+        req.session.error = 'Transaction not found';
+        return res.redirect('/games');
+      }
+      
+      // Check ownership
+      if (transaction.user_id !== req.session.user.id) {
+        req.session.error = 'Unauthorized access';
+        return res.redirect('/games');
+      }
+      
+      res.render('payment/status', {
+        title: 'Payment Status',
+        transaction,
+        user: req.session.user
+      });
+    } catch (error) {
+      console.error('Status page error:', error);
+      req.session.error = 'Failed to load status page';
+      res.redirect('/games');
+    }
+  },
+  
+  // Check payment status (AJAX)
+  checkStatus: async (req, res) => {
+    try {
+      const transaction = await Transaction.findByOrderId(req.params.order_id);
+      
+      if (!transaction) {
+        return res.status(404).json({ error: 'Transaction not found' });
+      }
+      
+      // Check status from DOKU
+      // ONLY check if not already success/failed to save API calls
+      let status = transaction.status;
+      if (status === 'waiting' || status === 'pending') {
+          try {
+            const dokuStatus = await checkPaymentStatus(transaction.invoice_number);
+            status = dokuStatus.transaction.status.toLowerCase(); 
+            
+            // Map DOKU status to our status
+            if (status === 'success') {
+                // Update local status if changed
+                if (status !== transaction.status) {
+                    await Transaction.updateStatus(
+                    transaction.order_id,
+                    'success',
+                    new Date()
+                    );
+                    await sendPaymentSuccessEmail(transaction);
+                }
+            }
+          } catch (e) {
+              console.log("Error checking DOKU status (might be sandbox limitation):", e.message);
+          }
+      }
+      
+      res.json({
+        status: status,
+        message: status === 'success' ? 'Payment successful!' : 'Waiting for payment...'
+      });
+      
+    } catch (error) {
+      console.error('Check status error:', error);
+      res.status(500).json({ error: 'Failed to check payment status' });
+    }
+  },
+  
+  // Handle payment callback from DOKU
+  callback: async (req, res) => {
+    try {
+      console.log('Payment callback received:', req.body);
+      
+      const { order, transaction } = req.body;
+      
+      if (!order || !transaction) {
+          return res.status(400).json({ error: 'Invalid callback data' });
+      }
+
+      const invoice_number = order.invoice_number;
+      const status = transaction.status.toLowerCase(); // success, failed
+      
+      const dbTransaction = await Transaction.findByInvoiceNumber(invoice_number);
+      
+      if (!dbTransaction) {
+        console.error('Transaction not found:', invoice_number);
+        return res.status(404).json({ error: 'Transaction not found' });
+      }
+      
+      // Update transaction status
+      await Transaction.updateStatus(
+        dbTransaction.order_id,
+        status,
+        status === 'success' ? new Date() : null
+      );
+      
+      // Send email notification if success
+      if (status === 'success') {
+        await sendPaymentSuccessEmail(dbTransaction);
+      }
+      
+      res.json({ success: true });
+      
+    } catch (error) {
+      console.error('Callback error:', error);
+      res.status(500).json({ error: 'Callback processing failed' });
+    }
   }
 };

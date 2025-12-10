@@ -1,61 +1,133 @@
 <%- include('../layouts/header', { title: title }) %>
 <%- include('../partials/navbar') %>
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card bg-dark text-white border-aqua text-center pt-4 pb-4">
-                <div class="card-body">
-                    <% if (status === 'success') { %>
-                        <i class="fas fa-check-circle fa-5x text-success mb-3"></i>
-                        <h2 class="mb-3">Payment Successful!</h2>
-                        <p>Thank you for your purchase. You can now download and play the game.</p>
-                    <% } else if (status === 'pending') { %>
-                        <i class="fas fa-clock fa-5x text-warning mb-3"></i>
-                        <h2 class="mb-3">Waiting for Payment</h2>
-                        <p>Please complete your payment within 24 hours.</p>
-                        
-                        <div class="alert alert-warning d-inline-block">
-                            <i class="fas fa-stopwatch"></i> Time Remaining: <span id="timer">23:59:59</span>
-                        </div>
-                    <% } else { %>
-                        <i class="fas fa-times-circle fa-5x text-danger mb-3"></i>
-                        <h2 class="mb-3">Payment Failed</h2>
-                        <p>Something went wrong or the payment was cancelled.</p>
-                    <% } %>
-
-                    <div class="mt-4 d-grid gap-2 col-8 mx-auto">
-                        <a href="/" class="btn btn-outline-light">Back to Home</a>
-                        <a href="/payment/status" class="btn btn-aqua">Check Payment Status</a>
-                        <% if (status === 'success') { %>
-                            <a href="/games" class="btn btn-success">Go to My Games</a>
-                        <% } %>
-                    </div>
-                </div>
-            </div>
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card bg-dark text-white">
+        <div class="card-header bg-gradient text-center">
+          <h3><i class="fas fa-receipt"></i> Payment Invoice</h3>
         </div>
+        <div class="card-body">
+          <!-- Timer -->
+          <% if (transaction.status === 'pending' || transaction.status === 'waiting') { %>
+          <div class="alert alert-warning text-center">
+            <h5><i class="fas fa-clock"></i> Payment expires in:</h5>
+            <h2 id="countdown-timer" class="mb-0">Loading...</h2>
+          </div>
+          <% } %>
+          
+          <!-- Order Details -->
+          <div class="invoice-details">
+            <h5 class="border-bottom pb-2 mb-3">Order Details</h5>
+            <table class="table table-dark table-borderless">
+              <tr>
+                <td><strong>Order ID:</strong></td>
+                <td><%= transaction.order_id %></td>
+              </tr>
+              <tr>
+                <td><strong>Game:</strong></td>
+                <td><%= transaction.game_title %></td>
+              </tr>
+              <tr>
+                <td><strong>Amount:</strong></td>
+                <td class="text-aqua"><strong>Rp <%= transaction.amount.toLocaleString('id-ID') %></strong></td>
+              </tr>
+              <tr>
+                <td><strong>Payment Method:</strong></td>
+                <td><%= transaction.payment_method %></td>
+              </tr>
+              <tr>
+                <td><strong>Status:</strong></td>
+                <td><span class="badge bg-<%= transaction.status === 'success' ? 'success' : (transaction.status === 'failed' ? 'danger' : 'warning') %>"><%= transaction.status %></span></td>
+              </tr>
+            </table>
+          </div>
+          
+          <!-- Payment Instructions -->
+          <% if (transaction.status === 'pending' || transaction.status === 'waiting') { %>
+          <div class="payment-instructions mt-4">
+            <h5 class="border-bottom pb-2 mb-3">Payment Instructions</h5>
+            
+            <% if (transaction.payment_method === 'QRIS') { %>
+              <div class="text-center">
+                <% if (transaction.qr_code_url) { %>
+                  <img src="<%= transaction.qr_code_url %>" alt="QR Code" class="img-fluid bg-white p-2 rounded" style="max-width: 300px;">
+                  <p class="mt-3">Scan this QR code with any e-wallet app</p>
+                <% } else if (transaction.payment_url) { %>
+                   <div class="mt-3">
+                     <p>Click below to pay with QRIS:</p>
+                     <a href="<%= transaction.payment_url %>" target="_blank" class="btn btn-primary">Open Payment Link</a>
+                   </div>
+                <% } %>
+              </div>
+            <% } else if (transaction.payment_method === 'VIRTUAL_ACCOUNT') { %>
+              <div class="alert alert-info">
+                <p><strong>Virtual Account Number:</strong></p>
+                <h3><%= transaction.payment_code || '-' %></h3>
+                <p class="mb-0">Transfer to this VA number from your bank</p>
+              </div>
+            <% } else if (transaction.payment_method === 'RETAIL') { %>
+              <div class="alert alert-info">
+                <p><strong>Payment Code:</strong></p>
+                <h3><%= transaction.payment_code || '-' %></h3>
+                <p class="mb-0">Show this code at cashier</p>
+              </div>
+            <% } %>
+            
+            <% if (transaction.payment_url && transaction.payment_method !== 'QRIS') { %>
+              <div class="text-center mt-3">
+                <a href="<%= transaction.payment_url %>" target="_blank" class="btn btn-primary btn-lg">
+                  <i class="fas fa-external-link-alt"></i> Continue to Payment
+                </a>
+              </div>
+            <% } %>
+          </div>
+          <% } %>
+          
+          <!-- Actions -->
+          <div class="d-grid gap-2 mt-4">
+            <a href="/" class="btn btn-outline-secondary">
+              <i class="fas fa-home"></i> Back to Home
+            </a>
+            <a href="/payment/<%= transaction.order_id %>/status" class="btn btn-aqua">
+              <i class="fas fa-info-circle"></i> Check Payment Status
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 
-<%- include('../layouts/footer') %>
-
 <script>
-    // Simple 24h timer countdown (Visual only)
-    let timeLeft = 24 * 60 * 60; // seconds
-    const timerElement = document.getElementById('timer');
-    
-    if (timerElement) {
-        const interval = setInterval(() => {
-            if (timeLeft <= 0) {
-                clearInterval(interval);
-                timerElement.innerText = "Expired";
-            } else {
-                timeLeft--;
-                const h = Math.floor(timeLeft / 3600);
-                const m = Math.floor((timeLeft % 3600) / 60);
-                const s = timeLeft % 60;
-                timerElement.innerText = `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-            }
-        }, 1000);
-    }
+// Countdown Timer (24 hours)
+const expiredAt = new Date('<%= transaction.expired_at %>').getTime();
+
+function updateTimer() {
+  const now = new Date().getTime();
+  const distance = expiredAt - now;
+  
+  if (distance < 0) {
+    document.getElementById('countdown-timer').innerHTML = 'EXPIRED';
+    return;
+  }
+  
+  const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+  
+  const timerElement = document.getElementById('countdown-timer');
+  if (timerElement) {
+      timerElement.innerHTML = 
+        `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+}
+
+<% if (transaction.status === 'pending' || transaction.status === 'waiting') { %>
+updateTimer();
+setInterval(updateTimer, 1000);
+<% } %>
 </script>
+
+<%- include('../layouts/footer') %>

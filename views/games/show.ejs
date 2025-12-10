@@ -89,7 +89,7 @@ include('../partials/navbar') %>
             <% } else { %>
                 <!-- Buy Button -->
                 <% if (user) { %>
-                <a href="/payment/<%= game.slug %>/details" class="btn btn-aqua btn-lg">
+                <a href="/payment/buy/<%= game.slug %>" class="btn btn-aqua btn-lg">
                   <i class="fas fa-shopping-cart"></i> Buy Game (Rp <%= parseInt(game.price).toLocaleString('id-ID') %>)
                 </a>
                 <% } else { %>
