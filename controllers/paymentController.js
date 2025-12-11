@@ -59,6 +59,7 @@ module.exports = {
       const expiredAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
       
       // MAP Generic Payment Method to DOKU Payment Method Types
+      // Based on DOKU official documentation
       let paymentMethodTypes = [];
       
       switch (payment_method) {
@@ -66,44 +67,57 @@ module.exports = {
              paymentMethodTypes = ["QRIS"];
              break;
         case 'VIRTUAL_ACCOUNT':
-             // Include all popular banks
+             // Include all popular banks with correct DOKU naming
              paymentMethodTypes = [
                  "VIRTUAL_ACCOUNT_BCA", 
-                 "VIRTUAL_ACCOUNT_MANDIRI", 
+                 "VIRTUAL_ACCOUNT_BANK_MANDIRI", 
+                 "VIRTUAL_ACCOUNT_BANK_SYARIAH_MANDIRI",
                  "VIRTUAL_ACCOUNT_BRI", 
                  "VIRTUAL_ACCOUNT_BNI", 
-                 "VIRTUAL_ACCOUNT_DANAMON", 
-                 "VIRTUAL_ACCOUNT_PERMATA", 
-                 "VIRTUAL_ACCOUNT_CIMB", 
-                 "VIRTUAL_ACCOUNT_BSI"
+                 "VIRTUAL_ACCOUNT_BANK_DANAMON", 
+                 "VIRTUAL_ACCOUNT_BANK_PERMATA", 
+                 "VIRTUAL_ACCOUNT_BANK_CIMB",
+                 "VIRTUAL_ACCOUNT_DOKU"
              ];
              break;
         case 'EWALLET':
-             paymentMethodTypes = ["E_WALLET_OVO", "E_WALLET_DANA", "E_WALLET_LINKAJA", "E_WALLET_SHOPEEPAY"];
+             // Use correct EMONEY_ prefix from DOKU docs
+             paymentMethodTypes = [
+               "EMONEY_OVO", 
+               "EMONEY_DANA", 
+               "EMONEY_LINKAJA", 
+               "EMONEY_SHOPEE_PAY"
+             ];
              break;
         case 'RETAIL':
-             paymentMethodTypes = ["ONLINE_TO_OFFLINE_ALFAMART", "ONLINE_TO_OFFLINE_INDOMARET"];
+             paymentMethodTypes = [
+               "ONLINE_TO_OFFLINE_ALFA", 
+               "ONLINE_TO_OFFLINE_INDOMARET"
+             ];
              break;
         default:
-             paymentMethodTypes = []; // Empty array means SHOW ALL in DOKU
+             // Empty array = show all methods
+             paymentMethodTypes = [];
       }
       
-      // Create payment request to DOKU
+      // Create payment request to DOKU - FIXED STRUCTURE
       const paymentData = {
         order: {
           invoice_number: orderId,
           amount: parseInt(game.price), // Ensure integer
           currency: 'IDR'
         },
-        // payment: {
-        //   payment_method_types: paymentMethodTypes
-        // },
+        payment: {
+          payment_due_date: 1440, // 24 hours in minutes
+          payment_method_types: paymentMethodTypes.length > 0 ? paymentMethodTypes : []
+        },
         customer: {
           id: req.session.user.id.toString(),
           name: req.session.user.name, 
-          email: req.session.user.email
-        },
-        expired_at: expiredAt.toISOString()
+          email: req.session.user.email,
+          phone: '628000000000', // Dummy phone number - replace with real data if available
+          country: 'ID'
+        }
       };
       
       console.log('Sending DOKU Payment Request:', JSON.stringify(paymentData, null, 2));
@@ -112,19 +126,58 @@ module.exports = {
       
       console.log('DOKU Response:', JSON.stringify(dokuResponse, null, 2));
       
+      // Extract payment info safely based on response structure
+      let paymentUrl = null;
+      let paymentCode = null;
+      let qrCodeUrl = null;
+      
+      // Handle different response structures
+      // DOKU V2 Response is nested inside "response" object
+      const dokuData = dokuResponse.response || dokuResponse;
+
+      if (dokuData.payment) {
+        paymentUrl = dokuData.payment.url || null;
+        
+        // For QRIS
+        if (dokuData.payment.qr_checkout_string) {
+          qrCodeUrl = dokuData.payment.qr_checkout_string;
+        }
+        
+        // For Virtual Account
+        if (dokuData.payment.virtual_account_info) {
+          paymentCode = dokuData.payment.virtual_account_info.virtual_account_number;
+        }
+        
+        // For E-Wallet
+        if (dokuData.payment.payment_code) {
+          paymentCode = dokuData.payment.payment_code;
+        }
+      }
+      
+      // Fallback to top-level properties if they exist
+      paymentUrl = paymentUrl || dokuResponse.url || null;
+      
+      // Log extracted payment info
+      console.log('DEBUG PAYMENT INFO:', { 
+        paymentUrl, 
+        qrCodeUrl, 
+        dokuResponsePayment: dokuResponse.payment,
+        dokuResponseUrl: dokuResponse.url 
+      });
+      
       // Save transaction to database
       await Transaction.create({
         user_id: req.session.user.id,
         game_id: game.id,
         order_id: orderId,
-        invoice_number: dokuResponse.order.invoice_number || orderId, 
-        amount: game.price,
+        invoice_number: dokuResponse.order?.invoice_number || orderId, 
+        amount: parseInt(game.price),
         payment_method: payment_method,
         payment_channel: payment_method, // Simplified
         status: 'waiting',
-        payment_url: dokuResponse.payment.url, 
-        payment_code: dokuResponse.virtual_account_info?.virtual_account_number || dokuResponse.payment_code, 
-        qr_code_url: dokuResponse.qr_code_urls?.[0], 
+        payment_url: paymentUrl, 
+        payment_code: paymentCode, 
+        qr_code_url: qrCodeUrl, 
         expired_at: expiredAt
       });
       
@@ -138,7 +191,7 @@ module.exports = {
       console.error('Process payment error:', error.response?.data || error.message);
       res.status(500).json({ 
         error: 'Failed to process payment',
-        message: error.response?.data?.message || 'Check Server Logs for Details',
+        message: error.response?.data?.message || error.message || 'Check Server Logs for Details',
         details: error.response?.data
       });
     }
@@ -155,7 +208,15 @@ module.exports = {
       }
       
       // Check ownership
-      if (transaction.user_id !== req.session.user.id) {
+      console.log('DEBUG CHECK OWNERSHIP:', {
+        transactionUserId: transaction.user_id,
+        transactionUserIdType: typeof transaction.user_id,
+        sessionUserId: req.session.user.id,
+        sessionUserIdType: typeof req.session.user.id,
+        isMatchLoose: transaction.user_id != req.session.user.id
+      });
+
+      if (transaction.user_id != req.session.user.id) {
         req.session.error = 'Unauthorized access';
         return res.redirect('/games');
       }
@@ -183,7 +244,7 @@ module.exports = {
       }
       
       // Check ownership
-      if (transaction.user_id !== req.session.user.id) {
+      if (transaction.user_id != req.session.user.id) {
         req.session.error = 'Unauthorized access';
         return res.redirect('/games');
       }
@@ -215,22 +276,23 @@ module.exports = {
       if (status === 'waiting' || status === 'pending') {
           try {
             const dokuStatus = await checkPaymentStatus(transaction.invoice_number);
-            status = dokuStatus.transaction.status.toLowerCase(); 
             
-            // Map DOKU status to our status
-            if (status === 'success') {
-                // Update local status if changed
-                if (status !== transaction.status) {
-                    await Transaction.updateStatus(
-                    transaction.order_id,
-                    'success',
-                    new Date()
-                    );
-                    await sendPaymentSuccessEmail(transaction);
-                }
+            // Safely extract status from response
+            if (dokuStatus && dokuStatus.transaction && dokuStatus.transaction.status) {
+              status = dokuStatus.transaction.status.toLowerCase();
+              
+              // Map DOKU status to our status
+              if (status === 'success' && status !== transaction.status) {
+                await Transaction.updateStatus(
+                  transaction.order_id,
+                  'success',
+                  new Date()
+                );
+                await sendPaymentSuccessEmail(transaction);
+              }
             }
           } catch (e) {
-              console.log("Error checking DOKU status (might be sandbox limitation):", e.message);
+              console.log("Error checking DOKU status:", e.message);
           }
       }
       

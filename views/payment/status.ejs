@@ -71,39 +71,43 @@
 </div>
 
 <script>
-// Auto refresh status every 5 seconds for pending/processing payments
-<% if (['waiting', 'pending', 'processing'].includes(transaction.status)) { %>
-  let checkInterval = setInterval(checkPaymentStatus, 5000);
-  
-  async function checkPaymentStatus() {
-    try {
-      const response = await fetch('/payment/<%= transaction.order_id %>/check');
-      const data = await response.json();
+  // Manual refresh button logic (Always available if element exists)
+  const statusBtn = document.getElementById('check-status-btn');
+  if (statusBtn) {
+    statusBtn.addEventListener('click', async function() {
+      const originalText = this.innerHTML;
+      this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+      this.disabled = true;
       
-      if (data.status === 'success' || data.status === 'failed' || data.status === 'expired') {
-        clearInterval(checkInterval);
-        location.reload();
-      }
-    } catch (error) {
-      console.error('Failed to check status:', error);
-    }
+      await checkPaymentStatus();
+      
+      setTimeout(() => {
+        this.innerHTML = originalText;
+        this.disabled = false;
+      }, 1000);
+    });
   }
-  
-  // Manual refresh button
-  document.getElementById('check-status-btn')?.addEventListener('click', async function() {
-    const originalText = this.innerHTML;
-    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
-    this.disabled = true;
-    
-    await checkPaymentStatus();
-    
-    // If status didn't change (still pending), revert button
-    setTimeout(() => {
-      this.innerHTML = originalText;
-      this.disabled = false;
-    }, 1000);
-  });
-<% } %>
 </script>
+
+<% if (['waiting', 'pending', 'processing'].includes(transaction.status)) { %>
+<script>
+// Auto refresh status every 5 seconds
+let checkInterval = setInterval(checkPaymentStatus, 5000);
+
+async function checkPaymentStatus() {
+  try {
+    const response = await fetch('/payment/<%= transaction.order_id %>/check');
+    const data = await response.json();
+    
+    if (data.status === 'success' || data.status === 'failed' || data.status === 'expired') {
+      clearInterval(checkInterval);
+      location.reload();
+    }
+  } catch (error) {
+    console.error('Failed to check status:', error);
+  }
+}
+</script>
+<% } %>
 
 <%- include('../layouts/footer') %>
