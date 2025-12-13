@@ -1,0 +1,61 @@
+<%- include('../layouts/header', { title: title }) %>
+<%- include('../partials/navbar') %>
+
+<div class="container mt-5">
+    <div class="text-center text-white mb-5">
+        <h1 class="display-4 fw-bold gradient-text">Frequently Asked Questions</h1>
+        <p class="lead">Pertanyaan yang sering diajukan oleh pengguna</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="accordion accordion-flush" id="faqAccordion">
+                
+                <!-- FAQ Item 1 -->
+                <div class="accordion-item bg-dark-secondary border border-secondary mb-3 rounded">
+                    <h2 class="accordion-header" id="flush-headingOne">
+                        <button class="accordion-button collapsed bg-transparent text-white" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                            Bagaimana cara upload game?
+                        </button>
+                    </h2>
+                    <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-white">
+                            Daftar akun, login, lalu klik tombol "Upload Game" di navbar. Isi form detail game dan upload file game Anda.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 2 -->
+                <div class="accordion-item bg-dark-secondary border border-secondary mb-3 rounded">
+                    <h2 class="accordion-header" id="flush-headingTwo">
+                        <button class="accordion-button collapsed bg-transparent text-white" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+                            Apakah game di sini gratis?
+                        </button>
+                    </h2>
+                    <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-white">
+                            Sebagian besar game gratis untuk dimainkan. Namun, developer dapat menetapkan harga untuk game premium mereka.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 3 -->
+                <div class="accordion-item bg-dark-secondary border border-secondary mb-3 rounded">
+                    <h2 class="accordion-header" id="flush-headingThree">
+                        <button class="accordion-button collapsed bg-transparent text-white" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
+                            Metode pembayaran apa yang didukung?
+                        </button>
+                    </h2>
+                    <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-white">
+                            Kami mendukung QRIS, Virtual Account (BCA, Mandiri, BNI, BRI), dan kartu kredit.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../layouts/footer') %>

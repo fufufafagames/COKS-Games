@@ -1,219 +1,144 @@
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
-  <div class="container-fluid px-3 px-lg-4">
-    <!-- 1. Mobile Toggler (Left) -->
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top notranslate" translate="no" style="background-color: #0b0c10; border-bottom: 1px solid #1f2833;">
+  <div class="container px-3 px-lg-4">
+    
+    <!-- 1. Mobile Toggler (Left on Mobile) -->
     <button
-      class="navbar-toggler me-2 d-lg-none border-0 p-0"
+      class="navbar-toggler border-0 order-0 me-2"
       type="button"
       data-bs-toggle="collapse"
       data-bs-target="#navbarNav"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
     >
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <!-- 2. Brand (Left/Center-Left) -->
-    <a class="navbar-brand me-auto me-lg-4" href="/">
-      <i class="fas fa-gamepad"></i> <span class="d-none d-sm-inline">FUFUFAFAGAMES</span>
+    <!-- 2. Brand (Left/Center) -->
+    <a class="navbar-brand order-1 me-auto fw-bold d-flex align-items-center" href="/">
+      <i class="fas fa-gamepad text-aqua fa-lg"></i> 
+      <span class="ms-2 brand-text">FUFUFAFAGAMES</span>
     </a>
 
-    <!-- 3. Mobile Right Icons (Visible only on mobile) -->
-    <div class="d-flex align-items-center d-lg-none gap-3">
-      <!-- Search Icon Trigger (Mobile) -->
-      <button class="btn btn-link text-white p-0" type="button" data-bs-toggle="collapse" data-bs-target="#mobileSearch" aria-expanded="false">
-        <i class="fas fa-search fa-lg"></i>
-      </button>
-
-      <% if (user) { %>
-      <!-- Upload Icon (Mobile) -->
-      <a href="/games/create/new" class="btn btn-link text-white p-0">
-        <i class="fas fa-upload fa-lg"></i>
-      </a>
-
-      <!-- Profile Dropdown (Mobile & Desktop Custom) -->
-      <div class="dropdown">
-        <a
-          href="#"
-          class="d-flex align-items-center text-decoration-none"
-          id="profileDropdown"
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-        >
-          <% if (user.avatar) { %>
-          <img
-            src="<%= user.avatar %>"
-            alt="<%= user.name %>"
-            class="rounded-circle border border-aqua"
-            width="32"
-            height="32"
-            style="object-fit: cover;"
-          />
-          <% } else { %>
-          <i class="fas fa-user-circle fa-2x text-white"></i>
-          <% } %>
-          <i class="fas fa-chevron-down text-white ms-1" style="font-size: 0.8rem;"></i>
+    <!-- 3. Right Side: Search, Notif, Profile (ALWAYS VISIBLE) -->
+    <!-- Order-2 on mobile (Right), Order-lg-3 on Desktop (Right) -->
+    <div class="d-flex align-items-center gap-1 gap-lg-3 order-2 order-lg-3">
+        
+        <!-- Search Icon (Link to Page) -->
+        <a href="/search" class="text-white text-decoration-none">
+          <i class="fas fa-search hover-aqua" style="font-size: 1.2rem;"></i>
         </a>
 
-        <!-- Custom Crunchyroll-style Dropdown -->
-        <ul class="dropdown-menu dropdown-menu-end custom-profile-menu mt-2 shadow-lg border-0" aria-labelledby="profileDropdown">
-          <!-- Profile Header -->
-          <li class="profile-header p-3 mb-2">
-            <div class="d-flex align-items-center justify-content-between">
-              <a href="/profile/<%= user.id %>" class="d-flex align-items-center text-decoration-none text-white flex-grow-1">
-                <% if (user.avatar) { %>
+        <% if (user) { %>
+          <!-- Notification Icon -->
+          <div class="position-relative notification-btn cursor-pointer">
+            <i class="fas fa-bell text-white hover-aqua" style="font-size: 1.2rem;"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notification-badge" style="display: none; font-size: 0.6rem;">
+              0
+            </span>
+          </div>
+
+          <!-- Profile Dropdown -->
+          <div class="dropdown">
+            <a
+              href="#"
+              class="d-flex align-items-center text-decoration-none"
+              id="profileDropdown"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <% if (user.avatar) { %>
                 <img
                   src="<%= user.avatar %>"
                   alt="<%= user.name %>"
-                  class="rounded-circle me-3"
-                  width="48"
-                  height="48"
+                  class="rounded-circle border border-aqua"
+                  width="32"
+                  height="32"
                   style="object-fit: cover;"
                 />
-                <% } else { %>
-                <i class="fas fa-user-circle fa-3x me-3 text-aqua"></i>
-                <% } %>
-                <div class="d-flex flex-column">
-                  <span class="fw-bold text-truncate" style="max-width: 140px;"><%= user.name %></span>
-                  <small class="text-aqua">View Profile</small>
+              <% } else { %>
+                <i class="fas fa-user-circle fa-lg text-white" style="font-size: 1.8rem;"></i>
+              <% } %>
+            </a>
+
+            <!-- Custom Dropdown Menu -->
+            <ul class="dropdown-menu dropdown-menu-end custom-profile-menu mt-2 shadow-lg border-secondary bg-dark-secondary" aria-labelledby="profileDropdown">
+              <li class="px-3 py-2 border-bottom border-secondary">
+                <div class="d-flex align-items-center">
+                   <% if (user.avatar) { %>
+                    <img src="<%= user.avatar %>" class="rounded-circle me-2" width="40" height="40" style="object-fit: cover;">
+                   <% } else { %>
+                    <i class="fas fa-user-circle fa-2x me-2 text-white"></i>
+                   <% } %>
+                   <div class="overflow-hidden">
+                     <div class="fw-bold text-white text-truncate"><%= user.name %></div>
+                     <small class="text-muted">Gamer</small>
+                   </div>
                 </div>
-              </a>
-              <a href="/profile/edit/me" class="btn btn-link text-muted p-2 edit-profile-btn" title="Edit Profile">
-                <i class="fas fa-pencil-alt"></i>
-              </a>
-            </div>
-          </li>
-          
-          <!-- Menu Items -->
-          <li><a class="dropdown-item py-2" href="/profile/<%= user.id %>"><i class="fas fa-user me-2"></i> My Profile</a></li>
-          <li><a class="dropdown-item py-2" href="/payment/history"><i class="fas fa-shopping-bag me-2"></i> My Orders</a></li>
-          <li><a class="dropdown-item py-2" href="/profile/settings"><i class="fas fa-cog me-2"></i> Settings</a></li>
-          <li><hr class="dropdown-divider bg-secondary opacity-25 my-2" /></li>
-          <li><a class="dropdown-item py-2 text-danger" href="/logout"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
-        </ul>
-      </div>
-      <% } else { %>
-        <a href="/login" class="btn btn-sm btn-outline-aqua">Login</a>
-      <% } %>
-    </div>
-
-    <!-- 4. Desktop Menu & Search (Collapsible) -->
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <!-- Search Form (Desktop) -->
-      <form class="d-none d-lg-flex mx-auto search-form" action="/games" method="GET">
-        <input
-          class="form-control me-2"
-          type="search"
-          name="search"
-          placeholder="Search games..."
-          value="<%= typeof search !== 'undefined' ? search : '' %>"
-        />
-        <button class="btn btn-outline-aqua" type="submit">
-          <i class="fas fa-search"></i>
-        </button>
-      </form>
-
-      <!-- Desktop Right Menu -->
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link <%= typeof title != 'undefined' && title === 'Home' ? 'active' : '' %>" href="/games">
-            <i class="fas fa-gamepad me-1"></i> Games
-          </a>
-        </li>
-      </ul>
-      <ul class="navbar-nav ms-auto align-items-center d-none d-lg-flex">
-        <% if (user) { %>
-        <li class="nav-item">
-          <a class="btn btn-aqua me-3" href="/games/create/new">
-            <i class="fas fa-upload me-2"></i> Upload Game
-          </a>
-        </li>
-        
-        <!-- Desktop Profile Dropdown (Same structure as mobile for consistency) -->
-        <li class="nav-item dropdown">
-          <a
-            class="nav-link p-0 d-flex align-items-center"
-            href="#"
-            id="userDropdownDesktop"
-            role="button"
-            data-bs-toggle="dropdown"
-          >
-            <% if (user.avatar) { %>
-            <img
-              src="<%= user.avatar %>"
-              alt="<%= user.name %>"
-              class="rounded-circle border border-aqua"
-              width="40"
-              height="40"
-              style="object-fit: cover;"
-            />
-            <% } else { %>
-            <i class="fas fa-user-circle fa-2x text-white"></i>
-            <% } %>
-          </a>
-          
-          <!-- Custom Dropdown (Reused) -->
-          <ul class="dropdown-menu dropdown-menu-end custom-profile-menu mt-3 shadow-lg border-0" aria-labelledby="userDropdownDesktop">
-            <li class="profile-header p-3 mb-2">
-              <div class="d-flex align-items-center justify-content-between">
-                <a href="/profile/<%= user.id %>" class="d-flex align-items-center text-decoration-none text-white flex-grow-1">
-                  <% if (user.avatar) { %>
-                  <img
-                    src="<%= user.avatar %>"
-                    alt="<%= user.name %>"
-                    class="rounded-circle me-3"
-                    width="48"
-                    height="48"
-                    style="object-fit: cover;"
-                  />
-                  <% } else { %>
-                  <i class="fas fa-user-circle fa-3x me-3 text-aqua"></i>
-                  <% } %>
-                  <div class="d-flex flex-column">
-                    <span class="fw-bold text-truncate" style="max-width: 150px;"><%= user.name %></span>
-                    <small class="text-aqua">View Profile</small>
-                  </div>
-                </a>
-                <a href="/profile/edit/me" class="btn btn-link text-muted p-2 edit-profile-btn">
-                  <i class="fas fa-pencil-alt"></i>
-                </a>
-              </div>
-            </li>
-            <li><a class="dropdown-item py-2" href="/profile/<%= user.id %>"><i class="fas fa-user me-2"></i> My Profile</a></li>
-            <li><a class="dropdown-item py-2" href="/payment/history"><i class="fas fa-shopping-bag me-2"></i> My Orders</a></li>
-            <li><a class="dropdown-item py-2" href="/profile/settings"><i class="fas fa-cog me-2"></i> Settings</a></li>
-            <li><hr class="dropdown-divider bg-secondary opacity-25 my-2" /></li>
-            <li><a class="dropdown-item py-2 text-danger" href="/logout"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
-          </ul>
-        </li>
+              </li>
+              <li><a class="dropdown-item text-white hover-bg-dark" href="/profile/<%= user.id %>"><i class="fas fa-user me-2 text-aqua"></i> My Profile</a></li>
+              <li><a class="dropdown-item text-white hover-bg-dark" href="/payment/history"><i class="fas fa-shopping-bag me-2 text-aqua"></i> My Orders</a></li>
+              <li><a class="dropdown-item text-white hover-bg-dark" href="/profile/edit/me"><i class="fas fa-cog me-2 text-aqua"></i> Settings</a></li>
+              <li><hr class="dropdown-divider bg-secondary"></li>
+              <li><a class="dropdown-item text-danger hover-bg-dark" href="/logout"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+            </ul>
+          </div>
         <% } else { %>
-        <li class="nav-item me-2">
-          <a class="btn btn-outline-aqua btn-auth" href="/login">Login</a>
+          <div class="d-flex gap-2">
+            <a href="/login" class="btn btn-sm btn-outline-aqua btn-auth">Login</a>
+            <!-- User Request: Only Login button on mobile -->
+            <a href="/register" class="btn btn-sm btn-aqua btn-auth d-none d-lg-inline-block">Register</a>
+          </div>
+        <% } %>
+    </div>
+
+    <!-- 4. Main Navigation Links (Collapsible) -->
+    <!-- Order-3 on mobile (Bottom), Order-lg-2 on Desktop (Center) -->
+    <div class="collapse navbar-collapse order-3 order-lg-2 justify-content-center" id="navbarNav">
+      <ul class="navbar-nav mb-2 mb-lg-0 text-center">
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page != 'undefined' && page === 'home' ? 'active' : '' %>" href="/">Home</a>
         </li>
         <li class="nav-item">
-          <a class="btn btn-aqua btn-auth" href="/register">Register</a>
+          <a class="nav-link <%= typeof title != 'undefined' && title === 'Home' ? 'active' : '' %>" href="/games">Games</a>
         </li>
-        <% } %>
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page != 'undefined' && page === 'about' ? 'active' : '' %>" href="/about">About</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page != 'undefined' && page === 'community' ? 'active' : '' %>" href="/community">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= typeof page != 'undefined' && page === 'faq' ? 'active' : '' %>" href="/faq">FAQ</a>
+        </li>
       </ul>
-    </div>
-  </div>
-  
-  <!-- Mobile Search Collapse -->
-  <div class="collapse w-100 d-lg-none bg-dark-secondary" id="mobileSearch">
-    <div class="container py-3">
-      <form class="d-flex" action="/games" method="GET">
-        <input
-          class="form-control me-2"
-          type="search"
-          name="search"
-          placeholder="Search games..."
-          value="<%= typeof search !== 'undefined' ? search : '' %>"
-        />
-        <button class="btn btn-aqua" type="submit">
-          <i class="fas fa-search"></i>
-        </button>
-      </form>
     </div>
   </div>
 </nav>
+
+
+
+<!-- Search Modal -->
+<div class="modal fade" id="searchModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark border-aqua">
+      <div class="modal-body p-4">
+        <form action="/games" method="GET">
+          <div class="input-group input-group-lg">
+            <span class="input-group-text bg-dark-secondary border-aqua text-aqua"><i class="fas fa-search"></i></span>
+            <input type="search" name="search" class="form-control bg-dark-secondary border-aqua text-white" placeholder="Search games, categories..." autofocus>
+            <button class="btn btn-aqua" type="submit">Search</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="/js/notifications.js"></script>
 
 <!-- Flash Messages -->
 <% if (success) { %>
@@ -227,3 +152,14 @@
   <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 </div>
 <% } %>
+
+<style>
+/* Additional Navbar Styling */
+.hover-aqua:hover { color: #00ADB5 !important; transition: 0.3s; }
+.bg-dark-secondary { background-color: #1a1a1d; }
+.hover-bg-dark:hover { background-color: #2d2d30 !important; color: #00ADB5 !important; }
+.custom-profile-menu { min-width: 250px; }
+/* Ensure search input group looks unified */
+.input-group-text { border-right: none; }
+.input-group .form-control { border-left: none; }
+</style>

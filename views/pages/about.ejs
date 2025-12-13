@@ -1,0 +1,546 @@
+<%- include('../layouts/header', { title: title }) %>
+<%- include('../partials/navbar') %>
+
+<style>
+/* Hero Parallax */
+.about-hero {
+    background: linear-gradient(rgba(15, 15, 35, 0.8), rgba(15, 15, 35, 0.9)), url('https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.about-hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    background: linear-gradient(to top, var(--dark-primary), transparent);
+}
+
+/* Feature Cards */
+.feature-card {
+    background: rgba(26, 26, 46, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 217, 255, 0.1);
+    border-radius: 15px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--aqua);
+    box-shadow: 0 10px 30px rgba(0, 217, 255, 0.1);
+}
+
+/* Stats Section */
+.stat-item-lg {
+    text-align: center;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.stat-item-lg:hover {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--aqua);
+}
+
+.stat-number {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(to right, #fff, var(--aqua));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+
+/* Timeline */
+.timeline {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.timeline::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    background-color: var(--dark-tertiary);
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    margin-left: -3px;
+    border-radius: 3px;
+}
+
+.timeline-container {
+    padding: 10px 40px;
+    position: relative;
+    background-color: inherit;
+    width: 50%;
+}
+
+.timeline-container::after {
+    content: '';
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: -12.5px;
+    background-color: var(--dark-primary);
+    border: 4px solid var(--aqua);
+    top: 15px;
+    border-radius: 50%;
+    z-index: 1;
+}
+
+.left {
+    left: 0;
+}
+
+.right {
+    left: 50%;
+}
+
+.left::before {
+    content: " ";
+    height: 0;
+    position: absolute;
+    top: 22px;
+    width: 0;
+    z-index: 1;
+    right: 30px;
+    border: medium solid white;
+    border-width: 10px 0 10px 10px;
+    border-color: transparent transparent transparent var(--dark-secondary);
+}
+
+.right::before {
+    content: " ";
+    height: 0;
+    position: absolute;
+    top: 22px;
+    width: 0;
+    z-index: 1;
+    left: 30px;
+    border: medium solid white;
+    border-width: 10px 10px 10px 0;
+    border-color: transparent var(--dark-secondary) transparent transparent;
+}
+
+.right::after {
+    left: -12.5px;
+}
+
+.timeline-content {
+    padding: 20px 30px;
+    background-color: var(--dark-secondary);
+    position: relative;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.timeline-content:hover {
+    border-color: var(--aqua);
+    box-shadow: 0 0 15px rgba(0, 217, 255, 0.2);
+}
+
+@media screen and (max-width: 600px) {
+    .timeline::after {
+    left: 31px;
+    }
+    
+    .timeline-container {
+    width: 100%;
+    padding-left: 70px;
+    padding-right: 25px;
+    }
+    
+    .timeline-container::before {
+    left: 60px;
+    border: medium solid white;
+    border-width: 10px 10px 10px 0;
+    border-color: transparent var(--dark-secondary) transparent transparent;
+    }
+
+    .left::after, .right::after {
+    left: 18.5px;
+    }
+    
+    .right {
+    left: 0%;
+    }
+}
+
+/* Team Card */
+.team-member {
+    background: var(--dark-secondary);
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.team-member:hover {
+    transform: translateY(-10px);
+}
+
+.team-img {
+    height: 250px;
+    overflow: hidden;
+}
+
+.team-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    /* Fix Hero Text Overflow */
+    .about-hero h1.display-3 {
+        font-size: 2.5rem; /* Smaller font for mobile */
+        word-wrap: break-word;
+    }
+    
+    .about-hero .lead {
+        font-size: 1rem;
+        padding: 0 15px;
+    }
+
+    /* Fix Hero Height/Ratio to be more landscape-ish */
+    .about-hero {
+        height: auto;
+        min-height: 56.25vw; /* 16:9 Aspect Ratio */
+        padding: 80px 0; /* Add padding to prevent cut-off */
+    }
+
+    /* Fix CTA Buttons Collision */
+    .cta-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .cta-buttons .btn {
+        width: 100% !important; /* Full width on mobile */
+        margin-bottom: 10px;
+    }
+    
+    /* Fix Story Image Ratios */
+    .img-fluid.rounded-3 {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16/9;
+        object-fit: cover;
+    }
+}
+</style>
+
+<!-- 1. Hero Section -->
+<div class="about-hero mb-5">
+    <div class="container text-center animate-on-scroll scale-up">
+        <span class="badge rounded-pill bg-aqua text-dark mb-3 px-3 py-2 fw-bold">THE FUFUFAFA STORY</span>
+        <h1 class="display-3 fw-bold text-white mb-4">Empowering <span class="text-aqua">Gamers</span> & <span class="text-aqua">Creators</span></h1>
+        <p class="lead text-white-50 mx-auto" style="max-width: 700px;">
+            We are building the ultimate ecosystem where passion meets opportunity. Play limitless games, share your creations, and connect with a global community.
+        </p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- 2. Story Section -->
+    <div class="row align-items-center mb-5 py-5 animate-on-scroll fade-up">
+        <div class="col-lg-6 mb-4 mb-lg-0">
+             <img src="https://images.unsplash.com/photo-1552820728-8b83bb6b773f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Our Story" class="img-fluid rounded-3 shadow-lg border border-secondary">
+        </div>
+        <div class="col-lg-6 ps-lg-5">
+            <h2 class="fw-bold mb-4">Our <span class="text-aqua">Journey</span></h2>
+            <p class="text-white mb-4 fs-5">
+                Started in a small dorm room by a group of passionate gamers, Fufufafagames was born from a simple frustration: indie developers lacked a platform to truly shine without getting buried by corporate giants.
+            </p>
+            <p class="text-white mb-4">
+                What began as a simple game repository has evolved into a thriving ecosystem. We believe that every game, no matter how small pixels, deserves to be played. Today, we stand as a beacon for creativity, hosting thousands of browser-based games that bring joy to millions.
+            </p>
+        </div>
+    </div>
+
+    <!-- 3. Statistics Section -->
+    <div class="row mb-5 pb-5 g-4 animate-on-scroll fade-up">
+        <div class="col-md-3 col-6">
+            <div class="stat-item-lg">
+                <i class="fas fa-gamepad fa-2x text-white mb-3"></i>
+                <div class="stat-number" data-target="<%= stats.gamesHosted %>">0</div>
+                <p class="text-white mb-0 uppercase tracking-widest small">GAMES HOSTED</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-item-lg">
+                <i class="fas fa-users fa-2x text-white mb-3"></i>
+                <div class="stat-number" data-target="<%= stats.activeGamers %>">0</div>
+                <p class="text-white mb-0 uppercase tracking-widest small">ACTIVE GAMERS</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-item-lg">
+                <i class="fas fa-play-circle fa-2x text-white mb-3"></i>
+                <div class="stat-number" data-target="<%= stats.totalPlays %>">0</div>
+                <p class="text-white mb-0 uppercase tracking-widest small">TOTAL PLAYS</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-item-lg">
+                <i class="fas fa-code-branch fa-2x text-white mb-3"></i>
+                <div class="stat-number" data-target="<%= stats.indieDevs %>">0</div>
+                <p class="text-white mb-0 uppercase tracking-widest small">INDIE DEVS</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Mission & Vision -->
+    <div class="row text-center mb-5 animate-on-scroll scale-up">
+        <div class="col-lg-8 mx-auto">
+             <h2 class="fw-bold mb-5">Our <span class="text-aqua">Mission & Vision</span></h2>
+        </div>
+    </div>
+    <div class="row g-4 mb-5 pb-5 animate-on-scroll fade-up">
+        <div class="col-md-6">
+            <div class="p-5 bg-dark-secondary rounded-3 border border-secondary h-100 text-center position-relative overflow-hidden">
+                <div class="position-absolute top-0 start-0 w-100 h-100 bg-gradient-to-br from-aqua to-transparent opacity-5" style="z-index: 0; pointer-events: none;"></div>
+                <i class="fas fa-rocket fa-4x text-aqua mb-4 position-relative"></i>
+                <h3 class="mb-3 position-relative">Our Mission</h3>
+                <p class="text-white position-relative">
+                   To democratize game publishing by providing a free, accessible, and powerful platform where creativity knows no bounds. We aim to remove barriers between developers and players.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6">
+             <div class="p-5 bg-dark-secondary rounded-3 border border-secondary h-100 text-center position-relative overflow-hidden">
+                 <div class="position-absolute top-0 start-0 w-100 h-100 bg-gradient-to-bl from-purple to-transparent opacity-5" style="z-index: 0; pointer-events: none;"></div>
+                <i class="fas fa-eye fa-4x text-purple mb-4 position-relative" style="color: #bc13fe;"></i>
+                <h3 class="mb-3 position-relative">Our Vision</h3>
+                <p class="text-white position-relative">
+                    To become the global standard for browser-based gaming, creating a verified, safe, and endlessly entertaining metaverse for generations to come.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Key Features -->
+    <div class="row align-items-center mb-5 pb-5 animate-on-scroll fade-up">
+         <div class="col-12 text-center mb-5">
+            <h2 class="fw-bold">Why <span class="text-aqua">Choose Us?</span></h2>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4 d-flex align-items-stretch">
+            <div class="feature-card text-center w-100">
+                <i class="fas fa-bolt fa-3x text-warning mb-4"></i>
+                <h5>Lightning Fast</h5>
+                <p class="small text-white mb-0">Optimized servers ensuring zero lag and instant load times for all browser games.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4 d-flex align-items-stretch">
+            <div class="feature-card text-center w-100">
+                <i class="fas fa-shield-alt fa-3x text-success mb-4"></i>
+                <h5>Secure & Safe</h5>
+                <p class="small text-white mb-0">Rigorous screening process to ensure strict safety standards for our community.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4 d-flex align-items-stretch">
+             <div class="feature-card text-center w-100">
+                <i class="fas fa-users fa-3x text-info mb-4"></i>
+                <h5>Community First</h5>
+                <p class="small text-white mb-0">Built-in forums, rating systems, and social features to connect with fellow gamers.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4 d-flex align-items-stretch">
+             <div class="feature-card text-center w-100">
+                <i class="fas fa-hand-holding-usd fa-3x text-danger mb-4"></i>
+                <h5>Creator Friendly</h5>
+                <p class="small text-white mb-0">Start for free. Fair revenue share models coming soon for premium developers.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Roadmap -->
+    <div class="row mb-5 pb-5 animate-on-scroll fade-up">
+        <div class="col-12 text-center mb-5">
+            <h2 class="fw-bold">Project <span class="text-aqua">Roadmap</span></h2>
+        </div>
+        <div class="col-12">
+            <div class="timeline">
+                <div class="timeline-container left">
+                    <div class="timeline-content">
+                        <h5 class="fw-bold text-aqua">Q1 2024</h5>
+                        <p class="mb-0">Platform Launch Beta. Core functionality for uploading and playing games.</p>
+                    </div>
+                </div>
+                <div class="timeline-container right">
+                    <div class="timeline-content">
+                        <h5 class="fw-bold text-aqua">Q2 2024</h5>
+                        <p class="mb-0">Community Features. Forums, Comments, and advanced User Profiles implementation.</p>
+                    </div>
+                </div>
+                <div class="timeline-container left">
+                    <div class="timeline-content">
+                        <h5 class="fw-bold text-aqua">Q3 2024</h5>
+                        <p class="mb-0">Monetization System. Introduction of premium games and creator tipping.</p>
+                    </div>
+                </div>
+                <div class="timeline-container right">
+                    <div class="timeline-content">
+                        <h5 class="fw-bold text-aqua">Q4 2024</h5>
+                        <p class="mb-0">Global Tournament. First official Fufufafagames e-sports event.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. Meet The Team -->
+    <div class="row mb-5 pb-5 animate-on-scroll scale-up">
+         <div class="col-12 text-center mb-5">
+            <h2 class="fw-bold">Meet The <span class="text-aqua">Minds</span></h2>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4 d-flex align-items-stretch">
+            <div class="team-member h-100 pb-3 w-100">
+                <div class="team-img">
+                    <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Team Member">
+                </div>
+                <div class="px-4 pt-3 text-center">
+                    <h5 class="mb-1">Ahmad Ramadhan Shobrunjamil</h5>
+                    <p class="text-aqua small mb-2">Lead Developer</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="#" class="text-white"><i class="fab fa-github"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4 d-flex align-items-stretch">
+            <div class="team-member h-100 pb-3 w-100">
+                <div class="team-img">
+                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Team Member">
+                </div>
+                <div class="px-4 pt-3 text-center">
+                    <h5 class="mb-1">Adam Rahmatulloh</h5>
+                    <p class="text-aqua small mb-2">Product Designer</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="#" class="text-white"><i class="fab fa-dribbble"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+         <div class="col-md-6 col-lg-3 mb-4 d-flex align-items-stretch">
+            <div class="team-member h-100 pb-3 w-100">
+                <div class="team-img">
+                    <img src="/public/img/Masis.jpg" alt="Team Member">
+                </div>
+                <div class="px-4 pt-3 text-center">
+                    <h5 class="mb-1">Muhammad Anwar Ismail</h5>
+                    <p class="text-aqua small mb-2">Backend Engineer</p>
+                    <div class="d-flex justify-content-center gap-2">
+                         <a href="https://github.com/MasisTech" class="text-white"><i class="fab fa-github"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+         <div class="col-md-6 col-lg-3 mb-4 d-flex align-items-stretch">
+            <div class="team-member h-100 pb-3 w-100">
+                <div class="team-img">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Team Member">
+                </div>
+                <div class="px-4 pt-3 text-center">
+                    <h5 class="mb-1">Muhammad Ilham Jazuli</h5>
+                    <p class="text-aqua small mb-2">Community Manager</p>
+                     <div class="d-flex justify-content-center gap-2">
+                        <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. Call To Action -->
+    <div class="row justify-content-center mb-5 animate-on-scroll fade-up">
+        <div class="col-lg-10">
+            <div class="p-5 bg-gradient-to-r from-dark-secondary to-dark-primary rounded-3 border border-aqua shadow-lg text-center position-relative overflow-hidden">
+                <div class="position-absolute top-0 end-0 w-50 h-100 bg-aqua opacity-10" style="filter: blur(80px);"></div>
+                <h2 class="fw-bold mb-4">Ready to Start Your Adventure?</h2>
+                <p class="lead text-white mb-4">Join thousands of gamers and creators. The future of browser gaming starts with you.</p>
+                <div class="d-flex cta-buttons justify-content-center gap-3">
+                    <a href="/auth/register" class="btn btn-aqua btn-lg px-5" style="min-width: 200px; height: 54px; display: inline-flex; align-items: center; justify-content: center;">Join Now</a>
+                    <a href="/games" class="btn btn-outline-aqua btn-lg px-5" style="min-width: 200px; height: 54px; display: inline-flex; align-items: center; justify-content: center;">Explore Games</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/scroll-animations.js"></script>
+<script>
+    // Simple CountUp Animation for Stats
+    const counters = document.querySelectorAll('.stat-number');
+    const speed = 200; // The lower the slower
+
+    const startCounters = () => {
+        counters.forEach(counter => {
+            const updateCount = () => {
+                const target = +counter.getAttribute('data-target');
+                const count = +counter.innerText;
+                const inc = target / speed;
+
+                if (count < target) {
+                    counter.innerText = Math.ceil(count + inc);
+                    setTimeout(updateCount, 20);
+                } else {
+                    // For massive numbers, format with K or M if needed, but for now just target
+                     counter.innerText = target.toLocaleString();
+                }
+            };
+            updateCount();
+        });
+    }
+
+    // Trigger counters when Stats section is visible
+    const statsSection = document.querySelector('.stat-item-lg');
+    if(statsSection) {
+        const observer = new IntersectionObserver((entries) => {
+            if(entries[0].isIntersecting) {
+                startCounters();
+                observer.disconnect();
+            }
+        });
+        observer.observe(statsSection);
+    }
+</script>
+
+<%- include('../layouts/footer') %>

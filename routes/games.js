@@ -15,6 +15,7 @@ const gameController = require("../controllers/gameController");
 const upload = require("../middleware/upload");
 
 // Public routes
+router.get("/api/search", gameController.searchApi); // API Live Search
 router.get("/", gameController.index); // List all games
 router.get("/:slug", gameController.show); // Show game detail
 router.get("/:slug/play", gameController.play); // Play game

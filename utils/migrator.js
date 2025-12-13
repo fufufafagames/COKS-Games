@@ -28,6 +28,19 @@ const runMigration = async () => {
         `);
         console.log('transactions table created.');
 
+        // 3. Create notifications table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS notifications (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                type VARCHAR(50) NOT NULL,
+                message TEXT NOT NULL,
+                is_read BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT NOW()
+            );
+        `);
+        console.log('notifications table created.');
+
         console.log('Migration completed successfully!');
     } catch (error) {
         console.error('Migration failed:', error);

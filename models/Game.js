@@ -12,31 +12,65 @@ module.exports = {
    * @param {string} category - Category filter (optional)
    * @returns {Promise<array>} Array of games
    */
-  getAll: async (search = "", category = "") => {
+  getAll: async (search = "", category = "", sortBy = "newest", page = 1, limit = 12) => {
     let query = `
-            SELECT games.*, users.name as author_name, users.avatar as author_avatar
+            SELECT games.*, users.name as author_name, users.avatar as author_avatar,
+            COUNT(*) OVER() as total_count
             FROM games 
             JOIN users ON games.user_id = users.id 
             WHERE 1=1
         `;
     const params = [];
+    let paramCount = 1;
 
     // Add search filter
     if (search) {
       params.push(`%${search}%`);
-      query += ` AND (games.title ILIKE $${params.length} OR games.description ILIKE $${params.length})`;
+      query += ` AND (games.title ILIKE $${paramCount} OR games.description ILIKE $${paramCount})`;
+      paramCount++;
     }
 
-    // Add category filter - Use ILIKE for partial match (multi-category support)
+    // Add category filter
     if (category) {
       params.push(`%${category}%`);
-      query += ` AND games.category ILIKE $${params.length}`;
+      query += ` AND games.category ILIKE $${paramCount}`;
+      paramCount++;
     }
 
-    query += " ORDER BY games.created_at DESC";
+    // Sorting
+    switch (sortBy) {
+        case "oldest":
+            query += " ORDER BY games.created_at ASC";
+            break;
+        case "popular":
+            query += " ORDER BY games.play_count DESC";
+            break;
+        case "rating":
+            query += " ORDER BY games.avg_rating DESC NULLS LAST";
+            break;
+        case "az":
+            query += " ORDER BY games.title ASC";
+            break;
+        case "za":
+            query += " ORDER BY games.title DESC";
+            break;
+        case "newest":
+        default:
+            query += " ORDER BY games.created_at DESC";
+            break;
+    }
+    
+    // Pagination
+    const offset = (page - 1) * limit;
+    params.push(limit);
+    params.push(offset);
+    query += ` LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
 
     const result = await db.query(query, params);
-    return result.rows;
+    return {
+        games: result.rows,
+        total: result.rows.length > 0 ? parseInt(result.rows[0].total_count) : 0
+    };
   },
 
   /**
@@ -45,9 +79,18 @@ module.exports = {
    */
   getAllCategories: async () => {
     const result = await db.query(
-      "SELECT DISTINCT category FROM games WHERE category IS NOT NULL ORDER BY category ASC"
+      "SELECT DISTINCT category FROM games WHERE category IS NOT NULL"
     );
-    return result.rows.map((row) => row.category);
+    // Split comma-separated categories and get unique values
+    const allCategories = result.rows
+      .map(row => row.category)
+      .join(',')
+      .split(',')
+      .map(cat => cat.trim())
+      .filter(cat => cat.length > 0);
+      
+    // Return unique sorted categories
+    return [...new Set(allCategories)].sort();
   },
 
   /**
@@ -259,4 +302,26 @@ module.exports = {
     ]);
     return result.rows.length > 0;
   },
+
+  /**
+   * Search games by title prefix (Live Search)
+   * Case insensitive search matching the start of the title
+   * @param {string} query - Search prefix
+   * @returns {Promise<array>} Array of games
+   */
+  searchByTitlePrefix: async (query) => {
+    if (!query) return [];
+    
+    // Use ILIKE with % only at the end for prefix matching
+    // e.g., 'ab' -> 'ab%' matches 'Absurd', 'Abacus' but not 'Crab'
+    const result = await db.query(
+      `SELECT id, title, slug, thumbnail_url, category, avg_rating 
+       FROM games 
+       WHERE title ILIKE $1 
+       ORDER BY title ASC 
+       LIMIT 10`,
+      [query + '%']
+    );
+    return result.rows;
+  }
 };

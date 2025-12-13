@@ -62,33 +62,47 @@ module.exports = {
     }
   },
   /**
-   * Display all games dengan search & filter
-   * UPDATED: Handle empty games dengan proper message
-   */ index: async (req, res) => {
-    try {
-      const { search, category } = req.query;
-      const games = await Game.getAll(search, category); // Render games index page
-      const categories = await getCategories();
+ * Display all games dengan search & filter
+ * UPDATED: Handle empty games dengan proper message
+ * UPSATED: Added Pagination (Limit 5 per page)
+ */
+index: async (req, res) => {
+  try {
+    const { search, category, page = 1 } = req.query;
+    const limit = 5; // User requested 5 games per column/page
+    const currentPage = parseInt(page) || 1;
 
-      res.render("games/index", {
-        title: "All Games",
-        games,
-        search: search || "",
-        category: category || "",
-        categories, // Pass message jika games kosong
-        emptyMessage:
-          games.length === 0
-            ? search || category
-              ? "No games found matching your criteria. Try different filters!"
-              : "No games available yet. Be the first to upload a game! 🎮"
-            : null,
-      });
-    } catch (error) {
-      console.error("Index error:", error);
-      req.session.error = "Failed to load games. Please try again.";
-      res.redirect("/");
-    }
-  },
+    // Call getAll with pagination params
+    const { games, total } = await Game.getAll(search, category, "newest", currentPage, limit);
+    const categories = await getCategories();
+    
+    // Calculate total pages
+    const totalPages = Math.ceil(total / limit);
+
+    res.render("games/index", {
+      title: "All Games",
+      games,
+      search: search || "",
+      category: category || "",
+      categories,
+      // Pagination Data
+      currentPage,
+      totalPages,
+      totalGames: total,
+      // Pass message jika games kosong
+      emptyMessage:
+        games.length === 0
+          ? search || category
+            ? "No games found matching your criteria. Try different filters!"
+            : "No games available yet. Be the first to upload a game! 🎮"
+          : null,
+    });
+  } catch (error) {
+    console.error("Index error:", error);
+    req.session.error = "Failed to load games. Please try again.";
+    res.redirect("/");
+  }
+},
   /**
    * Display game detail
    */ show: async (req, res) => {
@@ -524,4 +538,31 @@ module.exports = {
       res.redirect("/games");
     }
   },
+  /**
+   * Render Search Page
+   */
+  searchPage: async (req, res) => {
+    const categories = await getCategories();
+    res.render('games/search', {
+      title: 'Search Games',
+      categories
+    });
+  },
+
+  /**
+   * API for Live Search
+   */
+  searchApi: async (req, res) => {
+    try {
+      const { q } = req.query;
+      if (!q || q.length < 1) {
+        return res.json([]);
+      }
+      const games = await Game.searchByTitlePrefix(q);
+      res.json(games);
+    } catch (error) {
+      console.error('Search API error:', error);
+      res.status(500).json({ error: 'Search failed' });
+    }
+  }
 };

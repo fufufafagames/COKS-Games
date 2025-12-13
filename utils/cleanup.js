@@ -11,7 +11,8 @@ const cleanupOrphanedFiles = async () => {
     
     try {
         // 1. Get all file paths from database
-        const games = await Game.getAll();
+        // 1. Get all file paths from database
+        const { games } = await Game.getAll(); // Fix: destructure games property
         const dbThumbnails = new Set();
         const dbVideos = new Set();
 

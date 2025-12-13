@@ -2211,7 +2211,7 @@ textarea.form-control {
 .carousel-container {
   position: relative;
   width: 100%;
-  height: 600px;
+  height: 470px;
   background: transparent;
   overflow: hidden;
   margin-bottom: 2rem;
@@ -2522,4 +2522,341 @@ textarea.form-control {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* ==================== MOBILE CAROUSEL FIX (16:9) ==================== */
+@media (max-width: 768px) {
+  .carousel-container {
+    height: 56.25vw !important; /* Force 16:9 aspect ratio */
+    min-height: 250px; /* Prevent it from being too short */
+    margin-bottom: 0;
+  }
+
+  /* Adjust upcoming cards size to fit smaller height */
+  .carousel-container .slide .item {
+    width: 100px;
+    height: 140px;
+    border-radius: 12px;
+    top: 50%; /* Center vertically relative to container */
+    transform: translate(0, -50%); /* Fix vertical alignment */
+  }
+
+  /* Adjust active item to fully cover */
+  .carousel-container .slide .item:nth-child(1), 
+  .carousel-container .slide .item:nth-child(2) {
+      border-radius: 0;
+  }
+
+  /* Adjust card positions */
+  .carousel-container .slide .item:nth-child(3) {
+    left: 65%;
+  }
+  .carousel-container .slide .item:nth-child(4) {
+    left: calc(65% + 110px);
+  }
+  .carousel-container .slide .item:nth-child(5) {
+    left: calc(65% + 220px);
+  }
+  
+  /* Stack content better */
+  .item .content {
+    left: 20px;
+    width: 60%; /* Leave room for cards on right */
+    top: 50%;
+    transform: translate(0, -50%);
+    padding-right: 10px;
+  }
+
+  .content .name {
+    font-size: 1.8rem; /* Smaller title */
+    margin-bottom: 5px;
+    line-height: 1.1;
+  }
+
+  .content .des {
+    font-size: 0.9rem; /* Smaller desc */
+    margin-bottom: 15px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Limit text lines to 2 */
+    line-clamp: 2; /* Standard property */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.3;
+  }
+
+  .content button {
+    padding: 8px 20px;
+    font-size: 0.85rem;
+  }
+  
+  /* Adjust nav buttons */
+  .carousel-nav {
+    bottom: 20px;
+    gap: 15px;
+  }
+  
+  .carousel-nav button {
+    width: 40px;
+    height: 40px;
+    font-size: 0.9rem;
+  }
+}
+
+/* ==================== NAVBAR MOBILE FIXES (FINAL) ==================== */
+
+/* 1. Prevent Wrapping on Mobile Navbar Container */
+@media (max-width: 991.98px) {
+  .navbar .container {
+      flex-wrap: nowrap !important; /* Force single line */
+      padding-left: 10px !important;
+      padding-right: 10px !important;
+  }
+  
+  /* Reset Brand Margin */
+  .navbar-brand {
+      margin-right: auto !important; /* Push right side to the end */
+  }
+}
+
+/* 2. Resize Brand Text */
+.brand-text {
+  font-size: 1rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* 3. Tiny Mobile Login Button */
+.navbar .btn-auth {
+  /* Box adjustments: Height increased slightly, Width optimized, Margin added */
+  padding: 5px 8px !important; 
+  font-size: 11px !important;
+  line-height: normal !important; /* Allow natural height */
+  height: auto !important;
+  min-height: 0 !important;
+  border-width: 1px !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  margin-left: 10px !important; /* Space from search icon */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 4. Search Icon Size */
+.navbar .fa-search {
+    font-size: 1rem !important;
+}
+
+/* Extra Small Phones */
+@media (max-width: 375px) {
+  .brand-text {
+      font-size: 0.8rem !important;
+  }
+  .navbar .container {
+      padding-left: 5px !important;
+      padding-right: 5px !important;
+  }
+  .navbar .btn-auth {
+      padding: 3px 6px !important;
+      font-size: 10px !important;
+  }
+}
+
+/* Desktop Styles */
+@media (min-width: 992px) {
+  .brand-text {
+      font-size: 1.5rem;
+  }
+  .navbar .btn-auth {
+      font-size: 0.9rem !important;
+      padding: 0.375rem 0.75rem !important;
+      border-width: 1px !important; 
+  }
+  .navbar .fa-search {
+      font-size: 1.2rem !important;
+  }
+}
+
+/* ------------------------------------------------------------------------------------------------- */
+/* Untuk tampilan game di Homepage */
+.playstore-grid {
+  display: grid;
+  /* Responsif: Mengatur jumlah kolom otomatis berdasarkan lebar layar */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+/* Card Style */
+.playstore-card {
+  background: transparent;
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  transition: transform 0.2s ease, background 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.playstore-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.05); /* Efek highlight tipis saat hover */
+}
+
+/* 1. Banner Atas (Aspect Ratio 16:9) */
+.playstore-card .card-banner {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* Membuat rasio 16:9 yang konsisten */
+  background: #0f0f1e;
+  border-radius: 12px; /* Round di semua sudut banner */
+  overflow: hidden;
+}
+
+.playstore-card .card-banner img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Gambar akan di-crop rapi mengisi kotak */
+  transition: transform 0.3s ease;
+}
+
+/* Efek Hover pada Banner */
+.playstore-card:hover .card-banner img {
+  transform: scale(1.05);
+}
+
+/* Ikon Play di tengah saat hover (Opsional, biar makin kerasa game) */
+.playstore-card .overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.playstore-card .overlay i {
+  font-size: 2rem;
+  color: #fff;
+  filter: drop-shadow(0 0 10px #00d9ff);
+}
+
+.playstore-card:hover .overlay {
+  opacity: 1;
+}
+
+/* 2. Bagian Bawah (Details) */
+.playstore-card .card-details {
+  display: flex; /* Layout menyamping */
+  padding: 12px 4px 0 4px; /* Spasi dari banner */
+  align-items: flex-start;
+}
+
+/* Logo Kecil */
+.playstore-card .game-logo img {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px; /* Sedikit rounded seperti icon HP */
+  object-fit: cover;
+  margin-right: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* Info Text Wrapper */
+.playstore-card .game-info-text {
+  flex: 1;
+  overflow: hidden; /* Supaya teks panjang kepotong rapi */
+}
+
+.playstore-card .game-title {
+  font-size: 1rem;
+  color: #ffffff;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Menambah titik-titik (...) kalau judul kepanjangan */
+  font-weight: 600;
+}
+
+.playstore-card .game-meta-row {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #b8b8d1;
+}
+
+.playstore-card .game-price {
+  color: #00d9ff; /* Warna Cyan tema kamu */
+  font-weight: 500;
+  margin-right: 10px;
+}
+
+.playstore-card .game-rating {
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.playstore-card .game-rating i {
+  color: #ffc107; /* Warna kuning bintang */
+  font-size: 0.7rem;
+}
+
+/* Container Utama untuk Geser Samping */
+.horizontal-scroll-container {
+  display: flex;              /* Susun menyamping (bukan grid) */
+  overflow-x: auto;           /* Izinkan scroll ke samping */
+  gap: 20px;                  /* Jarak antar kartu */
+  padding: 10px 40px 25px 40px; /* Padding bawah agak besar biar bayangan/shadow tidak kepotong */
+  
+  /* Fitur Mewah: Snap Effect (Biar pas digeser berhentinya rapi di kartu) */
+  scroll-snap-type: x mandatory; 
+  scroll-behavior: smooth;
+  
+  /* Sembunyikan Scrollbar (biar bersih kayak aplikasi native) */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+/* Sembunyikan Scrollbar untuk Chrome/Safari/Opera */
+.horizontal-scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Aturan Khusus Kartu di dalam Scroll Container */
+.horizontal-scroll-container .playstore-card {
+  flex: 0 0 auto;    /* PENTING: Jangan biarkan kartu mengecil/tergencet */
+  width: 280px;      /* Lebar tetap kartu */
+  scroll-snap-align: start; /* Titik berhenti snap */
+}
+
+/* Untuk ICON DI CAROUSEL */
+/* Ikon di dalam Carousel Hero */
+.hero-game-icon {
+    margin-bottom: 15px; /* Jarak antara ikon dan judul game */
+    animation: fadeInDown 1s ease; /* Efek animasi muncul dari atas (opsional) */
+}
+
+.hero-game-icon img {
+    width: 80px;      /* Ukuran ikon */
+    height: 80px;
+    object-fit: cover;
+    border-radius: 18px; /* Lengkungan sudut (squircle style) */
+    box-shadow: 0 4px 15px rgba(0, 217, 255, 0.4); /* Efek glowing cyan */
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Penyesuaian Responsif untuk HP */
+@media (max-width: 768px) {
+    .hero-game-icon img {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+    }
 }

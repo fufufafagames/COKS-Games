@@ -20,6 +20,7 @@ app.use(express.json());
 
 // Serve static files (CSS, JS, images)
 app.use(express.static(path.join(__dirname, "public")));
+app.use('/public', express.static(path.join(__dirname, "public"))); // Support explicit /public path
 
 // Method override untuk support PUT/DELETE dari form HTML
 app.use(methodOverride("_method"));
@@ -64,16 +65,20 @@ const gameRoutes = require("./routes/games");
 const ratingRoutes = require("./routes/ratings");
 const profileRoutes = require("./routes/profile");
 const paymentRoutes = require("./routes/payment");
+const notificationRoutes = require("./routes/notifications");
+const pageRoutes = require("./routes/pages");
 
 // Import game controller untuk landing page
 const gameController = require("./controllers/gameController");
 
 // Mount routes
+app.use("/", pageRoutes); // Mount static pages at root level
 app.use("/", authRoutes);
 app.use("/games", gameRoutes);
 app.use("/ratings", ratingRoutes);
 app.use("/profile", profileRoutes);
 app.use("/payment", paymentRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Homepage - Landing page dengan featured games
 // UPDATED: Tidak lagi redirect ke /games, tapi render landing page

@@ -1,39 +1,221 @@
 <%- include('../layouts/header', { title: title }) %>
 <%- include('../partials/navbar') %>
 
+<style>
+/* Marquee Track Animation */
+.marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 40s linear infinite;
+}
+
+.marquee-track:hover {
+    animation-play-state: paused;
+}
+
+@keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* Category Chips */
+.chip {
+    display: inline-block;
+    padding: 8px 20px;
+    margin: 0 10px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 500;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
+}
+
+.chip:hover, .chip.active {
+    background: #00d2ff; /* Aqua */
+    color: #000;
+    border-color: #00d2ff;
+    box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+}
+
+/* View Toggles */
+.view-toggles {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 4px;
+    display: inline-flex;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    border-radius: 50px;
+    gap: 2px;
+}
+
+/* Game Card Styles */
+.game-card {
+    position: relative;
+    overflow: hidden;
+    background: #16213e; /* Darker background */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px; /* Slightly more rounded */
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    display: flex; /* Ensure flex behavior */
+    flex-direction: column;
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 210, 255, 0.15); /* Aqua glow */
+    border-color: #00d2ff;
+}
+
+.game-card-img-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    overflow: hidden;
+    background: #0f0f1e;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.game-card-img-wrapper img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.game-card:hover .game-card-img-wrapper img {
+    transform: scale(1.1);
+}
+
+/* Overlay Interactive */
+.game-card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4); /* Darker overlay */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 2;
+}
+
+.game-card:hover .game-card-overlay {
+    opacity: 1;
+}
+
+.game-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.game-meta {
+    font-size: 0.85rem;
+}
+
+/* Pagination Styles */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 40px;
+}
+
+.page-btn {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 217, 255, 0.2);
+    border-radius: 12px;
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.page-btn:hover:not(.disabled) {
+    background: #00d2ff;
+    color: #000;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 210, 255, 0.3);
+}
+
+.page-btn.active {
+    background: #00d2ff;
+    color: #000;
+    pointer-events: none;
+    box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+}
+
+.page-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.pagination-info {
+    width: 100%;
+    text-align: center;
+    color: #8f9bb3;
+    font-size: 0.9rem;
+    margin-top: 15px;
+}
+</style>
+
 <!-- Parallax Hero Section -->
-<div class="parallax-section bg-game-hero d-flex align-items-center justify-content-center" style="min-height: 60vh;">
+<div class="parallax-section bg-game-hero d-flex align-items-center justify-content-center" style="min-height: 20vh;">
     <div class="container text-center">
         <div class="page-header mb-0 animate-on-scroll scale-up">
-            <h1 class="display-3 fw-bold glow-aqua mb-3">🎮 Discover Amazing Games</h1>
-            <p class="lead text-white fs-4">Browse, play, and upload your favorite browser games</p>
+            <h1 class="display-5 fw-bold glow-aqua" style="margin-bottom: 15px !important;">Explore Games</h1>
         </div>
     </div>
 </div>
 
 <!-- Main Content Section with Grid Background -->
-<div class="parallax-section bg-game-grid py-5">
+<div class="parallax-section bg-game-grid py-3">
     <div class="container">
-        <!-- Filters -->
-        <div class="row mb-5 animate-on-scroll fade-up">
+        <!-- Filters & Marquee -->
+        <div class="row mb-4 animate-on-scroll fade-up">
             <div class="col-md-12">
-                <div class="filter-bar">
-                    <div class="row align-items-center">
-                        <div class="col-md-8 mb-3 mb-md-0">
-                            <form action="/games" method="GET" class="d-flex">
-                                <input type="text" name="search" class="form-control me-2" placeholder="Search games by title or description..." value="<%= search %>">
-                                <button type="submit" class="btn btn-aqua">
-                                    <i class="fas fa-search"></i> Search
-                                </button>
+                <div class="filter-bar p-4 bg-dark-secondary rounded border border-aqua shadow-lg">
+                    <div class="row align-items-center g-3">
+                        <!-- Search Input -->
+                        <div class="col-md-4">
+                            <form action="/games" method="GET" class="d-flex position-relative">
+                                <input type="text" name="search" class="form-control rounded-pill ps-5 bg-dark border-secondary text-white" placeholder="Search games..." value="<%= search %>">
+                                <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                             </form>
                         </div>
-                        <div class="col-md-4">
-                            <select class="form-control" onchange="window.location.href='/games?category=' + this.value + '&search=<%= search %>'">
-                                <option value="">All Categories</option>
-                                <% categories.forEach(cat => { %>
-                                    <option value="<%= cat %>" <%= category === cat ? 'selected' : '' %>><%= cat %></option>
-                                <% }); %>
-                            </select>
+                        
+                        <!-- Marquee Category Filter -->
+                        <div class="col-md-8 overflow-hidden position-relative">
+                             <div class="filter-chips-valid-wrapper flex-grow-1 w-100">
+                                <div id="categoryTrack" class="marquee-track">
+                                    <a href="/games" class="chip <%= category === '' ? 'active' : '' %>" data-category="">All</a>
+                                    <% categories.forEach(cat => { %> 
+                                        <a href="/games?category=<%= cat %>&search=<%= search %>" class="chip <%= category === cat ? 'active' : '' %>" data-category="<%= cat %>">
+                                            <%= cat %>
+                                        </a>
+                                    <% }); %>
+                                </div>
+                            </div>
+                            <!-- Gradient Fade for edges -->
+                            <div class="position-absolute top-0 start-0 h-100 bg-gradient-to-r from-dark to-transparent" style="width: 50px; background: linear-gradient(90deg, #1a1a2e 0%, transparent 100%); pointer-events: none;"></div>
+                            <div class="position-absolute top-0 end-0 h-100 bg-gradient-to-l from-dark to-transparent" style="width: 50px; background: linear-gradient(-90deg, #1a1a2e 0%, transparent 100%); pointer-events: none;"></div>
                         </div>
                     </div>
                 </div>
@@ -42,13 +224,65 @@
         
         <!-- Games Grid -->
         <% if (games.length > 0) { %>
-            <div class="game-grid">
+            <div class="row g-4 justify-content-center justify-content-md-start">
                 <% games.forEach((game, index) => { %>
-                    <div class="animate-on-scroll fade-up delay-<%= (index % 3 + 1) * 100 %>">
+                    <!-- UPDATED: col-12 for mobile (1 column), col-sm-6 (2 col tab), col-lg-3 (4 col desktop) -->
+                    <div class="col-12 col-sm-6 col-lg-4 animate-on-scroll fade-up delay-<%= (index % 3 + 1) * 100 %>">
                         <%- include('../partials/game-card', { game: game }) %>
                     </div>
                 <% }); %>
             </div>
+
+            <!-- Pagination Controls -->
+            <% if (totalPages > 1) { %>
+                <div class="pagination-container animate-on-scroll fade-up">
+                    <!-- Prev Button -->
+                    <a href="<%= currentPage > 1 ? `/games?page=${currentPage - 1}&search=${search}&category=${category}` : '#' %>" 
+                       class="page-btn <%= currentPage === 1 ? 'disabled' : '' %>">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+
+                    <!-- Page Numbers -->
+                    <% 
+                    let startPage = Math.max(1, currentPage - 2);
+                    let endPage = Math.min(totalPages, startPage + 4);
+                    
+                    if (endPage - startPage < 4) {
+                        startPage = Math.max(1, endPage - 4);
+                    }
+                    %>
+
+                    <% if (startPage > 1) { %>
+                        <a href="/games?page=1&search=<%= search %>&category=<%= category %>" class="page-btn">1</a>
+                        <% if (startPage > 2) { %>
+                            <span class="page-btn disabled">...</span>
+                        <% } %>
+                    <% } %>
+
+                    <% for(let i = startPage; i <= endPage; i++) { %>
+                        <a href="/games?page=<%= i %>&search=<%= search %>&category=<%= category %>" 
+                           class="page-btn <%= currentPage === i ? 'active' : '' %>">
+                            <%= i %>
+                        </a>
+                    <% } %>
+
+                    <% if (endPage < totalPages) { %>
+                        <% if (endPage < totalPages - 1) { %>
+                            <span class="page-btn disabled">...</span>
+                        <% } %>
+                        <a href="/games?page=<%= totalPages %>&search=<%= search %>&category=<%= category %>" class="page-btn"><%= totalPages %></a>
+                    <% } %>
+
+                    <!-- Next Button -->
+                    <a href="<%= currentPage < totalPages ? `/games?page=${currentPage + 1}&search=${search}&category=${category}` : '#' %>" 
+                       class="page-btn <%= currentPage === totalPages ? 'disabled' : '' %>">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+                <div class="pagination-info animate-on-scroll fade-up">
+                    Showing page <%= currentPage %> of <%= totalPages %>
+                </div>
+            <% } %>
         <% } else { %>
             <!-- Empty State -->
             <div class="text-center py-5 animate-on-scroll fade-up">
@@ -56,20 +290,20 @@
                 <h3><%= emptyMessage || 'No games found' %></h3>
                 <% if (search || category) { %>
                     <p class="text-white">Try adjusting your search or filters</p>
-                    <a href="/games" class="btn btn-outline-aqua mt-3">
-                        <i class="fas fa-redo"></i> Clear Filters
+                    <a href="/games" class="btn btn-outline-aqua mt-3" style="min-width: 260px; height: 54px; display: inline-flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-redo me-2"></i> Clear Filters
                     </a>
                 <% } else { %>
                     <p class="text-white">Be the first to share your game with the community!</p>
                 <% } %>
                 
                 <% if (user) { %>
-                    <a href="/games/create/new" class="btn btn-aqua mt-3">
-                        <i class="fas fa-upload"></i> Upload Your First Game
+                    <a href="/games/create/new" class="btn btn-aqua mt-3" style="min-width: 260px; height: 54px; display: inline-flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-upload me-2"></i> Upload Your First Game
                     </a>
                 <% } else { %>
-                    <a href="/auth/login" class="btn btn-aqua mt-3">
-                        <i class="fas fa-sign-in-alt"></i> Login to Upload
+                    <a href="/auth/login" class="btn btn-aqua mt-3" style="min-width: 260px; height: 54px; display: inline-flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-sign-in-alt me-2"></i> Login to Upload
                     </a>
                 <% } %>
             </div>
@@ -77,5 +311,6 @@
     </div>
 </div>
 
+<script src="/js/games-filter.js"></script>
 <script src="/js/scroll-animations.js"></script>
 <%- include('../layouts/footer') %>

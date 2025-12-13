@@ -276,6 +276,186 @@
           gap: 15px;
         }
       }
+
+      /* --- PLAYSTORE SCROLL STYLE (Tambahkan ini) --- */
+      /* --- GANTI CSS INI --- */
+      .horizontal-scroll-container {
+        display: flex;
+        overflow-x: auto;
+        gap: 24px;
+        
+        /* Kita hapus padding kiri-kanan yang ribet kemarin */
+        padding: 5px 5px 25px 5px; 
+        
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+        
+        /* Sembunyikan Scrollbar */
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      .horizontal-scroll-container::-webkit-scrollbar {
+        display: none;
+      }
+
+      .horizontal-scroll-container .playstore-card {
+        flex: 0 0 auto;
+        width: 410px;
+        scroll-snap-align: start;
+      }
+      /* ----------------------------------------------- */
+      /* --- STYLE KARTU KOTAK (SQUARE) --- */
+      .square-game-card {
+        flex: 0 0 auto;       /* Supaya tidak tergencet */
+        width: 220px;         /* Lebar fix (bisa diubah jadi 140px atau 180px) */
+        text-decoration: none;
+        transition: transform 0.2s ease;
+      }
+
+      .square-game-card:hover {
+        transform: translateY(-5px); /* Efek naik dikit pas di-hover */
+      }
+
+      /* Gambar Kotak Besar */
+      .square-game-card .square-img-container {
+        width: 100%;
+        aspect-ratio: 1 / 1;  /* KUNCI: Memaksa rasio 1:1 (Kotak Sempurna) */
+        border-radius: 24px;  /* Lengkungan sudut besar a la Play Store modern */
+        overflow: hidden;
+        margin-bottom: 12px;  /* Jarak gambar ke tulisan bawah */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .square-game-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;    /* Gambar penuh tanpa gepeng */
+      }
+
+      /* Teks di Bawah */
+      .square-game-card .game-title-small {
+        color: #fff;
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+        
+        /* Trik kalau judul kepanjangan jadi ... */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .square-game-card .game-meta-small {
+        font-size: 0.8rem;
+        color: #b8b8d1;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      /* ----------------------------------------------- */
+
+      /* --- STYLE KOTAK IKLAN --- */
+      .ad-container {
+        margin: 60px 0; /* Jarak atas-bawah biar lega */
+        text-align: center;
+      }
+
+      .ad-placeholder {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 250px; /* Tinggi standar banner iklan sedang */
+        
+        /* Desain "Kotak Kosong" */
+        background: rgba(255, 255, 255, 0.03); /* Warna background tipis */
+        border: 2px dashed rgba(0, 217, 255, 0.3); /* Garis putus-putus Cyan */
+        border-radius: 12px;
+        color: #b8b8d1;
+        font-family: monospace; /* Font ala kodingan */
+        font-size: 1.2rem;
+        
+        transition: all 0.3s ease;
+      }
+
+      /* Efek pas mouse lewat (biar tau ini bisa diklik nantinya) */
+      .ad-placeholder:hover {
+        background: rgba(0, 217, 255, 0.05);
+        border-color: #00d9ff;
+        color: #fff;
+        cursor: pointer;
+      }
+      /*----------------------------------------------------------------------*/
+
+      /* --- STYLE SECTION EVENT (BENTO GRID) --- */
+      .event-card-wrapper {
+        background: rgba(255, 255, 255, 0.03); /* Background tipis penyatu */
+        border-radius: 30px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      /* Kiri: Video Area */
+      .event-video-box {
+        width: 100%;
+        aspect-ratio: 16 / 9; /* Rasio standar video YouTube */
+        background: #000;
+        border-radius: 24px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(0, 217, 255, 0.2);
+      }
+
+      .event-video-box iframe, 
+      .event-video-box video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* Kanan Atas: Banner Kecil */
+      .event-side-banner {
+        width: 100%;
+        height: 180px; /* Tinggi banner samping */
+        border-radius: 24px;
+        overflow: hidden;
+        margin-bottom: 20px;
+        position: relative;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .event-side-banner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+      }
+
+      .event-side-banner:hover img {
+        transform: scale(1.05);
+      }
+
+      /* Kanan Bawah: Deskripsi Text */
+      .event-text-box {
+        color: #b8b8d1;
+      }
+
+      .event-text-box h3 {
+        color: #fff;
+        font-weight: 700;
+        margin-bottom: 10px;
+        font-size: 1.5rem;
+      }
+
+      .event-text-box p {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 15px;
+      }
+      /*----------------------------------------------------------------------*/
     </style>
   </head>
   <body class="landing-page">
@@ -284,58 +464,341 @@
     <%- include('partials/navbar') %>
 
     <!-- Carousel Section -->
-    <div class="parallax-section bg-game-hero d-flex align-items-center justify-content-center" style="min-height: 100vh; padding: 0;">
-        <div class="carousel-container">
-            <div class="slide">
-                <% featuredGames.forEach((game, index) => { %>
-                    <div class="item" data-video-url="<%= game.video_url || '' %>">
-                        <% const thumbUrl = game.thumbnail_url || 'https://via.placeholder.com/400x300/1a1a2e/00D9FF?text=No+Image'; %>
-                        
-                        <!-- Thumbnail Background (Separate div for fade effect) -->
-                        <div class="thumb-bg" style="background-image: url('<%= thumbUrl %>'); width: 100%; height: 100%; position: absolute; top: 0; left: 0; background-size: cover; background-position: center; z-index: 1;"></div>
-                        
-                        <!-- Video Spinner -->
-                        <div class="video-spinner" style="display: none;">
-                            <div class="spinner-border text-light" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </div>
+    <div class="container" style="margin-top: 30px; margin-bottom: 30px;">
 
-                        <!-- Video container -->
-                        <div class="video-bg-container">
-                            <iframe class="video-bg youtube-frame" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="display: none;"></iframe>
-                            <video class="video-bg local-video" muted playsinline style="display: none; object-fit: cover; width: 100%; height: 100%;"></video>
-                            <div class="video-overlay"></div>
-                            
-                            <!-- Volume Control -->
-                            <button class="volume-toggle" style="display: none;">
-                                <i class="fas fa-volume-mute"></i>
-                            </button>
-                        </div>
+      <div class="parallax-section bg-game-hero d-flex align-items-center justify-content-center" 
+        style="min-height: 400px; padding: 0; border-radius: 30px; overflow: hidden; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+          <div class="carousel-container">
+              <div class="slide">
+                  <% featuredGames.forEach((game, index) => { %>
+                      <!-- <div class="item" data-video-url="<%= game.video_url || '' %>"> -->
+                      <div class="item <%= index === 0 ? 'active' : '' %>" data-video-url="<%= game.video_url || '' %>">
+                          <% const thumbUrl = game.thumbnail_url || 'https://via.placeholder.com/400x300/1a1a2e/00D9FF?text=No+Image'; %>
+                          
+                          <!-- Thumbnail Background (Separate div for fade effect) -->
+                          <div class="thumb-bg" style="background-image: url('<%= thumbUrl %>'); width: 100%; height: 100%; position: absolute; top: 0; left: 0; background-size: cover; background-position: center; z-index: 1;"></div>
+                          
+                          <!-- Video Spinner -->
+                          <div class="video-spinner" style="display: none;">
+                              <div class="spinner-border text-light" role="status">
+                                  <span class="visually-hidden">Loading...</span>
+                              </div>
+                          </div>
 
-                        <!-- Loading Spinner -->
-                        <div class="video-spinner" style="display: none;">
-                            <div class="spinner-border text-info" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </div>
-                        
-                        <div class="content">
-                            <div class="name"><%= game.title %></div>
-                            <div class="des"><%= game.description.substring(0, 100) %>...</div>
-                            <a href="/games/<%= game.slug %>">
-                                <button class="btn-aqua text-white">See More</button>
-                            </a>
-                        </div>
-                    </div>
-                <% }); %>
-            </div>
+                          <!-- Video container -->
+                          <div class="video-bg-container">
+                              <iframe class="video-bg youtube-frame" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="display: none;"></iframe>
+                              <video class="video-bg local-video" muted playsinline style="display: none; object-fit: cover; width: 100%; height: 100%;"></video>
+                              <div class="video-overlay"></div>
+                              
+                              <!-- Volume Control -->
+                              <button class="volume-toggle" style="display: none;">
+                                  <i class="fas fa-volume-mute"></i>
+                              </button>
+                          </div>
+
+                          <!-- Loading Spinner -->
+                          <div class="video-spinner" style="display: none;">
+                              <div class="spinner-border text-info" role="status">
+                                  <span class="visually-hidden">Loading...</span>
+                              </div>
+                          </div>
+                          
+                          <div class="content">
+                              <!-- <div class="name"><%= game.title %></div> -->
+                              <div class="hero-game-icon">
+                                  <img src="<%= game.icon_url ? game.icon_url : 'https://placehold.co/80x80/2a2a40/00D9FF?text=' + game.title.charAt(0) %>" 
+                                      alt="Icon"
+                                      onerror="this.onerror=null;this.src='https://placehold.co/80x80/2a2a40/00D9FF?text=<%= game.title.charAt(0) %>';">
+                              </div>
+                              <div class="des"><%= game.description.substring(0, 100) %>...</div>
+                              <a href="/games/<%= game.slug %>">
+                                  <button class="btn-aqua text-white">See More</button>
+                              </a>
+                          </div>
+                      </div>
+                  <% }); %>
+              </div>
+              
+              <div class="carousel-nav">
+                  <button class="prev"><i class="fas fa-chevron-left"></i></button>
+                  <button class="next"><i class="fas fa-chevron-right"></i></button>
+              </div>
+          </div>
+      </div>
+
+    </div>
+
+    <!-- Carousel baru  -->
+    <!-- <div class="container" style="margin-top: 30px; margin-bottom: 30px;">
+        
+        <div class="parallax-section bg-game-hero d-flex align-items-center justify-content-center" 
+             style="min-height: 400px; padding: 0; border-radius: 30px; overflow: hidden; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
             
-            <div class="carousel-nav">
-                <button class="prev"><i class="fas fa-chevron-left"></i></button>
-                <button class="next"><i class="fas fa-chevron-right"></i></button>
+            <div class="carousel-container" style="width: 100%; height: 100%;">
+                <div class="slide">
+                    <% featuredGames.forEach((game, index) => { %>
+                        <div class="item" data-video-url="<%= game.video_url || '' %>">
+                            <% const thumbUrl = game.thumbnail_url || 'https://via.placeholder.com/400x300/1a1a2e/00D9FF?text=No+Image'; %>
+                            
+                            <div class="thumb-bg" style="background-image: url('<%= thumbUrl %>'); width: 100%; height: 100%; position: absolute; top: 0; left: 0; background-size: cover; background-position: center; z-index: 1;">
+                                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, #0f0f1e 0%, transparent 60%, rgba(0,0,0,0.4) 100%);"></div>
+                            </div>
+                            
+                            <div class="video-spinner" style="display: none;">
+                                <div class="spinner-border text-light" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+
+                            <div class="video-bg-container">
+                                <iframe class="video-bg youtube-frame" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="display: none;"></iframe>
+                                <video class="video-bg local-video" muted playsinline style="display: none; object-fit: cover; width: 100%; height: 100%;"></video>
+                                <div class="video-overlay"></div>
+                                
+                                <button class="volume-toggle" style="display: none; position: absolute; bottom: 20px; right: 20px; z-index: 10;">
+                                    <i class="fas fa-volume-mute"></i>
+                                </button>
+                            </div>
+
+                            <div class="video-spinner" style="display: none;">
+                                <div class="spinner-border text-info" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                            
+                            <div class="content" style="z-index: 5;">
+                                <div class="hero-game-icon">
+                                    <img src="<%= game.icon_url ? game.icon_url : 'https://placehold.co/80x80/2a2a40/00D9FF?text=' + game.title.charAt(0) %>" 
+                                        alt="Icon"
+                                        onerror="this.onerror=null;this.src='https://placehold.co/80x80/2a2a40/00D9FF?text=<%= game.title.charAt(0) %>';">
+                                </div>
+                                <div class="name" style="font-size: 3rem; font-weight: bold; text-shadow: 0 5px 15px rgba(0,0,0,0.8);"><%= game.title %></div>
+                                <div class="des" style="max-width: 600px; margin: 0 auto 20px auto; text-shadow: 0 2px 5px rgba(0,0,0,0.8);"><%= game.description.substring(0, 100) %>...</div>
+                                <a href="/games/<%= game.slug %>">
+                                    <button class="btn-aqua text-white">See More</button>
+                                </a>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+                
+                <div class="carousel-nav" style="z-index: 10;">
+                    <button class="prev"><i class="fas fa-chevron-left"></i></button>
+                    <button class="next"><i class="fas fa-chevron-right"></i></button>
+                </div>
             </div>
         </div>
+    </div> -->
+
+    <!-- badan homepage -->
+    <!-- <div class="container" style="margin-top: 50px; margin-bottom: 50px; margin-left: 50px ">
+      <div class="playstore-grid">
+        <% featuredGames.forEach(game => { %>
+          <a href="/games/<%= game.slug %>" class="playstore-card">
+
+            <div class="card-banner">
+              <img src="<%= game.banner_url || game.thumbnail_url || 'https://via.placeholder.com/600x337' %>" alt="<%= game.title %>" loading="lazy">
+              <div class="overlay">
+                <i class="fas fa-play"></i></div>
+            </div>
+
+            <div class="card-details"> -->
+
+              <!-- <div class="game-logo">
+                <img src="<%= game.icon_url || 'https://via.placeholder.com/100' %>" alt="Icon"> pake ini kalau data icon game udah ada
+              </div> -->
+              <!-- <div class="game-logo">
+                <% if (game.icon_url && game.icon_url !== '') { %>
+                    <img src="<%= game.icon_url %>" alt="Icon" 
+                          onerror="this.onerror=null;this.src='https://placehold.co/100x100/2a2a40/00D9FF?text=<%= game.title.charAt(0) %>';">
+                <% } else { %>
+                    <img src="https://placehold.co/100x100/2a2a40/00D9FF?text=<%= game.title.charAt(0) %>" alt="Icon">
+                <% } %>
+              </div> -->
+
+              <!-- <div class="game-info-text">
+                <h3 class="game-title" title="<%= game.title %>"><%= game.title %></h3>
+            
+                <div class="game-meta-row">
+                  <span class="game-price">
+                    <%= game.price === 0 ? 'Free' : 'Rp ' + game.price.toLocaleString() %>
+                  </span>
+              
+                  <span class="game-rating">
+                    <%= game.rating || '0.0' %> <i class="fas fa-star"></i>
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </a>
+        <% }); %>
+      </div>
+
+    </div> -->
+    <div class="container" style="margin-bottom: 50px;">
+
+      <div class="d-flex justify-content-between align-items-center mb-3" style="padding: 0 40px;">
+        <h4 class="text-white fw-bold">Recommended for You</h4>
+        <a href="/all-games" class="text-info text-decoration-none small">Lihat Semua <i class="fas fa-arrow-right"></i></a>
+      </div>
+
+      <div class="horizontal-scroll-container">
+        <% 
+          // --- HACK VISUALISASI START ---
+          // Kita bikin array baru yang kosong
+          let dummyGames = [];
+          
+          // Kita ulang 10 kali data yang ada, biar total jadi 20 game (kalau aslinya 2)
+          for(let i = 0; i < 10; i++) {
+              dummyGames = dummyGames.concat(featuredGames);
+          }
+          // --- HACK VISUALISASI END ---
+        %>
+
+        <% dummyGames.forEach((game, index) => { %>
+          
+          <a href="/games/<%= game.slug %>" class="playstore-card">
+            
+            <div class="card-banner">
+              <img src="<%= game.banner_url || game.thumbnail_url || 'https://via.placeholder.com/600x337' %>" alt="<%= game.title %>" loading="lazy">
+              <div class="overlay">
+                  <i class="fas fa-play"></i>
+              </div>
+            </div>
+
+            <div class="card-details">
+              
+              <div class="game-logo">
+                <% if (game.icon_url && game.icon_url !== '') { %>
+                    <img src="<%= game.icon_url %>" alt="Icon" 
+                          onerror="this.onerror=null;this.src='https://placehold.co/100x100/2a2a40/00D9FF?text=<%= game.title.charAt(0) %>';">
+                <% } else { %>
+                    <img src="https://placehold.co/100x100/2a2a40/00D9FF?text=<%= game.title.charAt(0) %>" alt="Icon">
+                <% } %>
+              </div>
+
+              <div class="game-info-text">
+                <h3 class="game-title" title="<%= game.title %>"><%= game.title %> #<%= index + 1 %></h3>
+                
+                <div class="game-meta-row">
+                  <span class="game-price">
+                      <%= game.price === 0 ? 'Free' : 'Rp ' + game.price.toLocaleString() %>
+                  </span>
+                  <span class="game-rating">
+                      <%= game.rating || '4.5' %> <i class="fas fa-star"></i>
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </a>
+        <% }); %>
+      </div>
+
+      <br>
+      <!-- untuk event informasi -->
+       <div class="container" style="margin-bottom: 80px;">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="text-white fw-bold">Special Event 🔥</h4>
+        </div>
+
+        <div class="row g-4"> <div class="col-lg-8 col-md-12">
+                <div class="event-video-box">
+                    <iframe src="https://www.youtube.com/embed/O_CycbaPPYk?si=nXGmUQ0IQ6_H8Be6" 
+                            title="Event Video" frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                    </iframe>
+                    
+                    </div>
+            </div>
+
+            <div class="col-lg-4 col-md-12 d-flex flex-column justify-content-center">
+                
+                <div class="event-side-banner">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2qE6IfnqD6qlo_ODmOBKDUgJlEXMmnxIwOA&s" 
+                         alt="Event Banner">
+                </div>
+
+                <div class="event-text-box">
+                    <h3>Summer Tournament 2025</h3>
+                    <p>
+                        Bergabunglah dalam turnamen terbesar musim ini! 
+                        Dapatkan hadiah total Rp 50.000.000 dan skin eksklusif terbatas. 
+                        Pendaftaran dibuka untuk semua tier mulai dari Warrior sampai Mythic.
+                    </p>
+                    
+                    <a href="/events/summer-2025" class="btn-aqua text-white text-decoration-none px-4 py-2 rounded-pill d-inline-block">
+                        Daftar Sekarang <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+      </div>
+
+      <!-- <br> -->
+      <!-- untuk tampilan yg icon saja  -->
+      <div class="container" style="margin-bottom: 80px;">
+        
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="text-white fw-bold">Game Khusus PC</h4> <a href="/all-games" class="text-info text-decoration-none small">Lihat Semua <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <div class="horizontal-scroll-container">
+          
+          <% dummyGames.forEach((game, index) => { %>
+            
+            <a href="/games/<%= game.slug %>" class="square-game-card">
+              
+              <div class="square-img-container">
+                 <% if (game.icon_url && game.icon_url !== '') { %>
+                    <img src="<%= game.icon_url %>" alt="<%= game.title %>"
+                         onerror="this.onerror=null;this.src='https://placehold.co/200x200/2a2a40/00D9FF?text=<%= game.title.charAt(0) %>';">
+                 <% } else { %>
+                    <img src="<%= game.thumbnail_url || 'https://placehold.co/200x200' %>" alt="<%= game.title %>">
+                 <% } %>
+              </div>
+
+              <div class="text-start"> <div class="game-title-small" title="<%= game.title %>">
+                      <%= game.title %>
+                  </div>
+                  
+                  <div class="game-meta-small">
+                      <span><%= game.rating || '4.5' %> <i class="fas fa-star text-warning" style="font-size: 0.7rem;"></i></span>
+                      <span style="margin: 0 4px;">•</span>
+                      <span><%= game.price === 0 ? 'Free' : 'Rp ' + (game.price/1000) + 'k' %></span>
+                  </div>
+              </div>
+
+            </a>
+
+          <% }); %>
+
+        </div>
+      </div>
+
+      <!-- Buat Banner Iklan  -->
+      <div class="container ad-container">
+        <div class="ad-placeholder">
+            <span>[ SPACE IKLAN 728x250 ]<br><small>Tempatkan bannermu di sini</small></span>
+        </div>
+        <!-- kalau fotonnya udah ada  -->
+        <!-- <div class="container ad-container">
+          <a href="https://link-iklan-tujuannya.com">
+              <img src="/images/banner-promo-topup.jpg" style="width: 100%; border-radius: 12px;">
+          </a>
+        </div> -->
+      </div>
+
+      <div class="container" style="margin-bottom: 80px;">
+
+      
+
     </div>
 
     <!-- Popular Categories Section -->

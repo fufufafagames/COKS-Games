@@ -1,0 +1,503 @@
+<%- include('../layouts/header', { title: title }) %>
+<%- include('../partials/navbar') %>
+
+<div class="container mt-5">
+    <div class="text-center text-white mb-5">
+        <h1 class="display-4 fw-bold gradient-text">Community Hub</h1>
+        <p class="lead">Tempat berkumpulnya para gamers Fufufafagames</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Chat Area -->
+        <div class="col-md-10 mx-auto">
+            <!-- 3D Main Container -->
+            <div class="chat-3d-container">
+                <div class="card bg-glass border-0 shadow-3d mb-4 chat-container position-relative overflow-hidden">
+                    <!-- Decor Circles -->
+                    <div class="glow-circle circle-1"></div>
+                    <div class="glow-circle circle-2"></div>
+
+                    <!-- Header -->
+                    <div class="card-header bg-transparent border-bottom border-light-subtle d-flex justify-content-between align-items-center py-4 px-4 position-relative z-index-1">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="icon-box-3d">
+                                <i class="fas fa-comments text-white"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-0 fw-bold text-white text-shadow-sm">Global Nexus</h4>
+                                <small class="text-aqua-glow">Active Server • Jakarta Node</small>
+                            </div>
+                        </div>
+                        <span class="badge bg-aqua-gradient text-dark fw-bold px-3 py-2 shadow-sm pulse-animation">
+                            <i class="fas fa-satellite-dish me-2"></i>LIVE
+                        </span>
+                    </div>
+                    
+                    <!-- Messages Area -->
+                    <div class="card-body chat-messages p-4 position-relative z-index-1" id="chatMessages" style="height: 600px; overflow-y: auto; scroll-behavior: smooth;" data-last-id="<%= (messages && messages.length > 0) ? messages[messages.length - 1].id : 0 %>" data-user-name="<%= user ? user.name : '' %>">
+                        <% if (messages && messages.length > 0) { %>
+                            <% messages.forEach(msg => { %>
+                                <% const isMe = user && user.id === msg.user_id; %> <!-- Assuming we have msg.user_id available, we might need to adjust Chat model to return it -->
+                                <% const alignClass = (user && msg.user_name === user.name) ? 'ms-auto flex-row-reverse' : ''; %> <!-- Temporary check by name if id missing -->
+                                <div class="message mb-4 fade-in-up">
+                                    <div class="d-flex align-items-end gap-3 <%= (user && msg.user_name === user.name) ? 'flex-row-reverse' : '' %>">
+                                        <div class="avatar-3d">
+                                            <img src="<%= msg.user_avatar || 'https://via.placeholder.com/40' %>" class="rounded-circle" width="45" height="45" alt="User">
+                                            <div class="online-indicator"></div>
+                                        </div>
+                                        <div class="message-content-wrapper <%= (user && msg.user_name === user.name) ? 'text-end' : '' %>">
+                                            <div class="d-flex align-items-center gap-2 mb-1 <%= (user && msg.user_name === user.name) ? 'justify-content-end' : '' %>">
+                                                <span class="fw-bold <%= (user && msg.user_name === user.name) ? 'text-aqua' : 'text-purple-light' %> text-shadow-sm"><%= msg.user_name %></span>
+                                                <small class="text-white-50" style="font-size: 0.7rem;"><%= new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %></small>
+                                            </div>
+                                            <div class="message-bubble <%= (user && msg.user_name === user.name) ? 'bubble-me' : 'bubble-other' %> shadow-sm">
+                                                <%= msg.message %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="text-center text-white-50 mt-5 pt-5 empty-state">
+                                <div class="floating-icon mb-4">
+                                    <i class="fas fa-comment-dots fa-5x text-aqua-glow opacity-50"></i>
+                                </div>
+                                <h5>Ruang Hampa...</h5>
+                                <p>Jadilah pionir yang memulai percakapan ini!</p>
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="card-footer bg-transparent border-top border-light-subtle p-4 position-relative z-index-1">
+                        <% if (user) { %>
+                            <form id="chatForm" class="d-flex gap-3 align-items-center">
+                                <div class="input-group-3d flex-grow-1">
+                                    <input type="text" id="messageInput" class="form-control form-control-lg bg-glass-input text-white border-0" placeholder="Ketik pesan ke seluruh dunia..." autocomplete="off">
+                                </div>
+                                <button type="submit" class="btn-send-3d" aria-label="Send Message">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </form>
+                        <% } else { %>
+                            <div class="glass-alert text-center p-3 rounded-3">
+                                <p class="mb-2 text-white">Login untuk bergabung ke dalam Matrix Chat ini.</p>
+                                <a href="/auth/login" class="btn btn-sm btn-aqua-glow px-4">Login System</a>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --glass-bg: rgba(22, 22, 40, 0.75);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --neon-aqua: #00f2ff;
+        --neon-purple: #bc13fe;
+        --dark-depth: #0b0c15;
+    }
+
+    /* 3D Container & Glassmorphism */
+    .bg-glass {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        box-shadow: 
+            0 25px 50px -12px rgba(0, 0, 0, 0.5),
+            0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    }
+
+    .shadow-3d {
+        transform: perspective(1000px) rotateX(1deg);
+        transition: transform 0.3s ease;
+    }
+    
+    /* Decorative Glows */
+    .glow-circle {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        z-index: 0;
+        opacity: 0.4;
+        animation: floatGlow 10s infinite alternate;
+    }
+    .circle-1 {
+        width: 300px;
+        height: 300px;
+        background: var(--neon-purple);
+        top: -100px;
+        right: -50px;
+    }
+    .circle-2 {
+        width: 200px;
+        height: 200px;
+        background: var(--neon-aqua);
+        bottom: -50px;
+        left: -50px;
+        animation-delay: -5s;
+    }
+
+    @keyframes floatGlow {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(30px, 30px); }
+    }
+
+    /* 3D Icon Box */
+    .icon-box-3d {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--neon-aqua), #00a8ff);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: 0 10px 20px rgba(0, 242, 255, 0.3);
+        transform: rotate(-5deg);
+    }
+
+    .text-aqua-glow { color: var(--neon-aqua); text-shadow: 0 0 10px rgba(0, 242, 255, 0.5); }
+    .text-purple-light { color: #d48ef5; }
+    
+    /* Scrollbar */
+    .chat-messages::-webkit-scrollbar { width: 6px; }
+    .chat-messages::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+    .chat-messages::-webkit-scrollbar-thumb { 
+        background: rgba(255,255,255,0.2); 
+        border-radius: 10px; 
+    }
+    .chat-messages::-webkit-scrollbar-thumb:hover { background: var(--neon-aqua); }
+
+    /* Message Bubbles 3D */
+    .message-bubble {
+        padding: 12px 20px;
+        border-radius: 18px;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        position: relative;
+        max-width: 85%;
+        display: inline-block; /* Fix width to fit content */
+        text-align: left; /* Ensure text inside is always left-aligned */
+        word-wrap: break-word; /* Prevent overflow */
+    }
+    
+    .bubble-me {
+        background: linear-gradient(135deg, var(--neon-aqua), #0088cc);
+        color: #000;
+        border-bottom-right-radius: 4px;
+        box-shadow: 0 5px 15px rgba(0, 242, 255, 0.2);
+        font-weight: 500;
+    }
+    
+    .bubble-other {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        border-bottom-left-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(5px);
+    }
+
+    /* Avatar 3D */
+    .avatar-3d {
+        position: relative;
+        padding: 3px;
+        background: linear-gradient(45deg, var(--neon-aqua), var(--neon-purple));
+        border-radius: 50%;
+        box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    }
+    .avatar-3d img {
+        display: block;
+        background: #000;
+        position: relative;
+        z-index: 2;
+    }
+    .online-indicator {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: #00ff88;
+        border: 2px solid #000;
+        border-radius: 50%;
+        bottom: 0px;
+        right: 0px;
+        z-index: 3;
+        box-shadow: 0 0 5px #00ff88;
+    }
+
+    /* Input Field 3D */
+    .input-group-3d {
+        position: relative;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 30px;
+        padding: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s;
+    }
+    .input-group-3d:focus-within {
+        border-color: var(--neon-aqua);
+        box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
+    }
+    
+    .bg-glass-input {
+        background: transparent !important;
+        padding-left: 20px;
+        color: #fff !important;
+        border: none !important; /* Force no border on input */
+        box-shadow: none !important; /* Force no shadow on input */
+    }
+    .bg-glass-input:focus {
+        box-shadow: none !important; /* Double ensure no focus ring */
+        outline: none !important; 
+    }
+    .bg-glass-input::placeholder { color: rgba(255, 255, 255, 0.4); }
+
+/* Send Button - ULTIMATE FIX */
+/* Send Button - SIMPLIFIED & ROBUST */
+.btn-send-3d {
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
+    min-height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--neon-purple), #9d00e0);
+    
+    /* Flexbox Center - No hacks! */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    border: none;
+    box-shadow: 0 5px 15px rgba(188, 19, 254, 0.4);
+    transition: all 0.2s;
+    padding: 0;
+    cursor: pointer;
+    
+    /* Ensure icon color */
+    color: #ffffff !important;
+    font-size: 20px !important;
+}
+
+.btn-send-3d:hover,
+.btn-send-3d:active,
+.btn-send-3d:focus {
+    color: #ffffff !important; /* Keep icon white on hover */
+    outline: none;
+    transform: scale(1.05);
+}
+
+.btn-send-3d i {
+    /* No absolute positioning needed with Flexbox */
+    position: static !important;
+    font-size: 20px !important;
+    color: inherit !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    transform: none !important;
+}
+
+/* Spinner adjustment */
+.btn-send-3d .fa-spinner {
+    animation-name: fa-spin; 
+}
+
+
+    /* Badge Gradient */
+    .bg-aqua-gradient {
+        background: linear-gradient(90deg, var(--neon-aqua), #00ffaa);
+    }
+
+    /* Animations */
+    .fade-in-up {
+        animation: fadeInUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    
+    @keyframes fadeInUp {
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .pulse-animation { animation: pulseGlow 2s infinite; }
+    @keyframes pulseGlow {
+        0% { box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(0, 242, 255, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(0, 242, 255, 0); }
+    }
+    
+    .floating-icon { animation: floatIcon 3s ease-in-out infinite; }
+    @keyframes floatIcon {
+        0% { transform: translateY(0); }
+        50% { transform: translateY(-15px); }
+        100% { transform: translateY(0); }
+    }
+
+    .glass-alert {
+        background: rgba(255,255,255,0.05);
+        border: 1px dashed rgba(255,255,255,0.2);
+    }
+    .btn-aqua-glow {
+        background: transparent;
+        border: 1px solid var(--neon-aqua);
+        color: var(--neon-aqua);
+        box-shadow: 0 0 15px rgba(0,242,255,0.1);
+        transition: 0.3s;
+    }
+    .btn-aqua-glow:hover {
+        background: var(--neon-aqua);
+        color: #000;
+        box-shadow: 0 0 25px rgba(0,242,255,0.5);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const chatMessages = document.getElementById('chatMessages');
+        const chatForm = document.getElementById('chatForm');
+        const messageInput = document.getElementById('messageInput');
+        
+        // Get user state from a data attribute on the container or a hidden element
+        // We'll use the presence of chatForm as the main indicator for logged-in status
+        const isUserLoggedIn = !!chatForm;
+
+        // Auto scroll to bottom on load
+        if (chatMessages) {
+             chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Sound effect (optional)
+        // const notifSound = new Audio('/sounds/pop.mp3');
+
+        if (isUserLoggedIn) {
+            chatForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                e.stopImmediatePropagation(); // BLOCK main.js global handler!
+                
+                const message = messageInput.value.trim();
+                const btnSend = chatForm.querySelector('.btn-send-3d');
+                
+                if (!message) return;
+
+                // Loading State
+                const originalIcon = '<i class="fas fa-paper-plane"></i>';
+                btnSend.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                btnSend.disabled = true;
+
+                // Optimistic UI update
+                try {
+                    const res = await fetch('/api/messages', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message })
+                    });
+                    
+                    if (res.ok) {
+                        const newMsg = await res.json();
+                        appendMessage(newMsg);
+                        
+                        // CRITICAL FIX: Update lastMessageId immediately to prevent duplicate polling
+                        lastMessageId = newMsg.id;
+
+                        messageInput.value = '';
+                        // Remove empty state if exists
+                        const emptyState = document.querySelector('.empty-state');
+                        if (emptyState) emptyState.remove();
+                    }
+                } catch (err) {
+                    console.error('Failed to send message:', err);
+                    alert('Gagal mengirim pesan. Coba lagi.');
+                } finally {
+                    // Restore Icon
+                    btnSend.innerHTML = originalIcon;
+                    btnSend.disabled = false;
+                    messageInput.focus();
+                }
+            });
+        }
+
+        function appendMessage(msg) {
+            const div = document.createElement('div');
+            div.className = 'message mb-4 fade-in-up';
+            
+            // Assume we can check if it's me from a global variable or user session in data attribute. 
+            // For now in JS append, we optimistically assume "me" if I sent it, but polling needs logic.
+            // Let's rely on data attributes or a simple check.
+            const currentUserName = "<%= user ? user.name : '' %>"; // This is still EJS inline which we wanted to avoid, BUT for client side append it's cleaner to pass user name via data attribute on body or container.
+            
+            // BETTER APPROACH: Pass checks in function arguments or data attribute.
+            // Since we refactored EJS out of script, we need to get current user name from DOM.
+            const container = document.getElementById('chatMessages');
+            const myName = container.dataset.userName || ""; 
+            
+            const isMe = msg.user_name === myName;
+            
+            div.innerHTML = `
+                <div class="d-flex align-items-end gap-3 ${isMe ? 'flex-row-reverse' : ''}">
+                    <div class="avatar-3d">
+                        <img src="${msg.user_avatar || 'https://via.placeholder.com/40'}" class="rounded-circle" width="45" height="45" alt="User">
+                        <div class="online-indicator"></div>
+                    </div>
+                    <div class="message-content-wrapper ${isMe ? 'text-end' : ''}">
+                        <div class="d-flex align-items-center gap-2 mb-1 ${isMe ? 'justify-content-end' : ''}">
+                            <span class="fw-bold ${isMe ? 'text-aqua' : 'text-purple-light'} text-shadow-sm">${msg.user_name}</span>
+                            <small class="text-white-50" style="font-size: 0.7rem;">${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
+                        </div>
+                        <div class="message-bubble ${isMe ? 'bubble-me' : 'bubble-other'} shadow-sm">
+                            ${escapeHtml(msg.message)}
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+        }
+
+        function escapeHtml(text) {
+          return text
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#039;");
+        }
+
+        // Initialize lastMessageId from the data attribute on chatMessages container
+        // We will add this data attribute in the HTML part
+        let lastMessageId = parseInt(chatMessages.dataset.lastId) || 0;
+
+        setInterval(async () => {
+            try {
+                const res = await fetch('/api/messages');
+                if (res.ok) {
+                    const allMessages = await res.json();
+                    
+                    // Filter only new messages
+                    const newMessages = allMessages.filter(m => m.id > lastMessageId);
+                    
+                    if (newMessages.length > 0) {
+                        // Remove empty state if present
+                        const emptyState = document.querySelector('.empty-state');
+                        if (emptyState) emptyState.remove();
+
+                        newMessages.forEach(msg => {
+                            appendMessage(msg);
+                            lastMessageId = msg.id;
+                        });
+                        // Play sound if not sender (simple check could be added)
+                    }
+                }
+            } catch (err) {
+                console.error('Polling error:', err);
+            }
+        }, 3000); // 3 seconds poll
+    });
+</script>
+
+<%- include('../layouts/footer') %>
