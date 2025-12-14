@@ -167,6 +167,19 @@ main {
     width: 100%;
   }
 
+  /* User Feedback: Resize Navbar Icons on Mobile */
+  .navbar .fas, .navbar .fab {
+      font-size: 1rem !important; /* Reducing from 1.2rem/1.8rem */
+  }
+  .navbar-brand .fas {
+      font-size: 1.2rem !important; /* slightly larger for logo */
+  }
+  /* Fix Profile Avatar/Icon size */
+  .navbar img.rounded-circle {
+      width: 28px !important;
+      height: 28px !important;
+  }
+
   /* Mobile Navbar Adjustments */
   .navbar-brand {
     font-size: 1.2rem;
@@ -3083,8 +3096,83 @@ textarea.form-control {
   margin-bottom: 0 !important;
   padding-bottom: 0 !important; 
 }
-.landing-section {
-  margin-bottom: 20px !important; 
+
+/* PC Download Section - Mobile Optimization */
+.pc-download-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 15px;
+  padding: 10px 5px;
+  scrollbar-width: none; /* Hide scrollbar Firefox */
+}
+.pc-download-container::-webkit-scrollbar {
+  display: none; /* Hide scrollbar Chrome */
+}
+
+.pc-download-card {
+  flex: 0 0 auto;
+  width: 200px; /* Desktop width */
+  text-decoration: none;
+  transition: transform 0.2s;
+  display: block;
+}
+.pc-download-card:hover {
+  transform: translateY(-5px);
+}
+
+.pc-download-banner {
+  width: 100%;
+  aspect-ratio: 16/9; /* Banner ratio */
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.pc-download-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .pc-download-container {
+    flex-direction: column; /* Vertical stack on mobile */
+    overflow-x: visible;
+  }
+  
+  .pc-download-card {
+    width: 100%; /* Full width on mobile */
+    display: flex; /* Horizontal card layout on mobile */
+    align-items: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.05); /* Slight BG for visibility */
+    padding: 10px;
+    border-radius: 12px;
+    margin-bottom: 5px;
+  }
+  
+  .pc-download-banner {
+    width: 120px; /* Fixed small banner width */
+    height: 68px; /* Maintain approx 16:9 */
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .pc-download-info {
+    flex: 1;
+    min-width: 0; /* Text truncate fix */
+  }
+
+  /* Force only 3 items with this class on mobile */
+  .mobile-hidden {
+    display: none !important;
+  }
+}
+@media (min-width: 769px) {
+  .mobile-hidden {
+      display: block !important; /* Show on desktop */
+  }
+}
 }
 
 /* MOBILE CAROUSEL HEIGHT FIX */
@@ -3157,5 +3245,94 @@ textarea.form-control {
   .popular-category-grid {
     gap: 12px !important; 
   }
+}
+
+/* ==================== MODERN DOWNLOAD CONFIGURATION ==================== */
+.download-config-modern {
+    background: linear-gradient(145deg, rgba(22, 33, 62, 0.9), rgba(15, 15, 35, 0.95));
+    border: 1px solid rgba(0, 217, 255, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 217, 255, 0.05);
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.download-config-modern:hover {
+    border-color: rgba(0, 217, 255, 0.6);
+    box-shadow: 0 15px 40px rgba(0, 217, 255, 0.15), inset 0 0 20px rgba(0, 217, 255, 0.1);
+}
+
+.download-config-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-control-modern, .form-select-modern {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    height: 45px !important; /* Uniform Height Fix */
+    padding: 0.375rem 0.75rem !important; /* Standardize padding */
+    line-height: 1.5;
+}
+
+.form-control-modern:focus, .form-select-modern:focus {
+    background: rgba(0, 0, 0, 0.5) !important;
+    border-color: #00d9ff !important;
+    box-shadow: 0 0 15px rgba(0, 217, 255, 0.2) !important;
+    outline: none;
+}
+
+.modern-label {
+    color: #00d9ff;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    display: block;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+}
+
+.add-link-btn-modern {
+    background: rgba(0, 217, 255, 0.1);
+    border: 1px dashed rgba(0, 217, 255, 0.4);
+    color: #00d9ff;
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.add-link-btn-modern:hover {
+    background: rgba(0, 217, 255, 0.2);
+    border-color: #00d9ff;
+    color: #fff;
+    box-shadow: 0 0 20px rgba(0, 217, 255, 0.4);
+}
+
+.link-row .remove-link-btn {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    color: #ff5b5b;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.link-row .remove-link-btn:hover {
+    background: #dc3545;
+    color: white;
+    box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
 }
 

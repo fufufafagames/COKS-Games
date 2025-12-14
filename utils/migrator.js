@@ -94,6 +94,14 @@ const runMigration = async () => {
             console.log('Sample event inserted.');
         }
         */
+        // 8. Update games table (Download Config)
+        await pool.query(`
+            ALTER TABLE games
+            ADD COLUMN IF NOT EXISTS download_config TEXT,
+            ALTER COLUMN github_url DROP NOT NULL;
+        `);
+        console.log('games table updated (download_config & nullable github_url).');
+
         console.log('Event seeding skipped.');
 
         console.log('Migration completed successfully!');

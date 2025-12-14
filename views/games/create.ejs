@@ -46,23 +46,156 @@
             >
           </div>
 
+          <!-- Game Mode Section -->
+          <div class="mb-4">
+              <label class="form-label d-block text-white mb-3">
+                  <i class="fas fa-gamepad"></i> Game Mode *
+              </label>
+              <div class="row">
+                  <div class="col-md-6 mb-2">
+                       <input type="radio" class="btn-check" name="game_mode" id="mode_play" value="play" checked autocomplete="off">
+                       <label class="btn btn-outline-aqua w-100 p-3" for="mode_play">
+                           <i class="fas fa-globe fa-2x mb-2"></i><br>
+                           <strong>Play (Browser)</strong><br>
+                           <small>Playable directly in browser via iframe</small>
+                       </label>
+                  </div>
+                  <div class="col-md-6 mb-2">
+                       <input type="radio" class="btn-check" name="game_mode" id="mode_download" value="download" autocomplete="off">
+                       <label class="btn btn-outline-info w-100 p-3" for="mode_download">
+                           <i class="fas fa-download fa-2x mb-2"></i><br>
+                           <strong>Download (PC)</strong><br>
+                           <small>Users download files to play locally</small>
+                       </label>
+                  </div>
+              </div>
+          </div>
+
+          <!-- GitHub URL (Always Visible, Optional) -->
           <div class="mb-3">
             <label for="github_url" class="form-label">
-              <i class="fab fa-github"></i> GitHub URL *
+              <i class="fab fa-github"></i> GitHub URL Reference (Optional)
             </label>
             <input
               type="url"
               class="form-control"
               id="github_url"
               name="github_url"
-              required
-              placeholder="https://github.com/username/repo"
+              placeholder="https://github.com/username/repo (For Browser Games)"
             />
-            <small class="text-white">
-              For playable games: Link to repo with index.html<br />
-              For downloads: Link to releases page or .zip file
+            <small class="text-white-50">
+              Required for "Play" mode to load game. Optional for "Download" mode.
             </small>
           </div>
+
+          <!-- Download Configuration (Shown only for Download Mode) -->
+          <div id="download-config-section" class="download-config-modern p-4 mb-4 animate-fade-in" style="display: none;">
+              <div class="download-config-header d-flex align-items-center gap-2">
+                  <i class="fas fa-cogs fa-lg text-aqua"></i>
+                  <h5 class="text-aqua mb-0 fw-bold header-title">Download Configuration</h5>
+              </div>
+              
+              <div class="row mb-4">
+                  <div class="col-md-3">
+                      <label class="modern-label">Version</label>
+                      <input type="text" name="version" class="form-control form-control-modern" placeholder="e.g. v1.0">
+                  </div>
+                  <div class="col-md-3">
+                      <label class="modern-label">OS Platform</label>
+                      <select name="os" class="form-select form-select-modern">
+                          <option value="Windows">Windows</option>
+                          <option value="Linux">Linux</option>
+                          <option value="Mac">Mac</option>
+                          <option value="Android">Android</option>
+                          <option value="Multi-Platform">Multi-Platform</option>
+                      </select>
+                  </div>
+                  <div class="col-md-3">
+                      <label class="modern-label">Install Type</label>
+                      <select name="install_type" class="form-select form-select-modern">
+                          <option value="Installer (.exe)">Installer (.exe)</option>
+                          <option value="Portable (.zip)">Portable (.zip)</option>
+                          <option value="ISO Image">ISO Image</option>
+                          <option value="APK">APK</option>
+                      </select>
+                  </div>
+                  <div class="col-md-3">
+                      <label class="modern-label">File Size</label>
+                      <input type="text" name="file_size" class="form-control form-control-modern" placeholder="e.g. 2 GB">
+                  </div>
+              </div>
+
+              <!-- Download Links Manager -->
+              <div class="mb-3">
+                  <label class="modern-label mb-3"><i class="fas fa-link me-1"></i> Download Mirrors</label>
+                  <div id="links-container" class="d-grid gap-2">
+                      <!-- Dynamic Rows will be added here -->
+                      <div class="row link-row g-2 align-items-center">
+                          <div class="col-4 col-md-3">
+                              <input type="text" name="provider_name[]" class="form-control form-control-modern" placeholder="Provider Name">
+                          </div>
+                          <div class="col-6 col-md-8">
+                              <input type="url" name="provider_url[]" class="form-control form-control-modern" placeholder="https://example.com/download">
+                          </div>
+                          <div class="col-2 col-md-1">
+                              <button type="button" class="btn remove-link-btn" disabled title="Default Row"><i class="fas fa-trash"></i></button>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+              
+              <button type="button" class="btn add-link-btn-modern mt-2" id="add-link-btn">
+                  <i class="fas fa-plus-circle me-2"></i> Add Another Download Link
+              </button>
+          </div>
+
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const modePlay = document.getElementById('mode_play');
+                const modeDownload = document.getElementById('mode_download');
+                const downloadSection = document.getElementById('download-config-section');
+                const linksContainer = document.getElementById('links-container');
+                const addLinkBtn = document.getElementById('add-link-btn');
+                const githubInput = document.getElementById('github_url');
+
+                function toggleMode() {
+                    if (modeDownload.checked) {
+                        downloadSection.style.display = 'block';
+                        // GitHub optional
+                        githubInput.required = false; 
+                    } else {
+                        downloadSection.style.display = 'none';
+                        // GitHub theoretically required for Play mode, but logic is flexible now.
+                        // Let's keep it optional but encourage input.
+                    }
+                }
+
+                modePlay.addEventListener('change', toggleMode);
+                modeDownload.addEventListener('change', toggleMode);
+
+                // Add Link Logic
+                addLinkBtn.addEventListener('click', function() {
+                    const row = document.createElement('div');
+                    row.className = 'row link-row g-2 align-items-center slide-in-bottom';
+                    row.innerHTML = `
+                      <div class="col-4 col-md-3">
+                          <input type="text" name="provider_name[]" class="form-control form-control-modern" placeholder="Provider Name">
+                      </div>
+                      <div class="col-6 col-md-8">
+                          <input type="url" name="provider_url[]" class="form-control form-control-modern" placeholder="https://example.com/download">
+                      </div>
+                      <div class="col-2 col-md-1">
+                          <button type="button" class="btn remove-link-btn"><i class="fas fa-times"></i></button>
+                      </div>
+                    `;
+                    linksContainer.appendChild(row);
+                    
+                    row.querySelector('.remove-link-btn').addEventListener('click', function() {
+                        row.remove();
+                    });
+                });
+            });
+          </script>
 
           <!-- Price Model Section -->
           <div class="mb-3">

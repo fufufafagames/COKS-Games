@@ -212,13 +212,14 @@ module.exports = {
       tags,
       price_type,
       price,
-      icon_url, // [NEW]
+      icon_url,
+      download_config, // [NEW]
     } = gameData;
 
     const result = await db.query(
       `INSERT INTO games 
-             (user_id, title, slug, description, github_url, thumbnail_url, video_url, game_type, category, tags, price_type, price, icon_url, created_at, updated_at) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), NOW()) 
+             (user_id, title, slug, description, github_url, thumbnail_url, video_url, game_type, category, tags, price_type, price, icon_url, download_config, created_at, updated_at) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), NOW()) 
              RETURNING *`,
       [
         user_id,
@@ -233,7 +234,8 @@ module.exports = {
         tags,
         price_type,
         price,
-        icon_url, // [NEW]
+        icon_url,
+        download_config, // [NEW]
       ]
     );
 
@@ -258,14 +260,15 @@ module.exports = {
       game_type,
       price_type,
       price,
-      icon_url, // [NEW]
+      icon_url,
+      download_config, // [NEW]
     } = updateData;
 
     const result = await db.query(
       `UPDATE games 
              SET title = $1, description = $2, github_url = $3, thumbnail_url = $4, video_url = $5,
-                 category = $6, tags = $7, game_type = $8, price_type = $9, price = $10, icon_url = $11, updated_at = NOW() 
-             WHERE slug = $12
+                 category = $6, tags = $7, game_type = $8, price_type = $9, price = $10, icon_url = $11, download_config = $12, updated_at = NOW() 
+             WHERE slug = $13
              RETURNING *`,
       [
         title,
@@ -278,7 +281,8 @@ module.exports = {
         game_type,
         price_type,
         price,
-        icon_url, // [NEW]
+        icon_url,
+        download_config, // [NEW]
         slug,
       ]
     );

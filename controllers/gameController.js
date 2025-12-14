@@ -180,8 +180,18 @@ index: async (req, res) => {
       }
       // END: KOREKSI FIX UNTUK JSON PARSING TAGS
 
-      // Get ratings
-      const ratings = await Rating.getByGameId(game.id);
+      // Parse Download Config
+    game.parsedDownloadConfig = null;
+    if (game.download_config) {
+        try {
+            game.parsedDownloadConfig = JSON.parse(game.download_config);
+        } catch (e) {
+            console.error("Error parsing download_config for show:", e);
+        }
+    }
+
+    // Get ratings
+    const ratings = await Rating.getByGameId(game.id);
       const ratingStats = await Rating.getStats(game.id); // Check if current user has rated
 
       let isPurchased = false;
@@ -232,8 +242,10 @@ index: async (req, res) => {
    * Store new game
    */ store: async (req, res) => {
     try {
-      const { title, description, github_url, thumbnail_url, video_url, category, new_category, tags, price_type, price } =
-        req.body; // Generate unique slug
+      const { 
+        title, description, github_url, thumbnail_url, video_url, category, new_category, tags, price_type, price,
+        game_mode, version, os, install_type, file_size, provider_name, provider_url 
+      } = req.body; // Generate unique slug
 
       // Handle file uploads
       let finalThumbnailUrl = thumbnail_url;
@@ -247,10 +259,6 @@ index: async (req, res) => {
       let finalIconUrl = null;
       if (req.files && req.files['icon']) {
           finalIconUrl = '/uploads/icons/' + req.files['icon'][0].filename;
-      } else {
-          // Default icon placeholder if none provided
-           // We can leave it null or set a default. Let's leave null for now or dynamic in view.
-           // Actually, the frontend code uses placehold.co if null, so null is fine.
       }
 
       let finalVideoUrl = video_url;
@@ -272,31 +280,65 @@ index: async (req, res) => {
         slug = `${slugify(title, { lower: true, strict: true })}-${counter}`;
         slugExists = await Game.slugExists(slug);
         counter++;
-      } // Auto-detect game type
-
+      } 
+      
+      // Auto-detect game type BASED ON USER SELECTION (game_mode)
       let game_type = "playable";
-      if (
-        github_url.includes("/releases/") ||
-        github_url.includes(".zip") ||
-        github_url.includes(".rar")
-      ) {
-        game_type = "download";
-      } // Create game
+      if (game_mode === 'download') {
+          game_type = "download";
+      } else if (game_mode === 'play') {
+          game_type = "playable";
+      } else {
+        // Fallback to legacy detection if not specified
+        if (
+            github_url.includes("/releases/") ||
+            github_url.includes(".zip") ||
+            github_url.includes(".rar")
+        ) {
+            game_type = "download";
+        }
+      }
 
+      // Construct Download Config
+      let download_config = null;
+      if (game_type === 'download' || (provider_name && provider_name.length > 0)) {
+          const links = [];
+          if (Array.isArray(provider_name)) {
+              for (let i = 0; i < provider_name.length; i++) {
+                  if (provider_name[i] && provider_url[i]) {
+                      links.push({ name: provider_name[i], url: provider_url[i] });
+                  }
+              }
+          } else if (provider_name && provider_url) {
+              // Single entry case
+              links.push({ name: provider_name, url: provider_url });
+          }
+
+          download_config = JSON.stringify({
+              version: version || '',
+              os: os || '',
+              install_type: install_type || '',
+              file_size: file_size || '',
+              links: links
+          });
+      }
+
+      // Create game
       await Game.create({
         user_id: req.session.user.id,
         title,
         slug,
         description,
-        github_url,
+        github_url, // Optional now
         thumbnail_url: finalThumbnailUrl,
         video_url: finalVideoUrl,
-        icon_url: finalIconUrl, // [NEW]
+        icon_url: finalIconUrl, 
         game_type,
         category: finalCategory,
         tags: JSON.stringify(tags ? tags.split(",").map((t) => t.trim()) : []),
         price_type: price_type || 'free',
         price: price_type === 'free' ? 0 : (parseInt(price) || 0),
+        download_config, // [NEW]
       });
 
       req.session.success = "Game uploaded successfully! 🎮";
@@ -325,41 +367,30 @@ index: async (req, res) => {
       // ------------------------------------------------------------------
       // START: KOREKSI FIX UNTUK JSON PARSING TAGS
       game.parsedTags = [];
-
-      if (
-        game.tags &&
-        typeof game.tags === "string" &&
-        game.tags.trim().length > 0
-      ) {
-        let tagsArray = [];
+      if (game.tags && typeof game.tags === "string" && game.tags.trim().length > 0) {
         try {
-          // 1. Coba parse JSON. Ini berhasil jika formatnya ['tag1', 'tag2']
           const parsed = JSON.parse(game.tags);
-
           if (Array.isArray(parsed)) {
-            // Jika hasil parse adalah array (format JSON valid), gunakan itu
-            tagsArray = parsed;
+            game.parsedTags = parsed;
           } else if (typeof parsed === "string") {
-            // Kasus aneh: JSON.parse menghasilkan string
-            tagsArray = parsed
-              .split(",")
-              .map((t) => t.trim())
-              .filter((t) => t.length > 0);
+            game.parsedTags = parsed.split(",").map((t) => t.trim()).filter((t) => t.length > 0);
           }
         } catch (e) {
-          // 2. Jika JSON.parse gagal (kemungkinan data tersimpan sebagai string biasa)
-          console.error(
-            "Tags data is not valid JSON for edit, applying fallback parsing:",
-            e.message
-          );
-          tagsArray = game.tags
-            .split(",")
-            .map((t) => t.trim())
-            .filter((t) => t.length > 0);
-        } // Assign hasil array ke game.parsedTags
-
-        game.parsedTags = tagsArray;
-      } // END: KOREKSI FIX UNTUK JSON PARSING TAGS
+            game.parsedTags = game.tags.split(",").map((t) => t.trim()).filter((t) => t.length > 0);
+        }
+      }
+      
+      // Parse Download Config if exists
+      game.parsedDownloadConfig = null;
+      if (game.download_config) {
+          try {
+              game.parsedDownloadConfig = JSON.parse(game.download_config);
+          } catch (e) {
+              console.error("Error parsing download config:", e);
+          }
+      }
+      
+      // END: KOREKSI FIX UNTUK JSON PARSING TAGS
       // ------------------------------------------------------------------
 
       const categories = await getCategories();
@@ -391,7 +422,10 @@ index: async (req, res) => {
         return res.redirect("/games");
       }
 
-      const { title, description, github_url, thumbnail_url, video_url, category, new_category, tags, price_type, price } = req.body;
+      const { 
+          title, description, github_url, thumbnail_url, video_url, category, new_category, tags, price_type, price,
+          game_mode, version, os, install_type, file_size, provider_name, provider_url 
+      } = req.body;
 
       // Handle file uploads
       let finalThumbnailUrl = game.thumbnail_url;
@@ -406,7 +440,7 @@ index: async (req, res) => {
       }
 
       // [NEW] Handle Icon Update
-      let finalIconUrl = game.icon_url;
+      let finalIconUrl = game.icon_url || null;
       if (req.files && req.files['icon']) {
           // Delete old icon
           if (game.icon_url && game.icon_url.startsWith('/uploads/')) {
@@ -416,7 +450,7 @@ index: async (req, res) => {
           finalIconUrl = '/uploads/icons/' + req.files['icon'][0].filename;
       }
 
-      let finalVideoUrl = game.video_url;
+      let finalVideoUrl = game.video_url || null;
       if (req.files && req.files['video']) {
         if (game.video_url && game.video_url.startsWith('/uploads/')) {
           const oldPath = path.join(__dirname, '../public', game.video_url);
@@ -432,9 +466,41 @@ index: async (req, res) => {
         finalCategory = new_category.trim();
       }
 
+      // Determine game type and download config
       let game_type = "playable";
-      if (github_url.includes("/releases/") || github_url.includes(".zip") || github_url.includes(".rar")) {
-        game_type = "download";
+      if (game_mode === 'download') {
+          game_type = "download";
+      } else if (game_mode === 'play') {
+          game_type = "playable";
+      } else {
+        // Fallback preservation or legacy detection
+        if (github_url && (github_url.includes("/releases/") || github_url.includes(".zip"))) {
+            game_type = "download";
+        }
+      }
+
+      // Construct Download Config
+      let download_config = null;
+      // If download mode or if user entered provider details
+      if ((game_mode === 'download') || (provider_name && provider_name.length > 0)) {
+          const links = [];
+          if (Array.isArray(provider_name)) {
+              for (let i = 0; i < provider_name.length; i++) {
+                  if (provider_name[i] && provider_url[i]) {
+                      links.push({ name: provider_name[i], url: provider_url[i] });
+                  }
+              }
+          } else if (provider_name && provider_url) {
+              links.push({ name: provider_name, url: provider_url });
+          }
+
+          download_config = JSON.stringify({
+              version: version || '',
+              os: os || '',
+              install_type: install_type || '',
+              file_size: file_size || '',
+              links: links
+          });
       }
 
       // 🔧 EXPLICIT PRICE HANDLING
@@ -454,8 +520,8 @@ index: async (req, res) => {
       await Game.update(req.params.slug, {
         title,
         description,
-        github_url,
-        thumbnail_url: finalThumbnailUrl,
+        github_url: github_url || null,
+        thumbnail_url: finalThumbnailUrl || null,
         video_url: finalVideoUrl,
         icon_url: finalIconUrl, // [NEW]
         category: finalCategory,
@@ -463,6 +529,7 @@ index: async (req, res) => {
         game_type,
         price_type: finalPriceType,
         price: finalPrice,
+        download_config, // [NEW]
       });
 
       console.log('✅ Update completed\n');
@@ -471,7 +538,7 @@ index: async (req, res) => {
       res.redirect(`/games/${req.params.slug}`);
     } catch (error) {
       console.error("Update error:", error);
-      req.session.error = "Failed to update game";
+      req.session.error = "Failed to update: " + error.message;
       res.redirect(`/games/${req.params.slug}/edit`);
     }
   },

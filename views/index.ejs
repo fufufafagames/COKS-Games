@@ -740,30 +740,28 @@
       <% if (pcGames && pcGames.length > 0) { %>
       <div class="container" style="margin-bottom: 80px;">
         
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="text-white fw-bold">Game Khusus PC (Download)</h4> <a href="/all-games?type=download" class="text-info text-decoration-none small">Lihat Semua <i class="fas fa-arrow-right"></i></a>
+        <div class="d-flex justify-content-between align-items-center mb-3 recommended-header-container">
+            <h4 class="text-white fw-bold">Game Khusus PC (Download)</h4> <a href="/all-games?type=download" class="text-info text-decoration-none small">See All <i class="fas fa-arrow-right"></i></a>
         </div>
 
-        <div class="horizontal-scroll-container">
+        <div class="pc-download-container">
           
           <% pcGames.forEach((game, index) => { %>
             
-            <a href="/games/<%= game.slug %>" class="square-game-card">
+            <a href="/games/<%= game.slug %>" class="pc-download-card <%= index >= 3 ? 'mobile-hidden' : '' %>">
               
-              <div class="square-img-container">
-                 <% if (game.icon_url && game.icon_url !== '') { %>
-                    <img src="<%= game.icon_url %>" alt="<%= game.title %>"
-                         onerror="this.onerror=null;this.src='https://placehold.co/200x200/2a2a40/00D9FF?text=<%= game.title.charAt(0) %>';">
-                 <% } else { %>
-                    <img src="<%= game.thumbnail_url || 'https://placehold.co/200x200' %>" alt="<%= game.title %>">
-                 <% } %>
+              <div class="pc-download-banner">
+                 <img src="<%= game.banner_url || game.thumbnail_url || 'https://placehold.co/300x169/2a2a40/00D9FF?text=No+Image' %>" 
+                      alt="<%= game.title %>" loading="lazy"
+                      onerror="this.onerror=null;this.src='https://placehold.co/300x169/2a2a40/00D9FF?text=<%= game.title.charAt(0) %>';">
               </div>
 
-              <div class="text-start"> <div class="game-title-small" title="<%= game.title %>">
+              <div class="pc-download-info text-start"> 
+                  <div class="game-title-small text-white fw-bold text-truncate" style="max-width: 100%;" title="<%= game.title %>">
                       <%= game.title %>
                   </div>
                   
-                  <div class="game-meta-small">
+                  <div class="game-meta-small text-white small">
                       <span><%= (parseFloat(game.avg_rating) || 0).toFixed(1) %> <i class="fas fa-star text-warning" style="font-size: 0.7rem;"></i></span>
                       <span style="margin: 0 4px;">•</span>
                       <span><%= game.price === 0 ? 'Free' : 'Rp. ' + parseInt(game.price).toLocaleString('id-ID') %></span>

@@ -76,8 +76,7 @@ const gameValidation = [
 
   body("github_url")
     .trim()
-    .notEmpty()
-    .withMessage("GitHub URL is required")
+    .optional({ checkFalsy: true })
     .isURL()
     .withMessage("Please provide a valid URL")
     .matches(/^https:\/\/github\.com\//)

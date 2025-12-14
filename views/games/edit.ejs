@@ -11,7 +11,7 @@
                     <p class="text-white">Update your game information</p>
                 </div>
                 
-                <form id="game-form" action="/games/<%= game.slug %>?_method=PUT" method="POST" enctype="multipart/form-data">
+                <form id="game-form" action="/games/<%= game.slug %>?_method=PUT" method="POST" enctype="multipart/form-data" novalidate>
                     <div class="mb-3">
                         <label for="title" class="form-label">
                             <i class="fas fa-heading"></i> Game Title *
@@ -25,13 +25,171 @@
                         </label>
                         <textarea class="form-control" id="description" name="description" rows="5" required minlength="50"><%= game.description %></textarea>
                     </div>
+
+                    <!-- Game Mode Section -->
+                    <div class="mb-4">
+                        <label class="form-label d-block text-white mb-3">
+                            <i class="fas fa-gamepad"></i> Game Mode *
+                        </label>
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                 <input type="radio" class="btn-check" name="game_mode" id="mode_play" value="play" <%= (!game.game_type || game.game_type === 'playable') ? 'checked' : '' %>>
+                                 <label class="btn btn-outline-aqua w-100 p-3" for="mode_play">
+                                     <i class="fas fa-globe fa-2x mb-2"></i><br>
+                                     <strong>Play (Browser)</strong><br>
+                                     <small>Playable directly in browser via iframe</small>
+                                 </label>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                 <input type="radio" class="btn-check" name="game_mode" id="mode_download" value="download" <%= (game.game_type === 'downloadable' || game.game_type === 'download') ? 'checked' : '' %>>
+                                 <label class="btn btn-outline-info w-100 p-3" for="mode_download">
+                                     <i class="fas fa-download fa-2x mb-2"></i><br>
+                                     <strong>Download (PC)</strong><br>
+                                     <small>Users download files to play locally</small>
+                                 </label>
+                            </div>
+                        </div>
+                    </div>
                     
+                    <!-- GitHub URL -->
                     <div class="mb-3">
                         <label for="github_url" class="form-label">
-                            <i class="fab fa-github"></i> GitHub URL *
+                            <i class="fab fa-github"></i> GitHub URL Reference (Optional)
                         </label>
-                        <input type="url" class="form-control" id="github_url" name="github_url" value="<%= game.github_url %>" required>
+                        <input type="url" class="form-control" id="github_url" name="github_url" value="<%= game.github_url %>" placeholder="https://github.com/username/repo">
+                        <small class="text-white-50">Repository URL for reference.</small>
                     </div>
+
+                    <!-- Download Configuration -->
+                    <% 
+                        const dlConfig = game.parsedDownloadConfig || {}; 
+                        const isDownloadMode = (game.game_type === 'downloadable' || game.game_type === 'download');
+                    %>
+                    <div id="download-config-section" class="download-config-modern p-4 mb-4 animate-fade-in <%= isDownloadMode ? '' : 'd-none' %>">
+                        <div class="download-config-header d-flex align-items-center gap-2">
+                            <i class="fas fa-cogs fa-lg text-aqua"></i>
+                            <h5 class="text-aqua mb-0 fw-bold header-title">Download Configuration</h5>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <label class="modern-label">Version</label>
+                                <input type="text" name="version" class="form-control form-control-modern" value="<%= dlConfig.version || '' %>" placeholder="e.g. v1.0">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="modern-label">OS Platform</label>
+                                <select name="os" class="form-select form-select-modern">
+                                    <option value="Windows" <%= dlConfig.os === 'Windows' ? 'selected' : '' %>>Windows</option>
+                                    <option value="Linux" <%= dlConfig.os === 'Linux' ? 'selected' : '' %>>Linux</option>
+                                    <option value="Mac" <%= dlConfig.os === 'Mac' ? 'selected' : '' %>>Mac</option>
+                                    <option value="Android" <%= dlConfig.os === 'Android' ? 'selected' : '' %>>Android</option>
+                                    <option value="Multi-Platform" <%= dlConfig.os === 'Multi-Platform' ? 'selected' : '' %>>Multi-Platform</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="modern-label">Install Type</label>
+                                <select name="install_type" class="form-select form-select-modern">
+                                    <option value="Installer (.exe)" <%= dlConfig.install_type === 'Installer (.exe)' ? 'selected' : '' %>>Installer (.exe)</option>
+                                    <option value="Portable (.zip)" <%= dlConfig.install_type === 'Portable (.zip)' ? 'selected' : '' %>>Portable (.zip)</option>
+                                    <option value="ISO Image" <%= dlConfig.install_type === 'ISO Image' ? 'selected' : '' %>>ISO Image</option>
+                                    <option value="APK" <%= dlConfig.install_type === 'APK' ? 'selected' : '' %>>APK</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="modern-label">File Size</label>
+                                <input type="text" name="file_size" class="form-control form-control-modern" value="<%= dlConfig.file_size || '' %>" placeholder="e.g. 2 GB">
+                            </div>
+                        </div>
+          
+                        <!-- Download Links Manager -->
+                        <div class="mb-3">
+                            <label class="modern-label mb-3"><i class="fas fa-link me-1"></i> Download Mirrors</label>
+                            <div id="links-container" class="d-grid gap-2">
+                                <% if (dlConfig.links && dlConfig.links.length > 0) { %>
+                                    <% dlConfig.links.forEach(function(link) { %>
+                                        <div class="row link-row g-2 align-items-center">
+                                            <div class="col-4 col-md-3">
+                                                <input type="text" name="provider_name[]" class="form-control form-control-modern" value="<%= link.name %>" placeholder="Provider Name">
+                                            </div>
+                                            <div class="col-6 col-md-8">
+                                                <input type="url" name="provider_url[]" class="form-control form-control-modern" value="<%= link.url %>" placeholder="https://example.com/download">
+                                            </div>
+                                            <div class="col-2 col-md-1">
+                                                <button type="button" class="btn remove-link-btn" title="Remove Link"><i class="fas fa-times"></i></button>
+                                            </div>
+                                        </div>
+                                    <% }); %>
+                                <% } else { %>
+                                    <!-- Default empty row if no links -->
+                                    <div class="row link-row g-2 align-items-center">
+                                        <div class="col-4 col-md-3">
+                                            <input type="text" name="provider_name[]" class="form-control form-control-modern" placeholder="Provider Name">
+                                        </div>
+                                        <div class="col-6 col-md-8">
+                                            <input type="url" name="provider_url[]" class="form-control form-control-modern" placeholder="https://example.com/download">
+                                        </div>
+                                        <div class="col-2 col-md-1">
+                                            <button type="button" class="btn remove-link-btn" title="Remove Link"><i class="fas fa-times"></i></button>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn add-link-btn-modern mt-2" id="add-link-btn">
+                            <i class="fas fa-plus-circle me-2"></i> Add Another Download Link
+                        </button>
+                    </div>
+
+                     <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const modePlay = document.getElementById('mode_play');
+                            const modeDownload = document.getElementById('mode_download');
+                            const downloadSection = document.getElementById('download-config-section');
+                            const linksContainer = document.getElementById('links-container');
+                            const addLinkBtn = document.getElementById('add-link-btn');
+
+                            function toggleMode() {
+                                if (modeDownload.checked) {
+                                    downloadSection.classList.remove('d-none');
+                                } else {
+                                    downloadSection.classList.add('d-none');
+                                }
+                            }
+
+                            modePlay.addEventListener('change', toggleMode);
+                            modeDownload.addEventListener('change', toggleMode);
+
+                            // Add Link Logic
+                            addLinkBtn.addEventListener('click', function() {
+                                const row = document.createElement('div');
+                                row.className = 'row link-row g-2 align-items-center slide-in-bottom'; // Added slide-in animation class if available, or just keeping it simple
+                                row.innerHTML = `
+                                  <div class="col-4 col-md-3">
+                                      <input type="text" name="provider_name[]" class="form-control form-control-modern" placeholder="Provider Name">
+                                  </div>
+                                  <div class="col-6 col-md-8">
+                                      <input type="url" name="provider_url[]" class="form-control form-control-modern" placeholder="https://example.com/download">
+                                  </div>
+                                  <div class="col-2 col-md-1">
+                                      <button type="button" class="btn remove-link-btn"><i class="fas fa-times"></i></button>
+                                  </div>
+                                `;
+                                linksContainer.appendChild(row);
+                                
+                                row.querySelector('.remove-link-btn').addEventListener('click', function() {
+                                    row.remove();
+                                });
+                            });
+                            
+                            // Bind delete on existing rows
+                            document.querySelectorAll('.remove-link-btn').forEach(btn => {
+                                btn.addEventListener('click', function() {
+                                    this.closest('.link-row').remove();
+                                });
+                            });
+                        });
+                      </script>
 
                     <!-- Price Model Section -->
                     <div class="mb-3">
@@ -88,7 +246,7 @@
                             pricePro.addEventListener('change', togglePrice);
                         });
                     </script>
-
+                    
                     
                     <div class="mb-3">
                         <label for="thumbnail" class="form-label">
@@ -158,7 +316,7 @@
                                     <% }); %>
                                 </datalist>
                                 <div class="selected-items d-flex flex-wrap"></div>
-                                <input type="hidden" name="category" value="<%= game.category %>" required>
+                                <input type="hidden" name="category" value="<%= game.category %>">
                             </div>
                         </div>
                         
@@ -182,7 +340,7 @@
                         <!-- Progress Bar -->
                         <div id="progress-container" class="mb-3" style="display: none;">
                             <div class="d-flex justify-content-between text-white mb-1">
-                                <span>Uploading...</span>
+                                <span>Uploaded...</span>
                                 <span id="progress-text">0%</span>
                             </div>
                             <div class="progress" style="height: 10px;">
@@ -197,6 +355,25 @@
                             <i class="fas fa-times"></i> Cancel
                         </a>
                     </div>
+                    
+                    <script>
+                        // Validation Debugger
+                        document.querySelector('button[type="submit"]').addEventListener('click', function() {
+                            const form = document.getElementById('game-form');
+                            if (!form.checkValidity()) {
+                                const invalidFields = Array.from(form.querySelectorAll(':invalid'))
+                                    .map(field => field.name || field.id || field.placeholder);
+                                if (invalidFields.length > 0) {
+                                    // Highlight invalid fields if hidden
+                                    const firstInvalid = form.querySelector(':invalid');
+                                    if(firstInvalid.offsetParent === null) {
+                                       alert('Hidden field invalid: ' + (firstInvalid.name || firstInvalid.id));
+                                       console.error('Hidden invalid:', firstInvalid);
+                                    }
+                                }
+                            }
+                        });
+                    </script>
                 </form>
             </div>
         </div>
