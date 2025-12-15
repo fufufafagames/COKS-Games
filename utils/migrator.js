@@ -104,7 +104,64 @@ const runMigration = async () => {
 
         console.log('Event seeding skipped.');
 
+        // 9. Add discount columns to transactions table
+        await pool.query(`
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'transactions' AND column_name = 'discount_type') THEN
+                ALTER TABLE transactions ADD COLUMN discount_type VARCHAR(20) DEFAULT 'none';
+                END IF;
+
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'transactions' AND column_name = 'original_price') THEN
+                ALTER TABLE transactions ADD COLUMN original_price DECIMAL(10, 2) DEFAULT 0;
+                END IF;
+            END $$;
+        `);
+        console.log("transactions table updated (discount columns).");
+
+        // 10. Ensure updated_at exists in events table
+        await pool.query(`
+            ALTER TABLE events
+            ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW();
+        `);
+        console.log('events table updated (updated_at column).');
+
         console.log('Migration completed successfully!');
+        // 11. Create ads table
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS ads (
+                    id SERIAL PRIMARY KEY,
+                    title VARCHAR(255) NOT NULL,
+                    image_url VARCHAR(255) NOT NULL,
+                    target_url VARCHAR(255),
+                    location VARCHAR(50) DEFAULT 'home_top',
+                    is_active BOOLEAN DEFAULT FALSE,
+                    created_at TIMESTAMP DEFAULT NOW()
+                );
+            `);
+            console.log("   - Migration 11: 'ads' table checked/created.");
+
+            // 12. Create 'messages' table for Contact Form
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS messages (
+                    id SERIAL PRIMARY KEY,
+                    name VARCHAR(100) NOT NULL,
+                    email VARCHAR(100) NOT NULL,
+                    subject VARCHAR(200),
+                    message TEXT NOT NULL,
+                    is_read BOOLEAN DEFAULT FALSE,
+                    created_at TIMESTAMP DEFAULT NOW()
+                );
+            `);
+            console.log("   - Migration 12: 'messages' table checked/created.");
+
+            // 13. Add reset token columns to users for Local Password Reset
+            await pool.query(`
+                ALTER TABLE users 
+                ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255),
+                ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP;
+            `);
+            console.log("   - Migration 13: Reset token columns added to 'users'.");
     } catch (error) {
         console.error('Migration failed:', error);
     }

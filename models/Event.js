@@ -8,10 +8,17 @@ module.exports = {
    * Get active event
    * @returns {Promise<object|null>} Active event or null
    */
+  /**
+   * Get active event (Valid Date & Active Flag)
+   * @returns {Promise<object|null>} Active event or null
+   */
   getActive: async () => {
     try {
       const result = await db.query(
-        "SELECT * FROM events WHERE is_active = TRUE ORDER BY created_at DESC LIMIT 1"
+        `SELECT * FROM events 
+         WHERE is_active = TRUE 
+         AND CURRENT_DATE BETWEEN start_date AND end_date
+         ORDER BY created_at DESC LIMIT 1`
       );
       return result.rows[0] || null;
     } catch (error) {

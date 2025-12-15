@@ -111,6 +111,34 @@ router.get('/faq', (req, res) => {
   });
 });
 
+const Message = require('../models/Message');
+
+// Contact Page
+router.get('/contact', (req, res) => {
+    res.render('pages/contact', {
+        title: 'Contact Us',
+        page: 'contact',
+        user: req.session.user || null
+    });
+});
+
+// Handle Contact Form Submission
+router.post('/contact', async (req, res) => {
+    try {
+        const { name, email, subject, message } = req.body;
+        
+        // Save to Database
+        await Message.create({ name, email, subject, message });
+        
+        req.session.success = "Thank you! Your message has been received. Our team will read it shortly.";
+        res.redirect('/contact');
+    } catch (error) {
+        console.error("Contact Error:", error);
+        req.session.error = "Failed to send message. Please try again.";
+        res.redirect('/contact');
+    }
+});
+
 const Event = require('../models/Event');
 
 // Dynamic Event Page

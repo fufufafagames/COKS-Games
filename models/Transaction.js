@@ -6,8 +6,9 @@ class Transaction {
     const query = `
       INSERT INTO transactions 
       (user_id, game_id, order_id, invoice_number, amount, payment_method, 
-       payment_channel, status, payment_url, payment_code, qr_code_url, expired_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+       payment_channel, status, payment_url, payment_code, qr_code_url, expired_at,
+       discount_type, original_price)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING id
     `;
     
@@ -24,7 +25,9 @@ class Transaction {
       data.payment_url || null,
       data.payment_code || null,
       data.qr_code_url || null,
-      data.expired_at
+      data.expired_at,
+      data.discount_type || 'none',
+      data.original_price || data.amount
     ];
 
     const result = await db.query(query, params);
@@ -83,6 +86,34 @@ class Transaction {
     const result = await db.query(query, [userId, gameId]);
     return parseInt(result.rows[0].count) > 0;
   }
+
+  // Check if user has claimed any discount today (Success or Pending)
+  static async hasClaimedDiscountToday(userId) {
+    const query = `
+      SELECT count(*) as count 
+      FROM transactions 
+      WHERE user_id = $1 
+      AND discount_type IN ('daily', 'event', 'flash_sale')
+      AND status IN ('success', 'waiting', 'pending')
+      AND DATE(created_at) = CURRENT_DATE
+    `;
+    
+    const result = await db.query(query, [userId]);
+    return parseInt(result.rows[0].count) > 0;
+  }
+
+  // Check if the global 99% Flash Sale slot is already taken today
+  static async isFlashSaleSoldOutToday() {
+    const query = `
+      SELECT count(*) as count 
+      FROM transactions 
+      WHERE discount_type = 'flash_sale'
+      AND status IN ('success', 'waiting', 'pending')
+      AND DATE(created_at) = CURRENT_DATE
+    `;
+    const result = await db.query(query);
+    return parseInt(result.rows[0].count) > 0;
+  }
   
   // Get user transactions
   static async getByUserId(userId) {
@@ -95,6 +126,21 @@ class Transaction {
     `;
     
     const result = await db.query(query, [userId]);
+    return result.rows;
+  }
+  
+  // Get all discount winners (Flash Sale, Event, Daily)
+  static async getDiscountWinners() {
+    const query = `
+      SELECT t.*, g.title as game_title, u.name as username, u.email as user_email
+      FROM transactions t
+      JOIN games g ON t.game_id = g.id
+      JOIN users u ON t.user_id = u.id
+      WHERE t.discount_type IN ('flash_sale', 'event', 'daily')
+      AND t.status IN ('success', 'waiting', 'pending')
+      ORDER BY t.created_at DESC
+    `;
+    const result = await db.query(query);
     return result.rows;
   }
   

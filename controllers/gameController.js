@@ -4,9 +4,12 @@
  */
 
 const Game = require("../models/Game");
-const Event = require("../models/Event"); // [NEW]
+const Event = require("../models/Event");
+const Ad = require("../models/Ad"); // [NEW]
+const User = require("../models/User");
 const Rating = require("../models/Rating");
 const Transaction = require("../models/Transaction");
+const DiscountManager = require("../utils/DiscountManager");
 const slugify = require("slugify");
 const fs = require('fs');
 const path = require('path');
@@ -49,6 +52,9 @@ module.exports = {
       // [NEW] Ambil Active Event
       const activeEvent = await Event.getActive();
 
+      // [NEW] Ambil Active Ad
+      const activeAd = await Ad.getActive('home_top');
+
       // [NEW] Ambil Latest Updated Games
       const latestGames = await Game.getLatest(15); 
 
@@ -61,21 +67,45 @@ module.exports = {
 
       const categories = await getCategories();
 
+      // Get Daily Deal Game
+      let dailyDealGame = null;
+      try {
+          const totalGames = await Game.count();
+          const dailyIndex = DiscountManager.getDailyDealIndex(totalGames);
+          if (dailyIndex >= 0) {
+              const rawGame = await Game.findByOffset(dailyIndex);
+              // Make sure it's valid to be a daily deal (e.g. not free)
+              if (rawGame && rawGame.price > 0) { 
+                  const discountInfo = DiscountManager.calculateDiscount({...rawGame, isDailyDeal: true}, false);
+                  dailyDealGame = {
+                      ...rawGame,
+                      discountType: discountInfo.discountType,
+                      finalPrice: discountInfo.finalPrice,
+                      discountPercent: discountInfo.discountPercent
+                  };
+              }
+          }
+      } catch (e) {
+          console.error("Error getting daily deal:", e);
+      }
+
       res.render("index", {
-        title: "FUFUFAFAGAMES - Discover Amazing Games",
+        title: "COK'S - Discover Amazing Games",
         featuredGames,
         recommendedGames, // [NEW]
         pcGames, // [NEW]
         activeEvent, // [NEW]
+        activeAd, // [NEW]
         latestGames, // [NEW]
         popularCategoryName, // [NEW]
         popularCategoryGames, // [NEW]
         categories,
+        dailyDealGame, // New
       });
     } catch (error) {
       console.error("Landing page error:", error); // Jika error, tetap render landing page tapi tanpa featured games
       res.render("index", {
-        title: "FUFUFAFAGAMES - Discover Amazing Games",
+        title: "COK'S - Discover Amazing Games",
         featuredGames: [],
         recommendedGames: [],
         pcGames: [],
@@ -94,22 +124,47 @@ module.exports = {
  */
 index: async (req, res) => {
   try {
-    const { search, category, page = 1 } = req.query;
-    const limit = 5; // User requested 5 games per column/page
+    const { search, category, type, page = 1 } = req.query;
+    const limit = 6; // Updated to 6 for professional grid (3x2 Desktop)
     const currentPage = parseInt(page) || 1;
 
     // Call getAll with pagination params
-    const { games, total } = await Game.getAll(search, category, "newest", currentPage, limit);
+    const { games, total } = await Game.getAll(search, category, "newest", currentPage, limit, type);
+    
+    // [NEW] Calculate discounts for listing badges
+    try {
+        const totalGamesCount = await Game.count();
+        const dailyIndex = DiscountManager.getDailyDealIndex(totalGamesCount);
+        const dailyDealGame = await Game.findByOffset(dailyIndex);
+        const dailyDealId = dailyDealGame ? dailyDealGame.id : -1;
+
+        const isFlashSaleSoldOut = await Transaction.isFlashSaleSoldOutToday();
+        const activeEvent = await Event.getActive();
+
+        games.forEach(g => {
+            const isDaily = (g.id === dailyDealId);
+            // Pass REAL availability
+            g.discount = DiscountManager.calculateDiscount(
+                {...g, isDailyDeal: isDaily}, 
+                !isFlashSaleSoldOut, 
+                activeEvent
+            );
+        });
+    } catch (e) {
+        console.error("Error calculating list discounts:", e);
+    }
+
     const categories = await getCategories();
     
     // Calculate total pages
     const totalPages = Math.ceil(total / limit);
 
     res.render("games/index", {
-      title: "All Games",
+      title: type === 'download' ? "PC Games (Download)" : (category ? `Games - ${category}` : "All Games"),
       games,
       search: search || "",
       category: category || "",
+      type: type || "",
       categories,
       // Pagination Data
       currentPage,
@@ -118,7 +173,7 @@ index: async (req, res) => {
       // Pass message jika games kosong
       emptyMessage:
         games.length === 0
-          ? search || category
+          ? search || category || type
             ? "No games found matching your criteria. Try different filters!"
             : "No games available yet. Be the first to upload a game! 🎮"
           : null,
@@ -215,6 +270,23 @@ index: async (req, res) => {
           }
       }
 
+      // [NEW] Check Daily Deal Status
+      const totalGamesCount = await Game.count();
+      const dailyIndex = DiscountManager.getDailyDealIndex(totalGamesCount);
+      const dailyDealGame = await Game.findByOffset(dailyIndex);
+      const isDaily = (dailyDealGame && dailyDealGame.id === game.id);
+
+      // [NEW] Calculate Discount (Display Only)
+      // Check Global Flash Sale Status
+      const isFlashSaleSoldOut = await Transaction.isFlashSaleSoldOutToday();
+      const activeEvent = await Event.getActive(); // [NEW] Fetch Active Event
+      
+      const discount = DiscountManager.calculateDiscount(
+          {...game, isDailyDeal: isDaily}, 
+          !isFlashSaleSoldOut, 
+          activeEvent
+      );
+
       res.render("games/show", {
         title: game.title,
         game,
@@ -222,6 +294,7 @@ index: async (req, res) => {
         ratingStats,
         userRating,
         isPurchased,
+        discount // [NEW] contains finalPrice, discountPercent, discountType
       });
     } catch (error) {
       console.error("Show error:", error);

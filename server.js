@@ -120,9 +120,21 @@ app.listen(PORT, "0.0.0.0", () => {
   const cleanupOrphanedFiles = require('./utils/cleanup');
   cleanupOrphanedFiles();
 
-  // Run cleanup periodically (every 1 hour)
+  const Transaction = require('./models/Transaction');
+  Transaction.updateExpiredTransactions(); // Run on start
+
   // Run cleanup periodically (every 1 hour)
   setInterval(cleanupOrphanedFiles, 60 * 60 * 1000);
+
+  // Run Transaction Cleanup every 1 minute (Critical for Flash Sale)
+  setInterval(async () => {
+      try {
+          await Transaction.updateExpiredTransactions();
+          // console.log("Cleaned up expired transactions");
+      } catch (e) {
+          console.error("Error cleaning transactions:", e);
+      }
+  }, 60 * 1000);
 
   // Run migration
   const runMigration = require('./utils/migrator');

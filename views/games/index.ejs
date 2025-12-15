@@ -230,7 +230,7 @@
             <% if (totalPages > 1) { %>
                 <div class="pagination-container animate-on-scroll fade-up">
                     <!-- Prev Button -->
-                    <a href="<%= currentPage > 1 ? `/games?page=${currentPage - 1}&search=${search}&category=${category}` : '#' %>" 
+                    <a href="<%= currentPage > 1 ? `/games?page=${currentPage - 1}&search=${search}&category=${category}&type=${type || ''}` : '#' %>" 
                        class="page-btn <%= currentPage === 1 ? 'disabled' : '' %>">
                         <i class="fas fa-chevron-left"></i>
                     </a>
@@ -246,14 +246,14 @@
                     %>
 
                     <% if (startPage > 1) { %>
-                        <a href="/games?page=1&search=<%= search %>&category=<%= category %>" class="page-btn">1</a>
+                        <a href="/games?page=1&search=<%= search %>&category=<%= category %>&type=<%= type || '' %>" class="page-btn">1</a>
                         <% if (startPage > 2) { %>
                             <span class="page-btn disabled">...</span>
                         <% } %>
                     <% } %>
 
                     <% for(let i = startPage; i <= endPage; i++) { %>
-                        <a href="/games?page=<%= i %>&search=<%= search %>&category=<%= category %>" 
+                        <a href="/games?page=<%= i %>&search=<%= search %>&category=<%= category %>&type=<%= type || '' %>" 
                            class="page-btn <%= currentPage === i ? 'active' : '' %>">
                             <%= i %>
                         </a>
@@ -263,11 +263,11 @@
                         <% if (endPage < totalPages - 1) { %>
                             <span class="page-btn disabled">...</span>
                         <% } %>
-                        <a href="/games?page=<%= totalPages %>&search=<%= search %>&category=<%= category %>" class="page-btn"><%= totalPages %></a>
+                        <a href="/games?page=<%= totalPages %>&search=<%= search %>&category=<%= category %>&type=<%= type || '' %>" class="page-btn"><%= totalPages %></a>
                     <% } %>
 
                     <!-- Next Button -->
-                    <a href="<%= currentPage < totalPages ? `/games?page=${currentPage + 1}&search=${search}&category=${category}` : '#' %>" 
+                    <a href="<%= currentPage < totalPages ? `/games?page=${currentPage + 1}&search=${search}&category=${category}&type=${type || ''}` : '#' %>" 
                        class="page-btn <%= currentPage === totalPages ? 'disabled' : '' %>">
                         <i class="fas fa-chevron-right"></i>
                     </a>
@@ -281,7 +281,7 @@
             <div class="text-center py-5 animate-on-scroll fade-up">
                 <i class="fas fa-gamepad fa-5x text-white mb-3"></i>
                 <h3><%= emptyMessage || 'No games found' %></h3>
-                <% if (search || category) { %>
+                <% if (search || category || type) { %>
                     <p class="text-white">Try adjusting your search or filters</p>
                     <a href="/games" class="btn btn-outline-aqua mt-3" style="min-width: 260px; height: 54px; display: inline-flex; align-items: center; justify-content: center;">
                         <i class="fas fa-redo me-2"></i> Clear Filters

@@ -50,7 +50,7 @@
                     </td>
                     <td class="text-end">
                         <button type="button" 
-                                class="btn btn-sm btn-outline-warning me-1 btn-edit-event" 
+                                class="btn btn-sm btn-outline-warning me-1 edit-event-btn" 
                                 data-bs-toggle="modal" 
                                 data-bs-target="#editEventModal"
                                 data-id="<%= e.id %>"
@@ -176,7 +176,7 @@
                             <label class="form-label">Banner</label>
                             <div class="input-group mb-2">
                                 <span class="input-group-text bg-secondary border-secondary text-white">URL</span>
-                                <input type="url" class="form-control bg-dark text-white border-secondary banner-url-input" name="banner_url" placeholder="https://...">
+                                <input type="text" class="form-control bg-dark text-white border-secondary banner-url-input" name="banner_url" placeholder="https://... or /uploads/...">
                             </div>
                             <div class="text-center text-muted mb-2">- OR -</div>
                             <input type="file" class="form-control bg-dark text-white border-secondary banner-file-input" name="banner" accept=".jpg,.jpeg,.png,.gif">
@@ -185,7 +185,7 @@
                             <label class="form-label">Video</label>
                             <div class="input-group mb-2">
                                 <span class="input-group-text bg-secondary border-secondary text-white">URL</span>
-                                <input type="url" class="form-control bg-dark text-white border-secondary video-url-input" name="video_url" placeholder="https://youtube.com/...">
+                                <input type="text" class="form-control bg-dark text-white border-secondary video-url-input" name="video_url" placeholder="https://youtube.com/...">
                             </div>
                             <div class="text-center text-muted mb-2">- OR -</div>
                             <input type="file" class="form-control bg-dark text-white border-secondary video-file-input" name="video" accept=".mp4,.mkv,.av1">
@@ -246,7 +246,7 @@
                             <label class="form-label">Banner</label>
                             <div class="input-group mb-2">
                                 <span class="input-group-text bg-secondary border-secondary text-white">URL</span>
-                                <input type="url" name="banner_url" id="editBanner" class="form-control bg-black text-white border-secondary banner-url-input" placeholder="https://...">
+                                <input type="text" name="banner_url" id="editBanner" class="form-control bg-black text-white border-secondary banner-url-input" placeholder="https://... or /uploads/...">
                             </div>
                             <div class="text-center text-muted mb-2">- OR -</div>
                             <input type="file" class="form-control bg-black text-white border-secondary banner-file-input" name="banner" accept=".jpg,.jpeg,.png,.gif">
@@ -255,7 +255,7 @@
                             <label class="form-label">Video</label>
                             <div class="input-group mb-2">
                                 <span class="input-group-text bg-secondary border-secondary text-white">URL</span>
-                                <input type="url" name="video_url" id="editVideo" class="form-control bg-black text-white border-secondary video-url-input" placeholder="https://youtube.com/...">
+                                <input type="text" name="video_url" id="editVideo" class="form-control bg-black text-white border-secondary video-url-input" placeholder="https://youtube.com/...">
                             </div>
                             <div class="text-center text-muted mb-2">- OR -</div>
                             <input type="file" class="form-control bg-black text-white border-secondary video-file-input" name="video" accept=".mp4,.mkv,.av1">
@@ -288,33 +288,28 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('Event Management Script Loaded');
+
         // Inject Games Data safely
         const availableGames = JSON.parse(document.getElementById('games-data').textContent);
-        console.log('Loaded games:', availableGames.length);
-
-        const editButtons = document.querySelectorAll('.edit-event-btn');
-        const eventForm = document.getElementById('eventForm');
-        const modalTitle = document.getElementById('modalTitle');
-        const idInput = document.getElementById('eventId');
-
-        // Elements
-        const titleInput = document.getElementById('eventTitle');
-        const descInput = document.getElementById('eventDescription');
-        const bannerUrlInput = document.getElementById('eventBannerUrl');
-        const videoUrlInput = document.getElementById('eventVideoUrl');
-        const targetUrlInput = document.getElementById('eventTargetUrl');
-        const startInput = document.getElementById('eventStartDate');
-        const endInput = document.getElementById('eventEndDate');
-        const gameIdInput = document.getElementById('eventGameId');
         
-        // Progress UI
+        // Forms
+        const editForm = document.getElementById('editEventForm');
+        const createForm = document.getElementById('createEventForm');
+
+        // Edit Modal Inputs
+        const titleInput = document.getElementById('editTitle');
+        const descInput = document.getElementById('editDescription');
+        const bannerUrlInput = document.getElementById('editBanner');
+        const videoUrlInput = document.getElementById('editVideo');
+        const startInput = document.getElementById('editStart');
+        const endInput = document.getElementById('editEnd');
         const progressContainer = document.getElementById('uploadProgressContainer');
-        const progressBar = document.getElementById('uploadProgressBar');
 
         // --- Game Search Logic ---
         function setupGameSearch(containerSelector) {
             const container = document.querySelector(containerSelector);
-            if(!container) return; // Guard
+            if(!container) return;
 
             const searchInput = container.querySelector('.game-search-input');
             const resultsContainer = container.querySelector('.game-search-results');
@@ -382,51 +377,44 @@
 
             clearBtn.addEventListener('click', clearSelection);
 
-            // Expose for external use (Edit Modal)
             container.selectGame = selectGame;
             container.clearSelection = clearSelection;
         }
 
-        // Initialize Search on both modals (Targeting the modal ID/Class properly)
-        // Since my previous HTML edits used unique IDs for modals but classes for internal structure.
-        // Create Modal
         setupGameSearch('#createEventModal'); 
-        // Edit Modal
         setupGameSearch('#editEventModal');
 
-
         // --- Edit Button Logic ---
+        const editButtons = document.querySelectorAll('.edit-event-btn');
         editButtons.forEach(btn => {
             btn.addEventListener('click', function() {
+                console.log('Edit clicked for ID:', this.dataset.id);
                 const id = this.dataset.id;
-                const data = JSON.parse(this.dataset.event); // Ensure dataset.event exists or use individual attrs
-                // If dataset.event is missing (it matches my view_file output which shows individual data attributes), use them.
                 
-                modalTitle.textContent = 'Edit Event';
-                eventForm.action = `/admin/events/${id}/update`;
-                idInput.value = id;
+                // Update Form Action
+                if(editForm) editForm.action = `/admin/events/${id}/update`;
                 
-                // Using dataset attributes as fallback if JSON not present (view_file showed data-title etc.)
-                titleInput.value = this.dataset.title || '';
-                descInput.value = this.dataset.description || '';
-                bannerUrlInput.value = this.dataset.banner || '';
-                videoUrlInput.value = this.dataset.video || '';
-                targetUrlInput.value = this.dataset.target || '';
+                // Populate Inputs
+                if(titleInput) titleInput.value = this.dataset.title || '';
+                if(descInput) descInput.value = this.dataset.description || '';
+                if(bannerUrlInput) bannerUrlInput.value = this.dataset.banner || '';
+                if(videoUrlInput) videoUrlInput.value = this.dataset.video || '';
                 
-                // Game ID logic
+                // Game Selection
                 const gameId = this.dataset.gameId;
                 const editModal = document.querySelector('#editEventModal');
                 if(editModal && editModal.clearSelection) editModal.clearSelection();
                 
-                if(gameId && gameId !== 'null') {
+                if(gameId && gameId !== 'null' && gameId !== '') {
                     const game = availableGames.find(g => g.id == gameId);
                     if(game && editModal.selectGame) editModal.selectGame(game);
                 }
 
-                if(this.dataset.start) startInput.value = this.dataset.start;
-                if(this.dataset.end) endInput.value = this.dataset.end;
+                // Dates
+                if(startInput) startInput.value = this.dataset.start || '';
+                if(endInput) endInput.value = this.dataset.end || '';
                 
-                progressContainer.classList.add('d-none');
+                if(progressContainer) progressContainer.classList.add('d-none');
             });
         });
         
@@ -434,11 +422,7 @@
         const createBtn = document.querySelector('[data-bs-target="#createEventModal"]');
         if(createBtn) {
             createBtn.addEventListener('click', () => {
-                 modalTitle.textContent = 'Create New Event';
-                 eventForm.action = '/admin/events';
-                 eventForm.reset();
-                 idInput.value = '';
-                 // Clear search
+                 if(createForm) createForm.reset();
                  const createModal = document.querySelector('#createEventModal');
                  if(createModal && createModal.clearSelection) createModal.clearSelection();
             });

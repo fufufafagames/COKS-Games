@@ -29,15 +29,8 @@ module.exports = {
    * Show register form
    */
   showRegister: (req, res) => {
-    const error = req.session.error;
-    const success = req.session.success;
-    delete req.session.error;
-    delete req.session.success;
-
     res.render("auth/register", {
       title: "Register",
-      error,
-      success,
     });
   },
 
@@ -100,15 +93,8 @@ module.exports = {
    * Show login form
    */
   showLogin: (req, res) => {
-    const error = req.session.error;
-    const success = req.session.success;
-    delete req.session.error;
-    delete req.session.success;
-
     res.render("auth/login", {
       title: "Login",
-      error,
-      success,
     });
   },
 
@@ -247,7 +233,7 @@ module.exports = {
   //       req.session.error = "OAuth not configured";
   //       return res.redirect("/login");
   //     }
-
+  //
   //     // Page ini akan handle token extraction via JavaScript
   //     res.render("auth/oauth-callback", {
   //       title: "Completing Login",
@@ -374,15 +360,8 @@ module.exports = {
    * Show Forgot Password Form
    */
   showForgotPassword: (req, res) => {
-    const error = req.session.error;
-    const success = req.session.success;
-    delete req.session.error;
-    delete req.session.success;
-
     res.render("auth/forgot-password", {
       title: "Forgot Password",
-      error,
-      success,
     });
   },
 
@@ -393,6 +372,8 @@ module.exports = {
   forgotPassword: async (req, res) => {
     try {
       const { email } = req.body;
+      const crypto = require('crypto'); // Built-in Node module
+      const { sendPasswordResetEmail } = require('../utils/emailService');
 
       // Validation
       if (!email) {
@@ -403,42 +384,41 @@ module.exports = {
       // Check if user exists
       const user = await User.findByEmail(email);
       if (!user) {
-        // Don't reveal if email exists or not (security best practice)
-        req.session.success =
-          "If that email exists, we've sent a password reset link.";
+        // Security: Fake success
+        req.session.success = "If that email exists, we've sent a password reset link.";
         return res.redirect("/login");
       }
 
       // Check if user has password (OAuth users can't reset password)
       if (!user.password) {
-        req.session.error =
-          "This account uses OAuth login. Please login using your OAuth provider.";
+        req.session.error = "This account uses OAuth. Please login with Google/Discord.";
         return res.redirect("/forgot-password");
       }
 
-      // Check if Supabase is available
-      if (!supabase) {
-        req.session.error =
-          "Password reset not configured. Please contact support.";
-        return res.redirect("/forgot-password");
-      }
+      // Generate Token
+      const token = crypto.randomBytes(32).toString('hex');
+      const expires = new Date(Date.now() + 3600000); // 1 Hour
 
-      // Send reset password email via Supabase
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${process.env.APP_URL}/reset-password`,
-      });
+      // Save Token to DB
+      await User.setResetToken(email, token, expires);
 
-      if (error) {
-        console.error("Forgot password error:", error);
-        req.session.error = "Failed to send reset email. Please try again.";
-        return res.redirect("/forgot-password");
+      // Send Email via Nodemailer (Local)
+      const emailSent = await sendPasswordResetEmail(user, token);
+
+      if (!emailSent) {
+          req.session.error = "Failed to send email. Check server logs.";
+          return res.redirect("/forgot-password");
       }
 
       req.session.success = "Password reset link sent! Check your email inbox.";
-      res.redirect("/login");
+      req.session.save((err) => {
+        if (err) console.error("Session save error:", err);
+        res.redirect("/login");
+      });
+
     } catch (error) {
       console.error("Forgot password error:", error);
-      req.session.error = "Failed to send reset email. Please try again.";
+      req.session.error = "An error occurred. Please try again.";
       res.redirect("/forgot-password");
     }
   },
@@ -448,16 +428,9 @@ module.exports = {
    */
   showResetPassword: (req, res) => {
     const token = req.query.token || "";
-    const error = req.session.error;
-    const success = req.session.success;
-    delete req.session.error;
-    delete req.session.success;
-
     res.render("auth/reset-password", {
       title: "Reset Password",
       token: token,
-      error,
-      success,
     });
   },
 
@@ -485,30 +458,25 @@ module.exports = {
         return res.redirect(`/reset-password?token=${token}`);
       }
 
-      // Check if Supabase is available
-      if (!supabase) {
-        req.session.error =
-          "Password reset not configured. Please contact support.";
-        return res.redirect("/login");
+      // Verify Token
+      const user = await User.findByResetToken(token);
+      if (!user) {
+          req.session.error = "Invalid or expired reset token.";
+          return res.redirect("/forgot-password");
       }
 
-      // Update password via Supabase
-      const { error } = await supabase.auth.updateUser({
-        password: password,
-      });
+      // Update Local Password
+      await User.updatePassword(user.id, password);
+      
+      // Clear Token
+      await User.clearResetToken(user.id);
 
-      if (error) {
-        console.error("Reset password error:", error);
-        req.session.error = "Failed to reset password. Token may be expired.";
-        return res.redirect("/forgot-password");
-      }
-
-      req.session.success =
-        "Password reset successful! You can now login with your new password.";
+      req.session.success = "Password reset successful! You can now login.";
       res.redirect("/login");
+
     } catch (error) {
       console.error("Reset password error:", error);
-      req.session.error = "Failed to reset password. Please try again.";
+      req.session.error = "Failed to reset password.";
       res.redirect("/forgot-password");
     }
   },

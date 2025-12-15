@@ -264,7 +264,7 @@
                         <% } %>
                         <input type="file" class="form-control" id="thumbnail" name="thumbnail" accept="image/*">
                         <small class="text-white">Or update URL below</small>
-                        <input type="url" class="form-control mt-2" id="thumbnail_url" name="thumbnail_url" value="<%= game.thumbnail_url %>">
+                        <input type="text" class="form-control mt-2" id="thumbnail_url" name="thumbnail_url" value="<%= game.thumbnail_url %>">
                     </div>
 
                     <!-- [NEW] Icon Upload Section -->
@@ -297,7 +297,7 @@
                         <% } %>
                         <input type="file" class="form-control" id="video" name="video" accept="video/*">
                         <small class="text-white">Or update URL below (YouTube embed, etc.)</small>
-                        <input type="url" class="form-control mt-2" id="video_url" name="video_url" value="<%= game.video_url || '' %>">
+                        <input type="text" class="form-control mt-2" id="video_url" name="video_url" value="<%= game.video_url || '' %>">
                     </div>
                     
                     <div class="row">

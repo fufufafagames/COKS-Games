@@ -1,22 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= title %></title>
-
-    <!-- Bootstrap CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <!-- Font Awesome -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="/css/style.css" />
+<%- include('layouts/header') %>
 
     <style>
       /* Landing Page Specific Styles - Scoped to not affect navbar */
@@ -387,6 +369,28 @@
         color: #fff;
         cursor: pointer;
       }
+
+      /* [NEW] Responsive Ad Image Class */
+      .ad-responsive-img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.1);
+        transition: transform 0.3s ease;
+      }
+
+      /* [NEW] Mobile Responsiveness */
+      @media (max-width: 768px) {
+        .ad-placeholder, .ad-responsive-img {
+            height: 120px !important; /* Smaller height on mobile */
+            font-size: 0.9rem;
+        }
+        .ad-container {
+            margin: 30px 0; /* Smaller margin on mobile */
+            padding: 0 10px;
+        }
+      }
       /*----------------------------------------------------------------------*/
 
       /* --- STYLE SECTION EVENT (BENTO GRID) --- */
@@ -455,6 +459,57 @@
         line-height: 1.6;
         margin-bottom: 15px;
       }
+      /* --- DISCOUNT BADGES & PRICING --- */
+      .discount-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        z-index: 10;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .flash-sale-badge { 
+          background: linear-gradient(135deg, #ff004c 0%, #ff5e00 100%); 
+          border: 1px solid rgba(255,255,255,0.2);
+          animation: pulse-red 2s infinite;
+      }
+      .daily-deal-badge { 
+          background: linear-gradient(135deg, #00d9ff 0%, #0066cc 100%);
+      }
+      .event-badge { 
+          background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); 
+      }
+
+      @keyframes pulse-red {
+          0% { box-shadow: 0 0 0 0 rgba(255, 0, 76, 0.7); }
+          70% { box-shadow: 0 0 0 10px rgba(255, 0, 76, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(255, 0, 76, 0); }
+      }
+
+      .price-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        line-height: 1.2;
+      }
+      .original-price {
+        text-decoration: line-through;
+        color: #888;
+        font-size: 0.75rem;
+      }
+      .final-price {
+        font-weight: bold;
+      }
+      .final-price.discounted {
+        color: #ff9f43;
+      }
+      /* ----------------------------------------------- */
       /*----------------------------------------------------------------------*/
     </style>
   </head>
@@ -641,7 +696,7 @@
 
       <div class="d-flex justify-content-between align-items-center mb-3 recommended-header-container" style="padding: 0 40px;">
         <h4 class="text-white fw-bold">Recommended for You</h4>
-        <a href="/all-games" class="text-info text-decoration-none small">See All <i class="fas fa-arrow-right"></i></a>
+        <a href="/games" class="text-info text-decoration-none small">See All <i class="fas fa-arrow-right"></i></a>
       </div>
 
       <div class="horizontal-scroll-container">
@@ -655,6 +710,11 @@
                 <div class="overlay">
                     <i class="fas fa-play"></i>
                 </div>
+                <% if (game.discount && game.discount.discountType !== 'none') { %>
+                    <div class="discount-badge <%= game.discount.discountType === 'flash_sale' ? 'flash-sale-badge' : (game.discount.discountType === 'daily' ? 'daily-deal-badge' : 'event-badge') %>">
+                        -<%= game.discount.discountPercent %>% <%= game.discount.discountType === 'flash_sale' ? '⚡' : '' %>
+                    </div>
+                <% } %>
                 </div>
 
                 <div class="card-details">
@@ -673,7 +733,14 @@
                     
                     <div class="game-meta-row">
                     <span class="game-price">
-                        <%= game.price === 0 ? 'Free' : 'Rp. ' + parseInt(game.price).toLocaleString('id-ID') %>
+                        <% if (game.discount && game.discount.discountType !== 'none') { %>
+                            <div class="price-container">
+                                <span class="original-price">Rp <%= parseInt(game.price).toLocaleString('id-ID') %></span>
+                                <span class="final-price discounted">Rp <%= parseInt(game.discount.finalPrice).toLocaleString('id-ID') %></span>
+                            </div>
+                        <% } else { %>
+                            <span class="final-price"><%= game.price === 0 ? 'Free' : 'Rp. ' + parseInt(game.price).toLocaleString('id-ID') %></span>
+                        <% } %>
                     </span>
                     <span class="game-rating">
                         <%= (parseFloat(game.avg_rating) || 0).toFixed(1) %> <i class="fas fa-star"></i>
@@ -700,13 +767,32 @@
 
         <div class="row g-4"> <div class="col-lg-8 col-md-12">
                 <div class="event-video-box">
-                    <iframe src="<%= activeEvent.video_url || 'https://www.youtube.com/embed/O_CycbaPPYk?si=nXGmUQ0IQ6_H8Be6' %>" 
-                            title="Event Video" frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen>
-                    </iframe>
-                    
-                    </div>
+                    <% 
+                        let videoUrl = activeEvent.video_url || 'https://www.youtube.com/embed/O_CycbaPPYk?si=nXGmUQ0IQ6_H8Be6';
+                        let isYoutube = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be');
+                        let embedUrl = videoUrl;
+                        
+                        if (isYoutube) {
+                            const ytMatch = videoUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+                            if (ytMatch && ytMatch[1]) {
+                                embedUrl = 'https://www.youtube.com/embed/' + ytMatch[1];
+                            }
+                        }
+                    %>
+
+                    <% if (isYoutube) { %>
+                        <iframe src="<%= embedUrl %>" 
+                                title="Event Video" frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                        </iframe>
+                    <% } else { %>
+                        <video controls style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; background: #000;">
+                            <source src="<%= videoUrl %>" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    <% } %>
+                </div>
             </div>
 
             <div class="col-lg-4 col-md-12 d-flex flex-column justify-content-center">
@@ -741,7 +827,7 @@
       <div class="container" style="margin-bottom: 80px;">
         
         <div class="d-flex justify-content-between align-items-center mb-3 recommended-header-container">
-            <h4 class="text-white fw-bold">Game Khusus PC (Download)</h4> <a href="/all-games?type=download" class="text-info text-decoration-none small">See All <i class="fas fa-arrow-right"></i></a>
+            <h4 class="text-white fw-bold">Game Khusus PC (Download)</h4> <a href="/games?type=download" class="text-info text-decoration-none small">See All <i class="fas fa-arrow-right"></i></a>
         </div>
 
         <div class="pc-download-container">
@@ -754,6 +840,12 @@
                  <img src="<%= game.banner_url || game.thumbnail_url || 'https://placehold.co/300x169/2a2a40/00D9FF?text=No+Image' %>" 
                       alt="<%= game.title %>" loading="lazy"
                       onerror="this.onerror=null;this.src='https://placehold.co/300x169/2a2a40/00D9FF?text=<%= game.title.charAt(0) %>';">
+                       
+                  <% if (game.discount && game.discount.discountType !== 'none') { %>
+                    <div class="discount-badge <%= game.discount.discountType === 'flash_sale' ? 'flash-sale-badge' : (game.discount.discountType === 'daily' ? 'daily-deal-badge' : 'event-badge') %>" style="font-size: 0.6rem; padding: 2px 6px;">
+                        -<%= game.discount.discountPercent %>%
+                    </div>
+                  <% } %>
               </div>
 
               <div class="pc-download-info text-start"> 
@@ -764,7 +856,12 @@
                   <div class="game-meta-small text-white small">
                       <span><%= (parseFloat(game.avg_rating) || 0).toFixed(1) %> <i class="fas fa-star text-warning" style="font-size: 0.7rem;"></i></span>
                       <span style="margin: 0 4px;">•</span>
-                      <span><%= game.price === 0 ? 'Free' : 'Rp. ' + parseInt(game.price).toLocaleString('id-ID') %></span>
+                      
+                      <% if (game.discount && game.discount.discountType !== 'none') { %>
+                        <span class="text-warning fw-bold small"> -<%= game.discount.discountPercent %>%</span>
+                      <% } else { %>
+                        <span><%= game.price === 0 ? 'Free' : 'Rp. ' + parseInt(game.price).toLocaleString('id-ID') %></span>
+                      <% } %>
                   </div>
               </div>
 
@@ -778,16 +875,27 @@
 
       <!-- Buat Banner Iklan  -->
       <div class="container ad-container">
-        <div class="ad-placeholder">
-            <span>[ SPACE IKLAN 728x250 ]<br><small>Tempatkan bannermu di sini</small></span>
-        </div>
-        <!-- kalau fotonnya udah ada  -->
+          <% if (typeof activeAd !== 'undefined' && activeAd) { %>
+              <a href="<%= activeAd.target_url || '#' %>" target="_blank" class="d-block position-relative group-hover-glow" style="border-radius: 12px; overflow: hidden;">
+                  <img src="<%= activeAd.image_url %>" alt="<%= activeAd.title %>" 
+                       class="ad-responsive-img"
+                       onmouseover="this.style.transform='scale(1.02)'"
+                       onmouseout="this.style.transform='scale(1)'">
+              </a>
+          <% } else { %>
+            <div class="ad-placeholder">
+              <div>
+                [ SPACE IKLAN 728x250 ]<br />
+                <span style="font-size: 0.9rem; color: #666">Tempatkan bannermu di sini</span>
+              </div>
+            </div>
+          <% } %>
+      </div>  <!-- kalau fotonnya udah ada  -->
         <!-- <div class="container ad-container">
           <a href="https://link-iklan-tujuannya.com">
               <img src="/images/banner-promo-topup.jpg" style="width: 100%; border-radius: 12px;">
           </a>
         </div> -->
-      </div>
 
       <div class="container" style="margin-bottom: 30px;">
 
@@ -844,12 +952,26 @@
                 <% } else { %>
                     <img src="<%= game.thumbnail_url || 'https://placehold.co/180x180/1a1a2e/00D9FF?text=No+Icon' %>" alt="<%= game.title %>" class="game-icon">
                 <% } %>
+                <% if (game.discount && game.discount.discountType !== 'none') { %>
+                    <div class="discount-badge <%= game.discount.discountType === 'flash_sale' ? 'flash-sale-badge' : (game.discount.discountType === 'daily' ? 'daily-deal-badge' : 'event-badge') %>">
+                        -<%= game.discount.discountPercent %>%
+                    </div>
+                <% } %>
             </div>
             <div class="card-details">
                 <div class="game-info-text">
                     <h3 class="game-title"><%= game.title %></h3>
                     <div class="game-meta-row">
-                        <span class="game-price"><%= game.price === 0 ? 'Free' : 'Rp. ' + parseInt(game.price).toLocaleString('id-ID') %></span>
+                        <span class="game-price">
+                            <% if (game.discount && game.discount.discountType !== 'none') { %>
+                                <div class="price-container">
+                                    <span class="original-price">Rp <%= parseInt(game.price).toLocaleString('id-ID') %></span>
+                                    <span class="final-price discounted">Rp <%= parseInt(game.discount.finalPrice).toLocaleString('id-ID') %></span>
+                                </div>
+                            <% } else { %>
+                                <span class="final-price"><%= game.price === 0 ? 'Free' : 'Rp. ' + parseInt(game.price).toLocaleString('id-ID') %></span>
+                            <% } %>
+                        </span>
                         <span class="game-rating">
                             <i class="fas fa-star"></i>
                             <%= game.avg_rating || '4.5' %>

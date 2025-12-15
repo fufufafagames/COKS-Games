@@ -12,7 +12,7 @@ module.exports = {
    * @param {string} category - Category filter (optional)
    * @returns {Promise<array>} Array of games
    */
-  getAll: async (search = "", category = "", sortBy = "newest", page = 1, limit = 12) => {
+  getAll: async (search = "", category = "", sortBy = "newest", page = 1, limit = 12, type = "") => {
     let query = `
             SELECT games.*, users.name as author_name, users.avatar as author_avatar,
             COUNT(*) OVER() as total_count
@@ -35,6 +35,18 @@ module.exports = {
       params.push(`%${category}%`);
       query += ` AND games.category ILIKE $${paramCount}`;
       paramCount++;
+    }
+
+    // Add type filter (e.g. 'download' for PC Games)
+    if (type) {
+      if (type === 'download') {
+          // Check if game_type is 'download' OR has download_config
+          query += ` AND (games.game_type = 'download' OR games.download_config IS NOT NULL)`;
+      } else {
+          params.push(type);
+          query += ` AND games.game_type = $${paramCount}`;
+          paramCount++;
+      }
     }
 
     // Sorting
@@ -152,14 +164,26 @@ module.exports = {
    */
   getType: async (type, limit = 8) => {
     try {
-      const result = await db.query(`
+      let query = `
         SELECT games.*, users.name as author_name
         FROM games 
         JOIN users ON games.user_id = users.id
-        WHERE game_type = $1
-        ORDER BY created_at DESC
-        LIMIT $2
-      `, [type, limit]);
+        WHERE 
+      `;
+      const params = [];
+
+      if (type === 'download') {
+          query += `(game_type = 'download' OR download_config IS NOT NULL)`;
+          params.push(limit);
+      } else {
+          query += `game_type = $1`;
+          params.push(type);
+          params.push(limit);
+      }
+
+      query += ` ORDER BY created_at DESC LIMIT $${params.length}`;
+
+      const result = await db.query(query, params);
       return result.rows;
     } catch (error) {
         console.error("Error getting games by type:", error);
@@ -426,6 +450,25 @@ module.exports = {
    * @param {string} query - Search prefix
    * @returns {Promise<array>} Array of games
    */
+  /**
+   * Count total active games
+   */
+  count: async () => {
+    const result = await db.query("SELECT COUNT(*) FROM games");
+    return parseInt(result.rows[0].count);
+  },
+
+  /**
+   * Find game by offset (for random daily deal)
+   */
+  findByOffset: async (offset) => {
+    const result = await db.query(
+        "SELECT * FROM games ORDER BY id ASC LIMIT 1 OFFSET $1", 
+        [offset]
+    );
+    return result.rows[0];
+  },
+
   searchByTitlePrefix: async (query) => {
     if (!query) return [];
     

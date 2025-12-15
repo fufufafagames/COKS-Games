@@ -5,27 +5,51 @@
                 <a class="navbar-brand" href="/"><h4 class="footer-brand">🎮 COK'S</h4></a>
                 <p>Platform untuk upload dan play game berbasis browser</p>
             </div>
-            <div class="col-lg-4 col-md-6 col-sm-6">
+            <div class="col-lg-2 col-md-6 col-sm-6">
                 <h6>Quick Links</h6>
-                <ul>
-                    <li><a href="/games">All Games</a></li>
+                <ul class="list-unstyled">
+                    <li><a href="/games" class="text-decoration-none text-white">All Games</a></li>
                     <% if (user) { %>
-                        <li><a href="/games/create/new">Upload Game</a></li>
-                        <li><a href="/profile/<%= user.id %>">My Profile</a></li>
+                        <li><a href="/games/create/new" class="text-decoration-none text-white">Upload Game</a></li>
+                        <li><a href="/profile/<%= user.id %>" class="text-decoration-none text-white">My Profile</a></li>
                     <% } else { %>
-                        <li><a href="/login">Login</a></li>
-                        <li><a href="/register">Register</a></li>
+                        <li><a href="/login" class="text-decoration-none text-white">Login</a></li>
+                        <li><a href="/register" class="text-decoration-none text-white">Register</a></li>
                     <% } %>
                 </ul>
             </div>
-            <div class="col-lg-4 col-md-6 col-sm-6">
+            <div class="col-lg-3 col-md-6 col-sm-6">
                 <h6>Categories</h6>
-                <ul>
-                    <li><a href="/games?category=Action">Action</a></li>
-                    <li><a href="/games?category=Puzzle">Puzzle</a></li>
-                    <li><a href="/games?category=RPG">RPG</a></li>
-                    <li><a href="/games?category=Adventure">Adventure</a></li>
+                <ul class="list-unstyled">
+                    <li><a href="/games?category=Action" class="text-decoration-none text-white">Action</a></li>
+                    <li><a href="/games?category=Puzzle" class="text-decoration-none text-white">Puzzle</a></li>
+                    <li><a href="/games?category=RPG" class="text-decoration-none text-white">RPG</a></li>
+                    <li><a href="/games?category=Adventure" class="text-decoration-none text-white">Adventure</a></li>
                 </ul>
+            </div>
+            <!-- [NEW] Contact Section -->
+            <div class="col-lg-3 col-md-6 col-sm-12">
+                <h6 class="text-white">Contact Support</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <a href="/contact" class="text-decoration-none text-aqua fw-bold hover-glow">
+                            <i class="fas fa-edit me-2"></i> Form Pengaduan
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="mailto:coks.helper@gmail.com" class="text-decoration-none text-white hover-white">
+                            <i class="fas fa-envelope me-2"></i> coks.helper@gmail.com
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="https://wa.me/6289518757171" target="_blank" class="text-decoration-none text-success fw-bold hover-glow">
+                            <i class="fab fa-whatsapp me-2"></i> +62 895-1875-7171
+                        </a>
+                    </li>
+                </ul>
+                <small class="text-white d-block mt-2">
+                    Butuh bantuan teknis atau kerjasama? Hubungi kami langsung!
+                </small>
             </div>
         </div>
         <div class="text-center">

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %> - Admin Cok's</title>
+    <link rel="icon" type="image/png" href="/img/logo-coks.png" />
     
     <!-- Dependencies -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -118,7 +119,17 @@
             </li>
             <li>
                 <a href="/admin/events" class="nav-link <%= page === 'events' ? 'active' : '' %>">
-                    <i class="fas fa-calendar-alt"></i> Events (Coming Soon)
+                    <i class="fas fa-calendar-alt"></i> Events
+                </a>
+            </li>
+            <li>
+                <a href="/admin/ads" class="nav-link <%= page === 'ads' ? 'active' : '' %>">
+                    <i class="fas fa-ad"></i> Ad Manager
+                </a>
+            </li>
+            <li>
+                <a href="/admin/messages" class="nav-link <%= page === 'messages' ? 'active' : '' %>">
+                    <i class="fas fa-envelope"></i> Inbox
                 </a>
             </li>
             <li class="mt-4 border-top border-secondary pt-3">

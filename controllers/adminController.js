@@ -6,6 +6,8 @@
 const User = require("../models/User");
 const Game = require("../models/Game");
 const Event = require("../models/Event");
+const Ad = require("../models/Ad");
+const Transaction = require("../models/Transaction");
 const fs = require('fs');
 const path = require('path');
 const db = require("../config/database");
@@ -126,6 +128,27 @@ module.exports = {
     }
   },
 
+  // ==================== DISCOUNT MANAGEMENT ====================
+
+  /**
+   * List Discount Winners
+   */
+  discounts: async (req, res) => {
+    try {
+      const winners = await Transaction.getDiscountWinners();
+      
+      res.render("admin/discounts", {
+        title: "Discount Winners",
+        page: "discounts",
+        layout: "admin/layout",
+        winners
+      });
+    } catch (error) {
+      console.error("Discount Winners Error:", error);
+      res.status(500).send("Server Error");
+    }
+  },
+
   // ==================== EVENT MANAGEMENT ====================
 
   /**
@@ -165,7 +188,7 @@ module.exports = {
       
       // Auto-generate target_url (Slugify)
       const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-      const target_url = `/event/${slug}`;
+      const target_url = `/events/${slug}`;
 
       // Handle File Uploads
       if (req.files) {
@@ -200,7 +223,7 @@ module.exports = {
           
           // Auto-generate target_url (Slugify)
           const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-          const target_url = `/event/${slug}`;
+          const target_url = `/events/${slug}`;
 
           // Fetch old event for cleanup
           const oldEvent = await Event.findById(id);
@@ -257,29 +280,142 @@ module.exports = {
    * Delete Event
    */
   deleteEvent: async (req, res) => {
-    try {
-      const { id } = req.params;
-      
-      // Cleanup files before deleting
-      const oldEvent = await Event.findById(id);
-      if (oldEvent) {
-          if (oldEvent.banner_url && !oldEvent.banner_url.startsWith('http')) {
-               const p = path.join(__dirname, '../public', oldEvent.banner_url);
-               if(fs.existsSync(p)) fs.unlinkSync(p);
+      try {
+          const event = await Event.findById(req.params.id);
+          if (event) {
+              // Delete files
+              if (event.banner_url && event.banner_url.startsWith('/uploads/')) {
+                  const fs = require('fs');
+                  const path = require('path');
+                  const bannerPath = path.join(__dirname, '../public', event.banner_url);
+                  if (fs.existsSync(bannerPath)) fs.unlinkSync(bannerPath);
+              }
+              if (event.video_url && event.video_url.startsWith('/uploads/')) {
+                  const fs = require('fs');
+                  const path = require('path');
+                  const videoPath = path.join(__dirname, '../public', event.video_url);
+                  if (fs.existsSync(videoPath)) fs.unlinkSync(videoPath);
+              }
+              
+              await Event.delete(req.params.id);
+              req.session.success = "Event deleted successfully.";
           }
-          if (oldEvent.video_url && !oldEvent.video_url.startsWith('http')) {
-               const p = path.join(__dirname, '../public', oldEvent.video_url);
-               if(fs.existsSync(p)) fs.unlinkSync(p);
-          }
+          res.redirect("/admin/events");
+      } catch (error) {
+          console.error("Delete Event Error:", error);
+          res.status(500).send("Server Error");
       }
+  },
 
-      await Event.delete(id);
-      req.session.success = "Event deleted.";
-      res.redirect("/admin/events");
-    } catch (error) {
-      console.error("Delete Event Error:", error);
-      req.session.error = "Failed to delete event.";
-      res.redirect("/admin/events");
-    }
+  // ==================== AD MANAGEMENT ====================
+
+  listAds: async (req, res) => {
+      try {
+          const Ad = require('../models/Ad'); // Assuming Ad model is not globally available
+          const ads = await Ad.getAll();
+          res.render("admin/ads", {
+              title: "Ad Management",
+              page: "ads",
+              ads
+          });
+      } catch (error) {
+          console.error("List Ads Error:", error);
+          res.status(500).send("Server Error");
+      }
+  },
+
+  createAd: async (req, res) => {
+      try {
+          const Ad = require('../models/Ad'); // Assuming Ad model is not globally available
+          const { title, target_url, location } = req.body;
+          let image_url = '';
+
+          if (req.file) {
+              image_url = '/' + req.file.path.replace(/\\/g, '/').replace(/^public\//, '');
+          }
+
+          if (!image_url) {
+              req.session.error = "Ad image is required!";
+              return res.redirect("/admin/ads");
+          }
+
+          await Ad.create({ title, image_url, target_url, location });
+          req.session.success = "Ad created successfully!";
+          res.redirect("/admin/ads");
+      } catch (error) {
+          console.error("Create Ad Error:", error);
+          req.session.error = "Failed to create ad.";
+          res.redirect("/admin/ads");
+      }
+  },
+
+  activateAd: async (req, res) => {
+      try {
+          const Ad = require('../models/Ad'); // Assuming Ad model is not globally available
+          await Ad.activate(req.params.id); // Also disables others in same location
+          req.session.success = "Ad activated!";
+          res.redirect("/admin/ads");
+      } catch (error) {
+          console.error("Activate Ad Error:", error);
+          res.redirect("/admin/ads");
+      }
+  },
+
+  deleteAd: async (req, res) => {
+      try {
+          const id = req.params.id;
+          const ad = await Ad.findById(id);
+          if (ad) {
+               // Delete physical file
+               const fs = require('fs');
+               const path = require('path');
+               if (ad.image_url && ad.image_url.startsWith('/uploads/')) {
+                   const filePath = path.join(__dirname, '..', 'public', ad.image_url);
+                   if (fs.existsSync(filePath)) {
+                       fs.unlinkSync(filePath);
+                   }
+               }
+              await Ad.delete(id);
+              req.session.success = "Ad deleted successfully";
+          } else {
+              req.session.error = "Ad not found";
+          }
+          res.redirect('/admin/ads');
+      } catch (error) {
+         console.error(error);
+         req.session.error = "Failed to delete ad";
+         res.redirect('/admin/ads');
+      }
+  },
+
+  // ================= MESSAGE / INBOX =================
+
+  listMessages: async (req, res) => {
+      try {
+          const Message = require('../models/Message');
+          const messages = await Message.getAll();
+          res.render('admin/messages', { 
+              messages, 
+              currentUrl: '/admin/messages',
+              title: 'Inbox Messages',
+              page: 'messages'
+          });
+      } catch (error) {
+          console.error(error);
+          res.redirect('/admin');
+      }
+  },
+
+  deleteMessage: async (req, res) => {
+      try {
+          const Message = require('../models/Message');
+          await Message.delete(req.params.id);
+          req.session.success = "Message deleted successfully";
+          res.redirect('/admin/messages');
+      } catch (error) {
+          console.error(error);
+          req.session.error = "Failed to delete message";
+          res.redirect('/admin/messages');
+      }
   }
 };

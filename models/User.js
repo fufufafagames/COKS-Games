@@ -229,4 +229,41 @@ module.exports = {
 
     return ADMIN_EMAILS.includes(user.email);
   },
+
+  /**
+   * Set reset token for password recovery
+   * @param {string} email - User email
+   * @param {string} token - Reset Token
+   * @param {Date} expires - Expiration date
+   */
+  setResetToken: async (email, token, expires) => {
+     await db.query(
+        "UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE email = $3",
+        [token, expires, email]
+     );
+  },
+
+  /**
+   * Find user by valid reset token
+   * @param {string} token 
+   * @returns {object|null}
+   */
+  findByResetToken: async (token) => {
+      const result = await db.query(
+          "SELECT * FROM users WHERE reset_token = $1 AND reset_token_expires > NOW()",
+          [token]
+      );
+      return result.rows[0] || null;
+  },
+
+  /**
+   * Clear reset token after successful reset
+   * @param {number} userId 
+   */
+  clearResetToken: async (userId) => {
+      await db.query(
+          "UPDATE users SET reset_token = NULL, reset_token_expires = NULL WHERE id = $1",
+          [userId]
+      );
+  }
 };

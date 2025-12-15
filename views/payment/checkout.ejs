@@ -17,7 +17,21 @@
             <div class="col-md-8">
               <h4><%= game.title %></h4>
               <p class="text-muted"><%= game.description.substring(0, 150) %>...</p>
-              <h3 class="text-aqua">Rp <%= game.price.toLocaleString('id-ID') %></h3>
+              
+              <% if (typeof discount !== 'undefined' && discount && discount.discountType !== 'none') { %>
+                  <div class="mb-2">
+                    <span class="badge <%= discount.discountType === 'flash_sale' ? 'bg-danger' : (discount.discountType === 'daily' ? 'bg-info text-dark' : 'bg-primary') %> p-2">
+                      <%= discount.discountType === 'flash_sale' ? '⚡ 99% FLASH SALE' : (discount.discountType === 'daily' ? '⏰ 10% DAILY DEAL' : '🎉 25% SPECIAL EVENT') %>
+                    </span>
+                  </div>
+                  <h4 class="text-secondary text-decoration-line-through">Rp <%= parseInt(game.price).toLocaleString('id-ID') %></h4>
+                  <h3 class="text-warning fw-bold">Rp <%= parseInt(discount.finalPrice).toLocaleString('id-ID') %></h3>
+                  <% if (discount.discountType === 'flash_sale') { %>
+                      <small class="text-danger"><i class="fas fa-clock"></i> Expires in 15 minutes!</small>
+                  <% } %>
+              <% } else { %>
+                  <h3 class="text-aqua">Rp <%= parseInt(game.price).toLocaleString('id-ID') %></h3>
+              <% } %>
             </div>
           </div>
           

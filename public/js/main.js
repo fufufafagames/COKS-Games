@@ -1,5 +1,5 @@
 /**
- * FUFUFAFAGAMES - Client-side JavaScript
+ * COK'S - Client-side JavaScript
  * Handle interactive features
  */
 

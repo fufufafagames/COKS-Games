@@ -30,12 +30,37 @@ include('../partials/navbar') %>
             </span>
 
             <% if (game.price_type === 'paid') { %>
-            <span class="badge bg-warning text-dark">
-                <i class="fas fa-crown"></i> PRO
-            </span>
-            <span class="text-aqua fw-bold ms-2">
-                Rp <%= parseInt(game.price).toLocaleString('id-ID') %>
-            </span>
+                <span class="badge bg-warning text-dark">
+                    <i class="fas fa-crown"></i> PRO
+                </span>
+                
+                <% if (typeof discount !== 'undefined' && discount && discount.discountType !== 'none') { %>
+                    <!-- Discount Badge -->
+                    <span class="badge <%= discount.discountType === 'flash_sale' ? 'bg-danger' : (discount.discountType === 'daily' ? 'bg-info text-dark' : 'bg-primary') %> ms-2">
+                        <%= discount.discountType === 'flash_sale' ? '⚡ 99%' : '-' + discount.discountPercent + '%' %>
+                    </span>
+                    
+                    <!-- Strikethrough Price -->
+                    <span class="text-white text-decoration-line-through ms-2">
+                        Rp <%= parseInt(game.price).toLocaleString('id-ID') %>
+                    </span>
+                    
+                    <!-- Final Price -->
+                    <span class="text-warning fw-bold ms-2" style="font-size: 1.2rem;">
+                         Rp <%= parseInt(discount.finalPrice).toLocaleString('id-ID') %>
+                    </span>
+                    
+                    <% if (discount.discountType === 'flash_sale') { %>
+                        <span class="badge bg-danger ms-2 animate-pulse"><i class="fas fa-clock"></i> FLASH SALE!</span>
+                        <style>.animate-pulse{animation:pulse 2s cubic-bezier(0.4,0,0.6,1) infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}</style>
+                    <% } %>
+                    
+                <% } else { %>
+                    <span class="text-aqua fw-bold ms-2">
+                        Rp <%= parseInt(game.price).toLocaleString('id-ID') %>
+                    </span>
+                <% } %>
+
             <% } else { %>
             <span class="badge bg-success">
                 <i class="fas fa-gift"></i> FREE
@@ -256,11 +281,16 @@ include('../partials/navbar') %>
                 <!-- Buy Button -->
                 <% if (user) { %>
                 <a href="/payment/buy/<%= game.slug %>" class="btn btn-aqua btn-lg w-100">
-                  <i class="fas fa-shopping-cart"></i> Buy Game (Rp <%= parseInt(game.price).toLocaleString('id-ID') %>)
+                  <i class="fas fa-shopping-cart"></i> 
+                  <% if (typeof discount !== 'undefined' && discount && discount.discountType !== 'none') { %>
+                      Buy Now (Rp <%= parseInt(discount.finalPrice).toLocaleString('id-ID') %>)
+                  <% } else { %>
+                      Buy Game (Rp <%= parseInt(game.price).toLocaleString('id-ID') %>)
+                  <% } %>
                 </a>
                 <% } else { %>
                 <a href="/login" class="btn btn-aqua btn-lg w-100">
-                  <i class="fas fa-sign-in-alt"></i> Login to Buy (Rp <%= parseInt(game.price).toLocaleString('id-ID') %>)
+                  <i class="fas fa-sign-in-alt"></i> Login to Buy
                 </a>
                 <% } %>
             <% } %>

@@ -84,8 +84,13 @@ const gameValidation = [
 
   body("thumbnail_url")
     .optional({ checkFalsy: true })
-    .isURL()
-    .withMessage("Please provide a valid thumbnail URL"),
+    .custom((value) => {
+        // Allow local uploads path OR valid URL
+        if (value.startsWith('/uploads/') || value.match(/^https?:\/\//)) {
+            return true;
+        }
+        throw new Error('Please provide a valid thumbnail URL');
+    }),
 
   body("category")
     .notEmpty()

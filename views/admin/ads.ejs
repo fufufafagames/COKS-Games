@@ -1,0 +1,140 @@
+<%- include('partials/header') %>
+
+<!-- Main Container with responsive padding -->
+<div class="container-fluid p-3 p-md-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
+        <h2 class="text-white fw-bold m-0 text-center text-md-start">Ad Management</h2>
+        <button class="btn btn-aqua" data-bs-toggle="modal" data-bs-target="#createAdModal">
+            <i class="fas fa-plus me-2"></i> New Ad
+        </button>
+    </div>
+
+    <!-- Info Box -->
+    <div class="alert alert-info bg-dark border-secondary text-white-50 small">
+        <div class="d-flex">
+            <i class="fas fa-info-circle me-2 mt-1 text-aqua"></i>
+            <div>
+                <strong>How it works:</strong> You can upload multiple banners, but only <strong>ONE</strong> can be active at a time for each location (e.g. Home Top). Activating an ad will automatically deactivate others in the same spot.
+            </div>
+        </div>
+    </div>
+
+    <!-- Ad List -->
+    <div class="row g-3">
+        <% if (ads.length > 0) { %>
+            <% ads.forEach(ad => { %>
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card bg-dark border-secondary h-100 <%= ad.is_active ? 'border-active-glow' : '' %>">
+                        <div class="card-header bg-transparent border-secondary d-flex justify-content-between align-items-center">
+                            <span class="badge <%= ad.is_active ? 'bg-success' : 'bg-secondary' %>">
+                                <%= ad.is_active ? 'ACTIVE' : 'INACTIVE' %>
+                            </span>
+                            <small class="text-white"><%= ad.location %></small>
+                        </div>
+                        <div class="position-relative" style="height: 150px; overflow: hidden;">
+                            <img src="<%= ad.image_url %>" class="w-100 h-100" style="object-fit: cover; object-position: center;" alt="<%= ad.title %>">
+                            <div class="position-absolute bottom-0 start-0 w-100 bg-gradient-dark p-2">
+                                <h5 class="card-title text-white mb-0 text-truncate"><%= ad.title || 'Untitled Ad' %></h5>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Helper wrapper for truncation -->
+                            <div class="text-white-50 small text-truncate" style="max-width: 100%;">
+                                <i class="fas fa-link me-1"></i> 
+                                <a href="<%= ad.target_url || '#' %>" target="_blank" class="text-aqua text-decoration-none">
+                                    <%= ad.target_url || 'No Link' %>
+                                </a>
+                            </div>
+                            <p class="card-text text-white small mt-2">
+                                Created: <%= new Date(ad.created_at).toLocaleDateString() %>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent border-secondary d-flex gap-2">
+                            <% if (!ad.is_active) { %>
+                                <form action="/admin/ads/<%= ad.id %>/activate" method="POST" class="flex-grow-1">
+                                    <button type="submit" class="btn btn-sm btn-outline-success w-100">
+                                        <i class="fas fa-power-off me-1"></i> Activate
+                                    </button>
+                                </form>
+                            <% } else { %>
+                                <button disabled class="btn btn-sm btn-success w-100 flex-grow-1">
+                                    <i class="fas fa-check me-1"></i> Active
+                                </button>
+                            <% } %>
+                            
+                            <form action="/admin/ads/<%= ad.id %>/delete" method="POST" onsubmit="return confirm('Delete this ad permanently?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <div class="col-12 text-center py-5">
+                <div class="text-white-50 mb-3">
+                    <i class="fas fa-ad fa-3x"></i>
+                </div>
+                <h4 class="text-white">No Ads Found</h4>
+                <p class="text-white">Start by creating your first ad banner.</p>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- Create Ad Modal -->
+<div class="modal fade" id="createAdModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <form action="/admin/ads" method="POST" enctype="multipart/form-data">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Create New Ad</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Title (Internal Name)</label>
+                        <input type="text" class="form-control bg-black text-white border-secondary" name="title" placeholder="e.g. Christmas Promo" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Banner Image *</label>
+                        <input type="file" class="form-control bg-black text-white border-secondary" name="ad_image" accept="image/*" required>
+                        <div class="form-text text-white-50 small">Recommended Size: 728x250 pixels. High quality.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Target URL</label>
+                        <input type="url" class="form-control bg-black text-white border-secondary" name="target_url" placeholder="https://...">
+                        <div class="form-text text-white-50 small">Where user goes when clicking the banner.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Location</label>
+                        <select class="form-select bg-black text-white border-secondary" name="location">
+                            <option value="home_top">Homepage Top (728x250)</option>
+                            <!-- Future: home_sidebar, footer, etc. -->
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-aqua w-100 w-md-auto">Upload Ad</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.border-active-glow {
+    border-color: #00d9ff !important;
+    box-shadow: 0 0 15px rgba(0, 217, 255, 0.2);
+}
+.bg-gradient-dark {
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+}
+</style>
+
+<%- include('partials/footer') %>

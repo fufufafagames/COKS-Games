@@ -1,7 +1,10 @@
 const Game = require('../models/Game');
+const Event = require('../models/Event');
 const Transaction = require('../models/Transaction');
 const { createPayment, checkPaymentStatus } = require('../config/doku');
 const { sendPaymentSuccessEmail } = require('../utils/emailService');
+const DiscountManager = require('../utils/DiscountManager');
+const db = require('../config/database');
 
 module.exports = {
   // Show checkout page
@@ -33,10 +36,35 @@ module.exports = {
         }
       }
       
+      // Check for discounts
+      const hasClaimed = await Transaction.hasClaimedDiscountToday(req.session.user.id);
+      let discount = { finalPrice: game.price, discountType: 'none', discountPercent: 0 };
+      
+      // Determine discount
+      if (!hasClaimed) {
+         // Identify Daily Deal
+         const totalGamesCount = await Game.count();
+         const dailyIndex = DiscountManager.getDailyDealIndex(totalGamesCount);
+         const dailyDealGame = await Game.findByOffset(dailyIndex);
+         const isDaily = (dailyDealGame && dailyDealGame.id === game.id);
+
+         // [NEW] Get active event for consistency
+         const activeEvent = await Event.getActive();
+
+         // We pass 'true' for isFlashSaleAvailable for DISPLAY purposes.
+         // The real race-condition check happens in processPayment.
+         discount = DiscountManager.calculateDiscount(
+             {...game, isDailyDeal: isDaily}, 
+             true,
+             activeEvent
+         ); 
+      }
+
       res.render('payment/checkout', {
         title: `Buy ${game.title}`,
         game,
-        user: req.session.user
+        user: req.session.user,
+        discount
       });
     } catch (error) {
       console.error('Checkout error:', error);
@@ -47,139 +75,150 @@ module.exports = {
   
   // Process payment
   processPayment: async (req, res) => {
+    let client = null;
     try {
+      // Connect to pool for transaction
+      client = await db.pool.connect();
+      
       const { game_slug, payment_method } = req.body;
       const game = await Game.findBySlug(game_slug);
       
       if (!game) {
+        if(client) client.release();
         return res.status(404).json({ error: 'Game not found' });
       }
       
+      // Start Database Transaction
+      await client.query('BEGIN');
+
       const orderId = `ORDER-${Date.now()}-${req.session.user.id}`;
-      const expiredAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      let expiredAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // Default 24 hours
+      let originalPrice = parseInt(game.price);
+      let finalAmount = originalPrice;
+      let discountType = 'none';
+
+      // --- DISCOUNT LOGIC ---
+      // 1. Check if user already claimed a discount today
+      const hasClaimed = await Transaction.hasClaimedDiscountToday(req.session.user.id);
       
-      // MAP Generic Payment Method to DOKU Payment Method Types
-      // Based on DOKU official documentation
+      if (!hasClaimed) {
+          // Identify Daily Deal
+          const totalGamesCount = await Game.count();
+          const dailyIndex = DiscountManager.getDailyDealIndex(totalGamesCount);
+          const dailyDealGame = await Game.findByOffset(dailyIndex);
+          const isDaily = (dailyDealGame && dailyDealGame.id === game.id);
+
+          // [NEW] Fetch Active for discount calculation
+          const activeEvent = await Event.getActive();
+
+          // 2. Calculate potential discount
+          let potentialDiscount = DiscountManager.calculateDiscount(
+              {...game, isDailyDeal: isDaily}, 
+              true,
+              activeEvent
+          );
+
+          // 3. Special handling for Flash Sale (Race Condition Check)
+          if (potentialDiscount.discountType === 'flash_sale') {
+              // Lock: Check if anyone has won TODAY
+              const winnerCount = await client.query(
+                `SELECT count(*) as count FROM transactions 
+                 WHERE discount_type = 'flash_sale' 
+                 AND status IN ('success', 'waiting', 'pending')
+                 AND DATE(created_at) = CURRENT_DATE`
+              );
+              
+              if (parseInt(winnerCount.rows[0].count) > 0) {
+                  // SORRY! Someone beat you to it. Downgrade to Event Discount (25%)
+                  potentialDiscount = DiscountManager.calculateDiscount(
+                      {...game, isDailyDeal: isDaily}, 
+                      false, 
+                      activeEvent
+                  );
+              } else {
+                  // WINNER! 
+                  // Set strict expiration (15 mins) to prevent blocking the deal forever
+                  expiredAt = new Date(Date.now() + 15 * 60 * 1000);
+              }
+          }
+
+          finalAmount = potentialDiscount.finalPrice;
+          discountType = potentialDiscount.discountType;
+      }
+
+      // --- END DISCOUNT LOGIC ---
+
+      
+      // MAP Generic Payment Method
       let paymentMethodTypes = [];
-      
       switch (payment_method) {
-        case 'QRIS':
-             paymentMethodTypes = ["QRIS"];
-             break;
+        case 'QRIS': paymentMethodTypes = ["QRIS"]; break;
         case 'VIRTUAL_ACCOUNT':
-             // Include all popular banks with correct DOKU naming
-             paymentMethodTypes = [
-                 "VIRTUAL_ACCOUNT_BCA", 
-                 "VIRTUAL_ACCOUNT_BANK_MANDIRI", 
-                 "VIRTUAL_ACCOUNT_BANK_SYARIAH_MANDIRI",
-                 "VIRTUAL_ACCOUNT_BRI", 
-                 "VIRTUAL_ACCOUNT_BNI", 
-                 "VIRTUAL_ACCOUNT_BANK_DANAMON", 
-                 "VIRTUAL_ACCOUNT_BANK_PERMATA", 
-                 "VIRTUAL_ACCOUNT_BANK_CIMB",
-                 "VIRTUAL_ACCOUNT_DOKU"
-             ];
+             paymentMethodTypes = ["VIRTUAL_ACCOUNT_BCA", "VIRTUAL_ACCOUNT_BANK_MANDIRI", "VIRTUAL_ACCOUNT_BRI", "VIRTUAL_ACCOUNT_BNI", "VIRTUAL_ACCOUNT_BANK_PERMATA", "VIRTUAL_ACCOUNT_BANK_CIMB", "VIRTUAL_ACCOUNT_DOKU"];
              break;
         case 'EWALLET':
-             // Use correct EMONEY_ prefix from DOKU docs
-             paymentMethodTypes = [
-               "EMONEY_OVO", 
-               "EMONEY_DANA", 
-               "EMONEY_LINKAJA", 
-               "EMONEY_SHOPEE_PAY"
-             ];
+             paymentMethodTypes = ["EMONEY_OVO", "EMONEY_DANA", "EMONEY_SHOPEE_PAY"];
              break;
         case 'RETAIL':
-             paymentMethodTypes = [
-               "ONLINE_TO_OFFLINE_ALFA", 
-               "ONLINE_TO_OFFLINE_INDOMARET"
-             ];
+             paymentMethodTypes = ["ONLINE_TO_OFFLINE_ALFA", "ONLINE_TO_OFFLINE_INDOMARET"];
              break;
-        default:
-             // Empty array = show all methods
-             paymentMethodTypes = [];
       }
       
-      // Create payment request to DOKU - FIXED STRUCTURE
       const paymentData = {
         order: {
           invoice_number: orderId,
-          amount: parseInt(game.price), // Ensure integer
+          amount: parseInt(finalAmount), // Use Discounted Price
           currency: 'IDR'
         },
         payment: {
-          payment_due_date: 1440, // 24 hours in minutes
-          payment_method_types: paymentMethodTypes.length > 0 ? paymentMethodTypes : []
+          payment_due_date: 1440,
+          payment_method_types: paymentMethodTypes
         },
         customer: {
           id: req.session.user.id.toString(),
           name: req.session.user.name, 
           email: req.session.user.email,
-          phone: '628000000000', // Dummy phone number - replace with real data if available
           country: 'ID'
         }
       };
       
-      console.log('Sending DOKU Payment Request:', JSON.stringify(paymentData, null, 2));
-
+      // Call DOKU API
       const dokuResponse = await createPayment(paymentData);
       
-      console.log('DOKU Response:', JSON.stringify(dokuResponse, null, 2));
-      
-      // Extract payment info safely based on response structure
-      let paymentUrl = null;
-      let paymentCode = null;
-      let qrCodeUrl = null;
-      
-      // Handle different response structures
-      // DOKU V2 Response is nested inside "response" object
+      // Extract payment info
       const dokuData = dokuResponse.response || dokuResponse;
+      let paymentUrl = dokuData.payment?.url || dokuResponse.url || null;
+      let paymentCode = dokuData.payment?.payment_code || dokuData.payment?.virtual_account_info?.virtual_account_number || null;
+      let qrCodeUrl = dokuData.payment?.qr_checkout_string || null;
 
-      if (dokuData.payment) {
-        paymentUrl = dokuData.payment.url || null;
-        
-        // For QRIS
-        if (dokuData.payment.qr_checkout_string) {
-          qrCodeUrl = dokuData.payment.qr_checkout_string;
-        }
-        
-        // For Virtual Account
-        if (dokuData.payment.virtual_account_info) {
-          paymentCode = dokuData.payment.virtual_account_info.virtual_account_number;
-        }
-        
-        // For E-Wallet
-        if (dokuData.payment.payment_code) {
-          paymentCode = dokuData.payment.payment_code;
-        }
-      }
+      // Save transaction to database (Using the Client from transaction)
+      const query = `
+        INSERT INTO transactions 
+        (user_id, game_id, order_id, invoice_number, amount, payment_method, 
+         payment_channel, status, payment_url, payment_code, qr_code_url, expired_at,
+         discount_type, original_price)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        RETURNING id
+      `;
+
+      await client.query(query, [
+        req.session.user.id,
+        game.id,
+        orderId,
+        dokuResponse.order?.invoice_number || orderId,
+        parseInt(finalAmount),
+        payment_method,
+        payment_method,
+        'waiting',
+        paymentUrl,
+        paymentCode,
+        qrCodeUrl,
+        expiredAt,
+        discountType,
+        originalPrice
+      ]);
       
-      // Fallback to top-level properties if they exist
-      paymentUrl = paymentUrl || dokuResponse.url || null;
-      
-      // Log extracted payment info
-      console.log('DEBUG PAYMENT INFO:', { 
-        paymentUrl, 
-        qrCodeUrl, 
-        dokuResponsePayment: dokuResponse.payment,
-        dokuResponseUrl: dokuResponse.url 
-      });
-      
-      // Save transaction to database
-      await Transaction.create({
-        user_id: req.session.user.id,
-        game_id: game.id,
-        order_id: orderId,
-        invoice_number: dokuResponse.order?.invoice_number || orderId, 
-        amount: parseInt(game.price),
-        payment_method: payment_method,
-        payment_channel: payment_method, // Simplified
-        status: 'waiting',
-        payment_url: paymentUrl, 
-        payment_code: paymentCode, 
-        qr_code_url: qrCodeUrl, 
-        expired_at: expiredAt
-      });
+      await client.query('COMMIT');
       
       res.json({
         success: true,
@@ -188,12 +227,14 @@ module.exports = {
       });
       
     } catch (error) {
-      console.error('Process payment error:', error.response?.data || error.message);
+      if (client) await client.query('ROLLBACK');
+      console.error('Process payment error:', error);
       res.status(500).json({ 
         error: 'Failed to process payment',
-        message: error.response?.data?.message || error.message || 'Check Server Logs for Details',
-        details: error.response?.data
+        message: error.message
       });
+    } finally {
+      if (client) client.release();
     }
   },
   
