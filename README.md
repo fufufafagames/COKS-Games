@@ -98,7 +98,7 @@ Buka browser dan akses: `http://localhost:3000`
 ## Screenshot Tampilan
 
 ### Home Page
-![Homepage](public/img/Screenshoot-HOMEPAGE.png)
+![Homepage](public/img/screenshoot-homepage.png)
 
 ### Halaman Games
 ![Halaman Games](public/img/screenshot-games.png)
