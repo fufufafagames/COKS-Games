@@ -145,9 +145,8 @@ Buka browser dan akses: `http://localhost:3000`
 
 ### Halaman Pembayaran
 ![Pembayaran](public/img/screenshoot-metodepembayaran.png)
-![Pembayaran](public/img/screenshot-pembayaran2.png)
-![Pembayaran](public/img/screenshot-pembayaran3.png)
-![Pembayaran](public/img/screenshot-pembayaran4.png)
+![Pembayaran](public/img/screenshoot-metodepembayaran2.png)
+![Pembayaran](public/img/screenshoot-myorder.png)
 
 ### Admin Dashboard
 ![Admin Dashboard](public/img/screenshot-admin-panel1.png)
