@@ -116,9 +116,9 @@ Buka browser dan akses: `http://localhost:3000`
 ![Search](public/img/screenshoot-searchgames.png)
 
 ### Halaman Login/Register
-![Login](public/img/screenshot-login.png)
-![Register](public/img/screenshot-register.png)
-![Forgot Password](public/img/screenshot-forgot-password.png)
+![Login](public/img/screenshoot-login.png)
+![Register](public/img/screenshoot-register.png)
+![Forgot Password](public/img/screenshoot-forgotpassword.png)
 
 ### Halaman Kontak
 ![Kontak](public/img/screenshoot-kontakpengaduan.png)
