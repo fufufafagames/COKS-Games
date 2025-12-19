@@ -121,11 +121,10 @@ Buka browser dan akses: `http://localhost:3000`
 ![Forgot Password](public/img/screenshot-forgot-password.png)
 
 ### Halaman Kontak
-![Kontak](public/img/screenshot-contact.png)
+![Kontak](public/img/screenshoot-kontakpengaduan.png)
 
 ### Halaman Event
-![Event](public/img/screenshot-event1.png)
-![Event](public/img/screenshot-event2.png)
+![Event](public/img/screenshoot-event.png)
 
 ### Halaman Upload Games
 ![Upload Games](public/img/screenshot-upload1.png)
