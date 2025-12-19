@@ -127,10 +127,7 @@ Buka browser dan akses: `http://localhost:3000`
 ![Event](public/img/screenshoot-event.png)
 
 ### Halaman Upload Games
-![Upload Games](public/img/screenshot-upload1.png)
-![Upload Games](public/img/screenshot-upload2.png)
-![Upload Games](public/img/screenshot-upload3.png)
-![Upload Games](public/img/screenshot-upload4.png)
+![Upload Games](public/img/screenshoot-uploadgames.png)
 
 ### Halaman Edit Games
 ![Edit Games](public/img/screenshot-edit1.png)
@@ -138,19 +135,16 @@ Buka browser dan akses: `http://localhost:3000`
 ![Edit Games](public/img/screenshot-edit3.png)
 
 ### Halaman Profile
-![Profile](public/img/screenshot-profile.png)
+![Profile](public/img/screenshoot-profile.png)
 
 ### Halaman Setting Profile
-![Setting Profile](public/img/screenshot-setting1.png)
-![Setting Profile](public/img/screenshot-setting2.png)
+![Setting Profile](public/img/screenshoot-editprofile.png)
 
 ### Halaman Detail Game
-![Detail Game](public/img/screenshot-game-detail1.png)
-![Detail Game](public/img/screenshot-game-detail2.png)
-![Detail Game](public/img/screenshot-game-detail3.png)
+![Detail Game](public/img/screenshoot-detailgame.png)
 
 ### Halaman Pembayaran
-![Pembayaran](public/img/screenshot-pembayaran1.png)
+![Pembayaran](public/img/screenshoot-metodepembayaran.png)
 ![Pembayaran](public/img/screenshot-pembayaran2.png)
 ![Pembayaran](public/img/screenshot-pembayaran3.png)
 ![Pembayaran](public/img/screenshot-pembayaran4.png)
