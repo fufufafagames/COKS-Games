@@ -54,3 +54,6 @@ Projek ini SUDAH ONLINE dan bisa diakses publik!
 
 ---
 *Demikian laporan ini dibuat. Semua kode yang ditulis dapat dipertanggungjawabkan logic dan fungsinya.*
+*Berikut rangkuman logika project ini:*
+https://github.com/coks-games/Logika-COK-S
+
