@@ -130,7 +130,7 @@ Buka browser dan akses: `http://localhost:3000`
 ![Upload Games](public/img/screenshoot-uploadgame.png)
 
 ### Halaman Edit Games
-![Edit Games](public/img/screenshoot-editgames.png)
+![Edit Games](public/img/screenshoot-editgame.png)
 
 ### Halaman Profile
 ![Profile](public/img/screenshoot-profile.png)
