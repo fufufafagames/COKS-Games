@@ -147,12 +147,11 @@ Buka browser dan akses: `http://localhost:3000`
 ![Pembayaran](public/img/screenshoot-myorder.png)
 
 ### Admin Dashboard
-![Admin Dashboard](public/img/screenshot-admin-panel1.png)
-![Admin Dashboard](public/img/screenshot-admin-panel2.png)
-![Admin Dashboard](public/img/screenshot-admin-panel3.png)
-![Admin Dashboard](public/img/screenshot-admin-panel4.png)
-![Admin Dashboard](public/img/screenshot-admin-panel5.png)
-
+![Admin Dashboard](public/img/screenshoot-admin1.png)
+![Admin Dashboard](public/img/screenshoot-admin2.png)
+![Admin Dashboard](public/img/screenshoot-admin3.png)
+![Admin Dashboard](public/img/screenshoot-admin4.png)
+![Admin Dashboard](public/img/screenshoot-admin5.png)
 ---
 
 ## Kontributor/Team
